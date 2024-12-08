@@ -1,0 +1,8 @@
+{
+    "name": "AskCharlyLeetham/wc-xero-sync",
+    "description": "A WooCommerce plugin for multipurpose sync with Xero.",
+    "type": "wordpress-plugin",
+    "require": {
+        "calcinai/xero-php": "^2.0"
+    }
+}
