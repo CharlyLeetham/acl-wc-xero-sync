@@ -1,5 +1,5 @@
 {
-    "name": "AskCharlyLeetham/wc-xero-sync",
+    "name": "askcharlyleetham/wc-xero-sync",
     "description": "A WooCommerce plugin for multipurpose sync with Xero.",
     "type": "wordpress-plugin",
     "require": {
