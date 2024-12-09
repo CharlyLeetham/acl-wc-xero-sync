@@ -2,6 +2,7 @@
     "name": "acl/wc-xero-sync",
     "description": "A WooCommerce plugin for multipurpose sync with Xero.",
     "type": "wordpress-plugin",
+    "version": "1.0.0"
     "require": {
         "calcinai/xero-php": "^2.0"
     },
