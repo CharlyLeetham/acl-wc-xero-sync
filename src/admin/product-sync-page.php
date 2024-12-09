@@ -16,13 +16,13 @@ class ACLProductSyncPage {
      */
     public static function add_admin_pages() {
         add_menu_page(
-            'ACL Xero Sync',
-            'ACL Xero Sync',
-            'manage_woocommerce',
-            'acl-xero-sync',
-            [ __CLASS__, 'render_placeholder_page' ],
-            'dashicons-update',
-            56
+            'ACL Xero Sync',           // Page title
+            'ACL Xero Sync',           // Menu title
+            'manage_woocommerce',      // Capability
+            'acl-xero-sync',           // Menu slug
+            [ __CLASS__, 'render_placeholder_page' ], // Callback for the parent menu
+            'dashicons-update',        // Icon
+            56                         // Position
         );
 
         add_submenu_page(
@@ -146,26 +146,19 @@ class ACLProductSyncPage {
      * Renders the Product Sync Page.
      */
     public static function render_sync_page() {
-        if ( isset( $_POST['sync_xero_products'] ) ) {
-            \ACLWcXeroSync\Services\ACLSyncService::sync_products();
-            echo '<div class="updated"><p>Products synced to Xero!</p></div>';
-        }
-
-        ?>
-        <div class="wrap">
-            <h1>Sync Products to Xero</h1>
-            <form method="post">
-                <input type="hidden" name="sync_xero_products" value="1">
-                <button type="submit" class="button button-primary">Start Sync</button>
-            </form>
-        </div>
-        <?php
+        echo '<div class="wrap">';
+        echo '<h1>Sync Products to Xero</h1>';
+        echo '<p>This page is under construction.</p>';
+        echo '</div>';
     }
 
     /**
      * Renders the Settings Page.
      */
     public static function render_settings_page() {
-        // (Existing code for settings page with status, authorization button, and reset button)
+        echo '<div class="wrap">';
+        echo '<h1>Xero Settings</h1>';
+        echo '<p>This page is under construction.</p>';
+        echo '</div>';
     }
 }
