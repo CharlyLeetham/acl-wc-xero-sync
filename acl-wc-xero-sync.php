@@ -35,8 +35,19 @@ function acl_wc_xero_sync_check_dependencies() {
 }
 
 // Autoload dependencies and plugin code
+if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+    wp_die(
+        '<p><strong>ACL WooCommerce Xero Sync:</strong> Missing Composer dependencies. Please run <code>composer install</code>.</p>'
+    );
+}
+
+// Autoload dependencies and plugin code
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/src/bootstrap.php';
 
 // Initialize the plugin
-\ACLWcXeroSync\ACLBootstrap::init();
+try {
+    \ACLWcXeroSync\ACLBootstrap::init();
+} catch ( Exception $e ) {
+    error_log( 'ACL WooCommerce Xero Sync failed to initialize: ' . $e->getMessage() );
+}

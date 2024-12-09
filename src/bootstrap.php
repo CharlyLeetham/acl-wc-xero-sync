@@ -19,22 +19,22 @@ class ACLBootstrap {
         /*spl_autoload_register(function ($class) {
             error_log("Attempting to autoload: $class");
         });
-
+        */
         // Check if the ACLProductSyncPage class exists
         if ( ! class_exists( 'ACLWcXeroSync\Admin\ACLProductSyncPage' ) ) {
             error_log( 'Class ACLProductSyncPage not found' );
             return; // Exit initialization to avoid further errors
         }        
-        */
+        
 
-        require_once __DIR__ . '/admin/product-sync-page.php';
+        /*require_once __DIR__ . '/admin/product-sync-page.php';
 
         if ( ! class_exists( 'ACLWcXeroSync\Admin\ACLProductSyncPage' ) ) {
             error_log( 'Class ACLProductSyncPage still not found after manual inclusion' );
             return;
         } else {
             error_log( 'Class ACLProductSyncPage found after manual inclusion' );
-        }        
+        } */       
 
         // Initialize the admin sync page
         Admin\ACLProductSyncPage::init();
