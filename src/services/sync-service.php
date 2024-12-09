@@ -9,10 +9,34 @@ class ACLSyncService {
      */
     public static function sync_products() {
         try {
+            // Step 1: Fetch WooCommerce Products
             $products = ACLWCService::get_products();
-    
-            // Ensure Xero client initialization is error-handled
-            $xero = new \XeroPHP\Application\PrivateApplication([
+            self::log_message( count( $products ) . " products fetched from WooCommerce." );
+
+            // Step 2: Initialize Xero Client
+            $xero = self::initialize_xero_client();
+            if ( ! $xero ) {
+                throw new \Exception( "Failed to initialize Xero client." );
+            }
+
+            // Step 3: Process Each Product
+            foreach ( $products as $product ) {
+                self::process_product( $xero, $product );
+            }
+        } catch ( \Exception $e ) {
+            self::log_message( "Fatal error in sync process: {$e->getMessage()}" );
+            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
+        }
+    }
+
+    /**
+     * Initializes the Xero client with OAuth credentials.
+     *
+     * @return \XeroPHP\Application\PrivateApplication|false
+     */
+    private static function initialize_xero_client() {
+        try {
+            return new \XeroPHP\Application\PrivateApplication([
                 'oauth' => [
                     'consumer_key'    => get_option( 'acl_xero_consumer_key' ),
                     'consumer_secret' => get_option( 'acl_xero_consumer_secret' ),
@@ -20,39 +44,73 @@ class ACLSyncService {
                     'token_secret'    => get_option( 'xero_refresh_token' ),
                 ],
             ]);
-    
-            foreach ( $products as $product ) {
-                try {
-                    // Skip if no SKU
-                    if ( empty( $product['sku'] ) ) {
-                        self::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU." );
-                        echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
-                        continue;
-                    }
-    
-                    $sku = $product['sku'];
-    
-                    // Check if SKU exists in Xero
-                    $existing_items = $xero->load( 'Accounting\\Item' )
-                                           ->where( 'Code', $sku )
-                                           ->execute();
-    
-                    if ( ! empty( $existing_items ) ) {
-                        self::log_message( "Product [SKU: {$sku}] exists in Xero." );
-                        echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
-                    } else {
-                        self::log_message( "Product [SKU: {$sku}] does not exist in Xero." );
-                        echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
-                    }
-                } catch ( \Exception $e ) {
-                    self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}" );
-                    echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
-                }
+        } catch ( \Exception $e ) {
+            self::log_message( "Error initializing Xero client: {$e->getMessage()}" );
+            return false;
+        }
+    }
+
+    /**
+     * Processes a single product, checking its existence in Xero.
+     *
+     * @param \XeroPHP\Application\PrivateApplication $xero
+     * @param array $product
+     */
+    private static function process_product( $xero, $product ) {
+        if ( ! self::validate_product( $product ) ) {
+            return;
+        }
+
+        $sku = $product['sku'];
+
+        try {
+            // Check if SKU exists in Xero
+            $exists = self::check_if_sku_exists( $xero, $sku );
+
+            if ( $exists ) {
+                self::log_message( "Product [SKU: {$sku}] exists in Xero." );
+                echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
+            } else {
+                self::log_message( "Product [SKU: {$sku}] does not exist in Xero." );
+                echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
             }
         } catch ( \Exception $e ) {
-            // Log and handle general exceptions
-            self::log_message( "Fatal error in sync process: {$e->getMessage()}" );
-            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
+            self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}" );
+            echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
+        }
+    }
+
+    /**
+     * Validates a WooCommerce product to ensure it has a valid SKU.
+     *
+     * @param array $product
+     * @return bool
+     */
+    private static function validate_product( $product ) {
+        if ( empty( $product['sku'] ) ) {
+            self::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU." );
+            echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if a product SKU exists in Xero.
+     *
+     * @param \XeroPHP\Application\PrivateApplication $xero
+     * @param string $sku
+     * @return bool
+     */
+    private static function check_if_sku_exists( $xero, $sku ) {
+        try {
+            $existing_items = $xero->load( 'Accounting\\Item' )
+                                   ->where( 'Code', $sku )
+                                   ->execute();
+            return ! empty( $existing_items );
+        } catch ( \Exception $e ) {
+            self::log_message( "Error querying Xero for SKU {$sku}: {$e->getMessage()}" );
+            throw $e;
         }
     }
 
