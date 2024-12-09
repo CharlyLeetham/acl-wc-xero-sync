@@ -75,4 +75,32 @@ class ACLProductSyncPage {
     public static function render_settings_page() {
         if ( isset( $_POST['acl_xero_settings'] ) ) {
             update_option( 'acl_xero_consumer_key', sanitize_text_field( $_POST['acl_xero_consumer_key'] ) );
-            update_option( 'acl_xero_consumer_secret', sanitize_t
+            update_option( 'acl_xero_consumer_secret', sanitize_text_field( $_POST['acl_xero_consumer_secret'] ) );
+            echo '<div class="updated"><p>Settings updated successfully!</p></div>';
+        }
+
+        $consumer_key = get_option( 'acl_xero_consumer_key', '' );
+        $consumer_secret = get_option( 'acl_xero_consumer_secret', '' );
+
+        ?>
+        <div class="wrap">
+            <h1>Xero Settings</h1>
+            <form method="post">
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="acl_xero_consumer_key">Xero Consumer Key</label></th>
+                        <td><input type="text" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="acl_xero_consumer_secret">Xero Consumer Secret</label></th>
+                        <td><input type="text" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text"></td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
+                </p>
+            </form>
+        </div>
+        <?php
+    }
+}
