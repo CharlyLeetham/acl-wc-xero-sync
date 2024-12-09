@@ -1,8 +1,9 @@
+<?php
 namespace ACLWcXeroSync\Admin;
 
 class ACLProductSyncPage {
     /**
-     * Registers the admin menu pages.
+     * Initializes the admin menu pages.
      */
     public static function init() {
         add_action( 'admin_menu', [ __CLASS__, 'add_admin_pages' ] );
@@ -19,7 +20,7 @@ class ACLProductSyncPage {
             'ACL Xero Sync',           // Menu title
             'manage_woocommerce',      // Capability
             'acl-xero-sync',           // Menu slug
-            [ __CLASS__, 'render_placeholder_page' ] // Callback (placeholder for parent)
+            [ __CLASS__, 'render_placeholder_page' ] // Callback for parent menu
         );
 
         // Submenu: Product Sync
@@ -29,7 +30,7 @@ class ACLProductSyncPage {
             'Product Sync',            // Menu title
             'manage_woocommerce',      // Capability
             'acl-xero-sync-products',  // Menu slug
-            [ __CLASS__, 'render_sync_page' ] // Callback
+            [ __CLASS__, 'render_sync_page' ] // Callback for Product Sync
         );
 
         // Submenu: Settings
@@ -39,7 +40,7 @@ class ACLProductSyncPage {
             'Settings',                // Menu title
             'manage_woocommerce',      // Capability
             'acl-xero-sync-settings',  // Menu slug
-            [ __CLASS__, 'render_settings_page' ] // Callback
+            [ __CLASS__, 'render_settings_page' ] // Callback for Settings
         );
     }
 
@@ -47,7 +48,10 @@ class ACLProductSyncPage {
      * Renders a placeholder page for the parent menu.
      */
     public static function render_placeholder_page() {
-        echo '<div class="wrap"><h1>ACL Xero Sync</h1><p>Choose an option from the menu.</p></div>';
+        echo '<div class="wrap">';
+        echo '<h1>ACL Xero Sync</h1>';
+        echo '<p>Choose an option from the submenu.</p>';
+        echo '</div>';
     }
 
     /**
@@ -88,12 +92,20 @@ class ACLProductSyncPage {
             <form method="post">
                 <table class="form-table">
                     <tr>
-                        <th scope="row"><label for="acl_xero_consumer_key">Xero Consumer Key</label></th>
-                        <td><input type="text" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text"></td>
+                        <th scope="row">
+                            <label for="acl_xero_consumer_key">Xero Consumer Key</label>
+                        </th>
+                        <td>
+                            <input type="text" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text" />
+                        </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="acl_xero_consumer_secret">Xero Consumer Secret</label></th>
-                        <td><input type="text" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text"></td>
+                        <th scope="row">
+                            <label for="acl_xero_consumer_secret">Xero Consumer Secret</label>
+                        </th>
+                        <td>
+                            <input type="text" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text" />
+                        </td>
                     </tr>
                 </table>
                 <p class="submit">
