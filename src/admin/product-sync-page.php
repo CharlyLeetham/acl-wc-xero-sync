@@ -225,5 +225,18 @@ class ACLProductSyncPage {
         <?php
     }
 
-    // Other methods: handle_xero_callback, reset_authorization, and helper functions...
+    /**
+     * Renders the Product Sync Page.
+     */
+    public static function render_sync_page() {
+        ?>
+        <div class="wrap">
+            <h1>Sync Products to Xero</h1>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_sync_products' ) ); ?>">
+                <input type="hidden" name="sync_xero_products" value="1">
+                <button type="submit" class="button button-primary">Start Sync</button>
+            </form>
+        </div>
+        <?php
+    }
 }
