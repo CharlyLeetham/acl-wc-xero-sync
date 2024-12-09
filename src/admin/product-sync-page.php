@@ -1,8 +1,3 @@
-<?php
-/**
- * Handles the admin interface for syncing products to Xero and managing settings.
- */
-
 namespace ACLWcXeroSync\Admin;
 
 class ACLProductSyncPage {
@@ -14,10 +9,9 @@ class ACLProductSyncPage {
     }
 
     /**
-     * Adds submenu pages under WooCommerce for sync and settings.
+     * Adds ACL Xero Sync and its submenus under WooCommerce.
      */
     public static function add_admin_pages() {
-        
         // Parent Menu: ACL Xero Sync
         add_submenu_page(
             'woocommerce',             // Parent slug (WooCommerce menu)
@@ -25,32 +19,39 @@ class ACLProductSyncPage {
             'ACL Xero Sync',           // Menu title
             'manage_woocommerce',      // Capability
             'acl-xero-sync',           // Menu slug
-            [ __CLASS__, 'render_sync_page' ] // Callback for the first child page
+            [ __CLASS__, 'render_placeholder_page' ] // Callback (placeholder for parent)
         );
 
-        // Sync Page
+        // Submenu: Product Sync
         add_submenu_page(
-            'acl-xero-sync',
-            'Sync Products to Xero', // Page title
-            'Sync Products to Xero',          // Menu title
-            'manage_woocommerce',        // Capability
-            'acl-sync-xero-products',    // Menu slug
-            [ __CLASS__, 'render_sync_page' ] // Callback for rendering
+            'acl-xero-sync',           // Parent slug (ACL Xero Sync menu)
+            'Product Sync',            // Page title
+            'Product Sync',            // Menu title
+            'manage_woocommerce',      // Capability
+            'acl-xero-sync-products',  // Menu slug
+            [ __CLASS__, 'render_sync_page' ] // Callback
         );
 
-        // Settings Page
+        // Submenu: Settings
         add_submenu_page(
-            'acl-xero-sync',
-            'ACL Xero Settings',         // Page title
-            'ACL Xero Settings',         // Menu title
-            'manage_woocommerce',        // Capability
-            'acl-xero-settings',         // Menu slug
-            [ __CLASS__, 'render_settings_page' ] // Callback for rendering
+            'acl-xero-sync',           // Parent slug (ACL Xero Sync menu)
+            'Settings',                // Page title
+            'Settings',                // Menu title
+            'manage_woocommerce',      // Capability
+            'acl-xero-sync-settings',  // Menu slug
+            [ __CLASS__, 'render_settings_page' ] // Callback
         );
     }
 
     /**
-     * Renders the Sync Page.
+     * Renders a placeholder page for the parent menu.
+     */
+    public static function render_placeholder_page() {
+        echo '<div class="wrap"><h1>ACL Xero Sync</h1><p>Choose an option from the menu.</p></div>';
+    }
+
+    /**
+     * Renders the Product Sync Page.
      */
     public static function render_sync_page() {
         if ( isset( $_POST['sync_xero_products'] ) ) {
@@ -59,7 +60,7 @@ class ACLProductSyncPage {
         }
         ?>
         <div class="wrap">
-            <h1>ACL Sync Products to Xero</h1>
+            <h1>Sync Products to Xero</h1>
             <form method="post">
                 <input type="hidden" name="sync_xero_products" value="1">
                 <button type="submit" class="button button-primary">Start Sync</button>
@@ -69,47 +70,9 @@ class ACLProductSyncPage {
     }
 
     /**
-     * Renders the Settings Page for managing API keys and secrets.
+     * Renders the Settings Page.
      */
     public static function render_settings_page() {
-        // Save settings if submitted
         if ( isset( $_POST['acl_xero_settings'] ) ) {
             update_option( 'acl_xero_consumer_key', sanitize_text_field( $_POST['acl_xero_consumer_key'] ) );
-            update_option( 'acl_xero_consumer_secret', sanitize_text_field( $_POST['acl_xero_consumer_secret'] ) );
-            echo '<div class="updated"><p>Settings updated successfully!</p></div>';
-        }
-
-        // Retrieve saved settings
-        $consumer_key = get_option( 'acl_xero_consumer_key', '' );
-        $consumer_secret = get_option( 'acl_xero_consumer_secret', '' );
-
-        ?>
-        <div class="wrap">
-            <h1>ACL Xero Settings</h1>
-            <form method="post">
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="acl_xero_consumer_key">Xero Consumer Key</label>
-                        </th>
-                        <td>
-                            <input type="text" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="acl_xero_consumer_secret">Xero Consumer Secret</label>
-                        </th>
-                        <td>
-                            <input type="text" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text" />
-                        </td>
-                    </tr>
-                </table>
-                <p class="submit">
-                    <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
-                </p>
-            </form>
-        </div>
-        <?php
-    }
-}
+            update_option( 'acl_xero_consumer_secret', sanitize_t
