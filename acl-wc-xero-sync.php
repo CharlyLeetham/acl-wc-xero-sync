@@ -15,8 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Prevent direct access.
 }
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 // Prevent activation if WooCommerce is not active
 register_activation_hook( __FILE__, 'acl_wc_xero_sync_check_dependencies' );
 
@@ -36,15 +34,13 @@ function acl_wc_xero_sync_check_dependencies() {
     }
 }
 
-// Autoload dependencies and plugin code
-if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-    wp_die(
-        '<p><strong>ACL WooCommerce Xero Sync:</strong> Missing Composer dependencies. Please run <code>composer install</code>.</p>'
-    );
-}
+// Include third-party libraries
+require_once __DIR__ . '/lib/xero-php/vendor/autoload.php';
 
-// Autoload dependencies and plugin code
-require_once __DIR__ . '/vendor/autoload.php';
+// Include custom class files
+require_once __DIR__ . '/src/admin/product-sync-page.php';
+require_once __DIR__ . '/src/services/wc-service.php';
+require_once __DIR__ . '/src/services/sync-service.php';
 require_once __DIR__ . '/src/bootstrap.php';
 
 // Initialize the plugin

@@ -1,8 +1,0 @@
-# Ignore Composer system files
-/vendor/composer/installed.json
-/vendor/composer/installed.php
-/vendor/bin/
-/composer.lock
-
-# Private key
-privatekey.pem
