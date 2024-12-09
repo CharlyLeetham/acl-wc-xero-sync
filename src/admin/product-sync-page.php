@@ -66,6 +66,42 @@ class ACLProductSyncPage {
             wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=error' ) );
             exit;
         }
+    } 
+    
+    /**
+     * Exchanges the authorization code for tokens.
+     *
+     * @param string $auth_code The authorization code from Xero.
+     * @return array|false The tokens or false on failure.
+     */
+    private static function exchange_auth_code_for_token( $auth_code ) {
+        $client_id = get_option( 'acl_xero_consumer_key' );
+        $client_secret = get_option( 'acl_xero_consumer_secret' );
+        $redirect_uri = admin_url( 'admin-post.php?action=acl_xero_sync_callback' );
+
+        $response = wp_remote_post( 'https://identity.xero.com/connect/token', [
+            'body' => [
+                'grant_type'    => 'authorization_code',
+                'code'          => $auth_code,
+                'redirect_uri'  => $redirect_uri,
+                'client_id'     => $client_id,
+                'client_secret' => $client_secret,
+            ],
+        ] );
+
+        if ( is_wp_error( $response ) ) {
+            error_log( 'Xero Token Exchange Error: ' . $response->get_error_message() );
+            return false;
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( isset( $body['access_token'] ) ) {
+            return $body;
+        }
+
+        error_log( 'Xero Token Exchange Response: ' . print_r( $body, true ) );
+        return false;
     }    
 
     /**
