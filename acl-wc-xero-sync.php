@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Prevent direct access.
 }
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 // Prevent activation if WooCommerce is not active
 register_activation_hook( __FILE__, 'acl_wc_xero_sync_check_dependencies' );
 
