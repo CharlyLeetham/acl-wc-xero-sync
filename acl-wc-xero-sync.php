@@ -34,12 +34,6 @@ function acl_wc_xero_sync_check_dependencies() {
     }
 }
 
-if ( class_exists( '\XeroPHP\Application\PrivateApplication' ) ) {
-    error_log( 'XeroPHP PrivateApplication is loaded successfully.' );
-} else {
-    error_log( 'XeroPHP PrivateApplication failed to load.' );
-}
-
 // Include third-party libraries
 require_once __DIR__ . '/lib/xero-php/vendor/autoload.php';
 

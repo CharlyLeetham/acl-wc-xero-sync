@@ -1,7 +1,9 @@
 <?php
 namespace ACLWcXeroSync\Services;
 
-use XeroPHP\Application\PrivateApplication;
+use XeroPHP\Remote\URL;
+use XeroPHP\Remote\Request;
+use XeroPHP\Models\Accounting\Item;
 
 class ACLSyncService {
     /**
@@ -32,28 +34,32 @@ class ACLSyncService {
     /**
      * Initializes the Xero client with OAuth credentials.
      *
-     * @return \XeroPHP\Application\PrivateApplication|false
+     * @return \XeroPHP\Remote\Request|null
      */
     private static function initialize_xero_client() {
         try {
-            return new \XeroPHP\Application\PrivateApplication([
-                'oauth' => [
-                    'consumer_key'    => get_option( 'acl_xero_consumer_key' ),
-                    'consumer_secret' => get_option( 'acl_xero_consumer_secret' ),
-                    'token'           => get_option( 'xero_access_token' ),
-                    'token_secret'    => get_option( 'xero_refresh_token' ),
-                ],
-            ]);
+            $config = [
+                'client_id' => get_option( 'acl_xero_consumer_key' ),
+                'client_secret' => get_option( 'acl_xero_consumer_secret' ),
+                'access_token' => get_option( 'xero_access_token' ),
+                'tenant_id' => get_option( 'xero_tenant_id' ),
+            ];
+
+            if ( empty( $config['client_id'] ) || empty( $config['client_secret'] ) || empty( $config['access_token'] ) || empty( $config['tenant_id'] ) ) {
+                throw new \Exception( 'Missing Xero OAuth credentials.' );
+            }
+
+            return new Request( $config['access_token'], $config['tenant_id'] );
         } catch ( \Exception $e ) {
             self::log_message( "Error initializing Xero client: {$e->getMessage()}" );
-            return false;
+            return null;
         }
     }
 
     /**
      * Processes a single product, checking its existence in Xero.
      *
-     * @param \XeroPHP\Application\PrivateApplication $xero
+     * @param \XeroPHP\Remote\Request $xero
      * @param array $product
      */
     private static function process_product( $xero, $product ) {
@@ -98,16 +104,18 @@ class ACLSyncService {
     /**
      * Checks if a product SKU exists in Xero.
      *
-     * @param \XeroPHP\Application\PrivateApplication $xero
+     * @param \XeroPHP\Remote\Request $xero
      * @param string $sku
      * @return bool
      */
     private static function check_if_sku_exists( $xero, $sku ) {
         try {
-            $existing_items = $xero->load( 'Accounting\\Item' )
-                                   ->where( 'Code', $sku )
-                                   ->execute();
-            return ! empty( $existing_items );
+            $url = new URL($xero, 'Accounting/Items');
+            $response = $xero->send('GET', $url, [
+                'where' => "Code==\"{$sku}\"",
+            ]);
+
+            return ! empty( $response['Items'] );
         } catch ( \Exception $e ) {
             self::log_message( "Error querying Xero for SKU {$sku}: {$e->getMessage()}" );
             throw $e;
