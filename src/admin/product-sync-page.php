@@ -17,15 +17,15 @@ class ACLProductSyncPage {
      * Adds submenu pages under WooCommerce for sync and settings.
      */
     public static function add_admin_pages() {
+        
         // Parent Menu: ACL Xero Sync
-        add_menu_page(
+        add_submenu_page(
+            'woocommerce',             // Parent slug (WooCommerce menu)
             'ACL Xero Sync',           // Page title
             'ACL Xero Sync',           // Menu title
             'manage_woocommerce',      // Capability
             'acl-xero-sync',           // Menu slug
-            '',                        // Callback (empty for parent, handled by first child)
-            'dashicons-update',        // Icon
-            58                         // Position under WooCommerce
+            [ __CLASS__, 'render_sync_page' ] // Callback for the first child page
         );
 
         // Sync Page
