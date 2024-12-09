@@ -82,26 +82,28 @@ class ACLProductSyncPage {
             update_option( 'acl_xero_consumer_secret', sanitize_text_field( $_POST['acl_xero_consumer_secret'] ) );
             echo '<div class="updated"><p>Settings updated successfully!</p></div>';
         }
-
+    
         $consumer_key = get_option( 'acl_xero_consumer_key', '' );
         $consumer_secret = get_option( 'acl_xero_consumer_secret', '' );
         $redirect_uri = admin_url( 'admin-post.php?action=acl_xero_sync_callback' );
-
+    
         // Check Authorization Status
         $access_token = get_option( 'xero_access_token', '' );
-        $is_authorized = ! empty( $access_token );
+        $auth_success = isset( $_GET['auth'] ) && $_GET['auth'] === 'success';
+        $auth_error = isset( $_GET['auth'] ) && $_GET['auth'] === 'error';
+        $is_authorized = ! empty( $access_token ) || $auth_success;
         $status = $is_authorized ? 'Authorised' : 'Unauthorised';
-
+    
         ?>
         <div class="wrap">
             <h1>Xero Settings</h1>
-
+    
             <!-- Step 1: Callback URL -->
             <h2>Step 1: Enter Your API Details</h2>
             <p>This Callback URL is required when creating your app in Xero:</p>
             <code id="acl-xero-callback-url"><?php echo esc_url( $redirect_uri ); ?></code>
             <button type="button" id="acl-xero-copy-callback-url" class="button">Copy URL</button>
-
+    
             <!-- JavaScript to Copy the Callback URL -->
             <script>
             document.getElementById('acl-xero-copy-callback-url').addEventListener('click', function () {
@@ -113,7 +115,7 @@ class ACLProductSyncPage {
                 });
             });
             </script>
-
+    
             <!-- API Details Form -->
             <form method="post">
                 <table class="form-table">
@@ -130,10 +132,15 @@ class ACLProductSyncPage {
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
             </form>
-
+    
             <!-- Step 2: Sync with Xero -->
             <h2>Step 2: Sync with Xero</h2>
             <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
+            <?php if ( $auth_success ): ?>
+                <p style="color: green;">You have successfully authorized this app with Xero.</p>
+            <?php elseif ( $auth_error ): ?>
+                <p style="color: red;">Authorization failed. Please try again.</p>
+            <?php endif; ?>
             <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
                class="button button-primary"
                <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
@@ -145,6 +152,7 @@ class ACLProductSyncPage {
         </div>
         <?php
     }
+    
 
     /**
      * Handles the OAuth callback from Xero.
