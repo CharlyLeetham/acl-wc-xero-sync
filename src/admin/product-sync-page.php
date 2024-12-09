@@ -9,6 +9,7 @@ class ACLProductSyncPage {
         add_action( 'admin_menu', [ __CLASS__, 'add_admin_pages' ] );
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
+        add_action( 'admin_post_acl_xero_sync_products', [ 'ACLWcXeroSync\Services\ACLSyncService', 'sync_products' ] );
     }
 
     /**
