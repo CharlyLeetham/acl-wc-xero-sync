@@ -45,6 +45,30 @@ class ACLProductSyncPage {
     }
 
     /**
+     * Handles the OAuth callback from Xero.
+     */
+    public static function handle_xero_callback() {
+        if ( isset( $_GET['code'] ) ) {
+            $auth_code = sanitize_text_field( $_GET['code'] );
+            $tokens = self::exchange_auth_code_for_token( $auth_code );
+
+            if ( $tokens ) {
+                update_option( 'xero_access_token', $tokens['access_token'] );
+                update_option( 'xero_refresh_token', $tokens['refresh_token'] );
+                update_option( 'xero_token_expires', time() + $tokens['expires_in'] );
+                wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=success' ) );
+                exit;
+            } else {
+                wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=error' ) );
+                exit;
+            }
+        } else {
+            wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=error' ) );
+            exit;
+        }
+    }    
+
+    /**
      * Resets the authorization by clearing stored tokens.
      */
     public static function reset_authorization() {
