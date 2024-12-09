@@ -16,6 +16,12 @@ class ACLBootstrap {
             return;
         }
 
+        // Check if the ACLProductSyncPage class exists
+        if ( ! class_exists( 'ACLWcXeroSync\Admin\ACLProductSyncPage' ) ) {
+            error_log( 'Class ACLProductSyncPage not found' );
+            return; // Exit initialization to avoid further errors
+        }        
+
         // Initialize the admin sync page
         Admin\ACLProductSyncPage::init();
     }
