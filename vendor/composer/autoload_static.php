@@ -40,6 +40,10 @@ class ComposerStaticInita1ee5b919b7659f73fd9e38a1795c041
         array (
             'Calcinai\\OAuth2\\Client\\' => 23,
         ),
+        'A' => 
+        array (
+            'ACLWcXeroSync\\' => 14,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -49,8 +53,8 @@ class ComposerStaticInita1ee5b919b7659f73fd9e38a1795c041
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -79,6 +83,10 @@ class ComposerStaticInita1ee5b919b7659f73fd9e38a1795c041
         'Calcinai\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/calcinai/oauth2-xero/src',
+        ),
+        'ACLWcXeroSync\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 
