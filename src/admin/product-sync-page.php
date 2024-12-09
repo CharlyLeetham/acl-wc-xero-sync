@@ -45,6 +45,20 @@ class ACLProductSyncPage {
     }
 
     /**
+     * Resets the authorization by clearing stored tokens.
+     */
+    public static function reset_authorization() {
+        // Delete options related to Xero tokens
+        delete_option( 'xero_access_token' );
+        delete_option( 'xero_refresh_token' );
+        delete_option( 'xero_token_expires' );
+
+        // Redirect back to the settings page with a success message
+        wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&reset=success' ) );
+        exit;
+    }    
+
+    /**
      * Generates the Xero OAuth URL.
      *
      * @param string $client_id The Client ID from Xero.
