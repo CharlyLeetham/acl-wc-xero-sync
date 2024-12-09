@@ -11,6 +11,12 @@
             "ACLWcXeroSync\\": "src/"
         }
     },
+    "classmap": [
+        "src/admin/product-sync-page.php",
+        "src/services/wc-service.php",
+        "src/services/sync-service.php",
+        "src/bootstrap.php"
+    ],    
     "license": "GPL-2.0+",
     "authors": [
         {
