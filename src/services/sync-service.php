@@ -8,48 +8,51 @@ class ACLSyncService {
      * Syncs WooCommerce products to Xero by checking their existence only.
      */
     public static function sync_products() {
-        $products = ACLWCService::get_products();
-
-        // Initialize Xero API client
-        $xero = new PrivateApplication([
-            'oauth' => [
-                'consumer_key'    => get_option( 'acl_xero_consumer_key' ),
-                'consumer_secret' => get_option( 'acl_xero_consumer_secret' ),
-                'token'           => get_option( 'xero_access_token' ),
-                'token_secret'    => get_option( 'xero_refresh_token' ),
-            ],
-        ]);
-
-        foreach ( $products as $product ) {
-            if ( empty( $product['sku'] ) ) {
-                // Log and skip products without SKU
-                self::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU." );
-                echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
-                continue;
-            }
-
-            $sku = $product['sku'];
-
-            try {
-                // Check if the SKU exists in Xero
-                $existing_items = $xero->load( 'Accounting\\Item' )
-                                       ->where( 'Code', $sku )
-                                       ->execute();
-
-                if ( ! empty( $existing_items ) ) {
-                    // SKU exists
-                    self::log_message( "Product [SKU: {$sku}] exists in Xero." );
-                    echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
-                } else {
-                    // SKU does not exist
-                    self::log_message( "Product [SKU: {$sku}] does not exist in Xero." );
-                    echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
+        try {
+            $products = ACLWCService::get_products();
+    
+            // Ensure Xero client initialization is error-handled
+            $xero = new \XeroPHP\Application\PrivateApplication([
+                'oauth' => [
+                    'consumer_key'    => get_option( 'acl_xero_consumer_key' ),
+                    'consumer_secret' => get_option( 'acl_xero_consumer_secret' ),
+                    'token'           => get_option( 'xero_access_token' ),
+                    'token_secret'    => get_option( 'xero_refresh_token' ),
+                ],
+            ]);
+    
+            foreach ( $products as $product ) {
+                try {
+                    // Skip if no SKU
+                    if ( empty( $product['sku'] ) ) {
+                        self::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU." );
+                        echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+                        continue;
+                    }
+    
+                    $sku = $product['sku'];
+    
+                    // Check if SKU exists in Xero
+                    $existing_items = $xero->load( 'Accounting\\Item' )
+                                           ->where( 'Code', $sku )
+                                           ->execute();
+    
+                    if ( ! empty( $existing_items ) ) {
+                        self::log_message( "Product [SKU: {$sku}] exists in Xero." );
+                        echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
+                    } else {
+                        self::log_message( "Product [SKU: {$sku}] does not exist in Xero." );
+                        echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
+                    }
+                } catch ( \Exception $e ) {
+                    self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}" );
+                    echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
                 }
-            } catch ( \Exception $e ) {
-                // Handle errors during API interaction
-                self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}" );
-                echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
             }
+        } catch ( \Exception $e ) {
+            // Log and handle general exceptions
+            self::log_message( "Fatal error in sync process: {$e->getMessage()}" );
+            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
         }
     }
 
