@@ -25,21 +25,21 @@ class ACLProductSyncPage {
         );
 
         add_submenu_page(
-            'acl-xero-sync',           // Parent slug (ACL Xero Sync menu)
-            'Product Sync',            // Page title
-            'Product Sync',            // Menu title
-            'manage_woocommerce',      // Capability
-            'acl-xero-sync-products',  // Menu slug
-            [ __CLASS__, 'render_sync_page' ] // Callback for Product Sync
+            'acl-xero-sync',
+            'Product Sync',
+            'Product Sync',
+            'manage_woocommerce',
+            'acl-xero-sync-products',
+            [ __CLASS__, 'render_sync_page' ]
         );
 
         add_submenu_page(
-            'acl-xero-sync',           // Parent slug (ACL Xero Sync menu)
-            'Settings',                // Page title
-            'Settings',                // Menu title
-            'manage_woocommerce',      // Capability
-            'acl-xero-sync-settings',  // Menu slug
-            [ __CLASS__, 'render_settings_page' ] // Callback for Settings
+            'acl-xero-sync',
+            'Settings',
+            'Settings',
+            'manage_woocommerce',
+            'acl-xero-sync-settings',
+            [ __CLASS__, 'render_settings_page' ]
         );
     }
 
@@ -87,9 +87,34 @@ class ACLProductSyncPage {
         $consumer_secret = get_option( 'acl_xero_consumer_secret', '' );
         $redirect_uri = admin_url( 'admin-post.php?action=acl_xero_sync_callback' );
 
+        // Check Authorization Status
+        $access_token = get_option( 'xero_access_token', '' );
+        $is_authorized = ! empty( $access_token );
+        $status = $is_authorized ? 'Authorised' : 'Unauthorised';
+
         ?>
         <div class="wrap">
             <h1>Xero Settings</h1>
+
+            <!-- Step 1: Callback URL -->
+            <h2>Step 1: Enter Your API Details</h2>
+            <p>This Callback URL is required when creating your app in Xero:</p>
+            <code id="acl-xero-callback-url"><?php echo esc_url( $redirect_uri ); ?></code>
+            <button type="button" id="acl-xero-copy-callback-url" class="button">Copy URL</button>
+
+            <!-- JavaScript to Copy the Callback URL -->
+            <script>
+            document.getElementById('acl-xero-copy-callback-url').addEventListener('click', function () {
+                const url = document.getElementById('acl-xero-callback-url').innerText;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Callback URL copied to clipboard!');
+                }).catch(err => {
+                    alert('Failed to copy URL: ' + err);
+                });
+            });
+            </script>
+
+            <!-- API Details Form -->
             <form method="post">
                 <table class="form-table">
                     <tr>
@@ -106,15 +131,16 @@ class ACLProductSyncPage {
                 </p>
             </form>
 
-            <h2>Callback URL</h2>
-            <p>This URL is required when creating your app in Xero:</p>
-            <code><?php echo esc_url( $redirect_uri ); ?></code>
-
-            <h2>Connect to Xero</h2>
-            <?php if ( $consumer_key && $consumer_secret ): ?>
-                <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" class="button button-primary">Authorize with Xero</a>
-            <?php else: ?>
-                <p>Please save your Consumer Key and Secret to enable authorization.</p>
+            <!-- Step 2: Sync with Xero -->
+            <h2>Step 2: Sync with Xero</h2>
+            <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
+            <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
+               class="button button-primary"
+               <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
+               Authorise with Xero
+            </a>
+            <?php if ( ! $is_authorized ): ?>
+                <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
             <?php endif; ?>
         </div>
         <?php
