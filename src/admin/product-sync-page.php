@@ -45,6 +45,22 @@ class ACLProductSyncPage {
     }
 
     /**
+     * Generates the Xero OAuth URL.
+     *
+     * @param string $client_id The Client ID from Xero.
+     * @param string $redirect_uri The callback URL for the app.
+     * @return string The authorization URL.
+     */
+    private static function get_xero_auth_url( $client_id, $redirect_uri ) {
+        return 'https://login.xero.com/identity/connect/authorize?' . http_build_query( [
+            'response_type' => 'code',
+            'client_id'     => $client_id,
+            'redirect_uri'  => $redirect_uri,
+            'scope'         => 'accounting.transactions accounting.settings offline_access',
+        ] );
+    }    
+
+    /**
      * Renders a placeholder page for the parent menu.
      */
     public static function render_placeholder_page() {
