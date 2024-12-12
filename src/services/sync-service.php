@@ -207,6 +207,7 @@ class ACLSyncService {
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);  
             echo '<pre>'; 
+            var_dump ($e);
             var_dump($e->getMessage());
             echo 'Error: '.$errorDetails.'<br />';         
             echo '</pre>';
