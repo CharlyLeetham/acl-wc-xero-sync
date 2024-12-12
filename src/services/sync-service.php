@@ -86,6 +86,8 @@ class ACLSyncService {
         $sku = $product['sku'];
 
         try {
+
+            self::test_xero_connection($xero);            
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
@@ -152,4 +154,22 @@ class ACLSyncService {
         $timestamp = date( 'Y-m-d H:i:s' );
         file_put_contents( $log_file, "[{$timestamp}] {$message}\n", FILE_APPEND );
     }
+
+    // Add this new method to test the Xero connection
+    private static function test_xero_connection($xero) {
+        try {
+            // Attempt to get the organization details, which should be a basic, low-impact query
+            $orgs = $xero->load('Accounting\\Organisation')
+                        ->execute();
+            
+            if (empty($orgs)) {
+                throw new \Exception("No organizations found, Xero connection might be invalid.");
+            }
+            
+            self::log_message("Xero connection test passed. Organization name: " . $orgs[0]->getName());
+        } catch (\Exception $e) {
+            self::log_message("Xero connection test failed: " . $e->getMessage());
+            throw new \Exception("Xero connection test failed: " . $e->getMessage());
+        }
+    }    
 }
