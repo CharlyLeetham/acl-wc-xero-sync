@@ -212,25 +212,14 @@ class ACLSyncService {
     private static function add_admin_notice($message, $type = 'info') {
         error_log("Adding notice: " . $message); // This will log to your server's error log        
 
-        add_action('admin_notices', [__CLASS__, 'display_admin_notice'], 10, 2);
-        self::$admin_notices[] = ['message' => $message, 'type' => $type];
+        add_action('admin_notices', 'display_hello_world_notice');
     } 
     
     /**
      * Displays the admin notices.
      */
-    private static function display_admin_notice() {
-        foreach (self::$admin_notices as $notice) {
-            ?>
-            <div class="notice notice-<?php echo esc_attr($notice['type']); ?>">
-                <p><?php echo esc_html($notice['message']); ?></p>
-            </div>
-            <?php
-        }
-        // Clear notices after displaying to prevent them from appearing again
-        self::$admin_notices = [];
+    function display_hello_world_notice() {
+        echo '<div class="notice notice-info"><p>Hello World</p></div>';
     }
-
-    // Class property to store notices
-    private static $admin_notices = [];    
+  
 }
