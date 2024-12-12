@@ -211,12 +211,16 @@ class ACLSyncService {
      */
     private static function add_admin_notice($message, $type = 'info') {
         error_log("Adding notice: " . $message); // This will log to your server's error log        
+
         add_action('admin_notices', function() use ($message, $type) {
+            echo "<div class='notice notice-$type'><p>$message</p></div>";
+        });
+       /* add_action('admin_notices', function() use ($message, $type) {
             ?>
             <div class="notice notice-<?php echo esc_attr($type); ?>">
                 <p><?php echo esc_html($message); ?></p>
             </div>
             <?php
-        });
+        });*/
     }    
 }
