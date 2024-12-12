@@ -201,5 +201,21 @@ class ACLSyncService {
             self::log_message("Xero connection test failed: " . $e->getMessage(), 'xero_connection');
             throw new \Exception("Xero connection test failed: " . $e->getMessage());
         }
+    } 
+    
+    /**
+     * Adds an admin notice to be displayed on the admin screen.
+     *
+     * @param string $message The message to display.
+     * @param string $type The type of notice (error, warning, info, success).
+     */
+    private static function add_admin_notice($message, $type = 'info') {
+        add_action('admin_notices', function() use ($message, $type) {
+            ?>
+            <div class="notice notice-<?php echo esc_attr($type); ?>">
+                <p><?php echo esc_html($message); ?></p>
+            </div>
+            <?php
+        });
     }    
 }
