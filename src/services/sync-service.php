@@ -113,7 +113,7 @@ class ACLSyncService {
             $query = $xero->load( 'Accounting\\Item' )
                                    ->where( 'Code', $sku );
           
-            self::log_message($request);
+            self::log_message($query);
             
             $existing_items = $query->execute();                                   
             return ! empty( $existing_items );
