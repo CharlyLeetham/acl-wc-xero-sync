@@ -57,6 +57,20 @@ class ACLProductSyncPage {
                 update_option( 'xero_access_token', $tokens['access_token'] );
                 update_option( 'xero_refresh_token', $tokens['refresh_token'] );
                 update_option( 'xero_token_expires', time() + $tokens['expires_in'] );
+
+                // Fetch tenants
+                $tenants = self::get_xero_tenants($tokens['access_token']);
+
+                if ($tenants && !empty($tenants)) {
+                    // Assuming you want to use the first tenant; adjust if needed for multi-tenant support
+                    $tenant_id = $tenants[0]['tenantId'];
+                    update_option('xero_tenant_id', $tenant_id);
+                } else {
+                    error_log('No tenants found or error fetching tenants.');
+                    wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=error' ) );
+                    exit;
+                }  
+
                 wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=success' ) );
                 exit;
             } else {
@@ -68,6 +82,29 @@ class ACLProductSyncPage {
             exit;
         }
     } 
+
+    /**
+     * Gets the list of tenants associated with the access token.
+     *
+     * @param string $access_token The access token from Xero.
+     * @return array|null Array of tenant data or null if unable to fetch.
+     */
+    private static function get_xero_tenants($access_token) {
+        $client_id = get_option( 'acl_xero_consumer_key' );
+        $response = wp_remote_get( 'https://api.xero.com/connections', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $access_token,
+            ],
+        ]);
+
+        if ( is_wp_error( $response ) ) {
+            error_log( 'Xero Tenant Fetch Error: ' . $response->get_error_message() );
+            return null;
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        return $body; // This should be an array of tenant objects
+    }    
     
     /**
      * Exchanges the authorization code for tokens.

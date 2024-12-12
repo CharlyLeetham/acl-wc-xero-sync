@@ -48,24 +48,38 @@ class ACLSyncService {
      * @param string $client_secret The Consumer Secret.
      * @return \XeroPHP\Application
      */
-    private static function initialize_xero_client( $client_id, $client_secret ) {
-        echo $client_id." ".$client_secret;
+    private static function initialize_xero_client() {
         try {
-            $config = [
-                'oauth' => [
-                    'consumer_key'    => $client_id,
-                    'consumer_secret' => $client_secret,
-                ],
-            ];
-
-            $xero = new \XeroPHP\Application($client_id, $client_secret);
-            self::log_message( "Xero initialised correctly. id: ".$client_id." Secret: ".$client_secret);
+            $accessToken = get_option('xero_access_token');
+            $refreshToken = get_option('xero_refresh_token');
+            $tenantId = get_option('xero_tenant_id');
+    
+            if (empty($accessToken) || empty($refreshToken) || empty($tenantId)) {
+                throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
+            }
+    
+            $xero = new \XeroPHP\Application($accessToken, $tenantId);
+    
+            // Check if the token is expired and refresh if necessary
+            if ($xero->getOAuth2Token()->isExpired()) {
+                $newToken = $xero->refreshToken($refreshToken);
+                
+                if ($newToken) {
+                    update_option('xero_access_token', $newToken->getAccessToken());
+                    update_option('xero_refresh_token', $newToken->getRefreshToken());
+                    update_option('xero_token_expires', time() + $newToken->getExpiresIn());
+                    
+                    // Re-initialize with the new token
+                    $xero->setOAuth2Token($newToken);
+                } else {
+                    throw new \Exception("Failed to refresh the Xero access token.");
+                }
+            }
+    
+            self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId);
             return $xero;
-
-            // Instantiate Xero client
-            //return new \XeroPHP\Application($config);
-        } catch ( \Exception $e ) {
-            self::log_message( 'Error initializing Xero client: ' . $e->getMessage() );
+        } catch (\Exception $e) {
+            self::log_message('Error initializing Xero client: ' . $e->getMessage());
             throw $e;
         }
     }
