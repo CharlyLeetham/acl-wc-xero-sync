@@ -207,7 +207,7 @@ class ACLSyncService {
         } catch (\Exception $e) {
             if (strpos($e->getMessage(), 'Token Expired') !== false || strpos($e->getMessage(), 'AuthenticationUnsuccessful') !== false) {
                 self::log_message("Attempting to refresh token due to: " . $e->getMessage(), 'xero_connection');
-                try {
+                try { 
                     // Reinitialize with a potentially refreshed token
                     $xero = self::initialize_xero_client();
                     
