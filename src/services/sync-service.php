@@ -95,8 +95,7 @@ class ACLSyncService {
 
             $token_expires = get_option('xero_token_expires', 0);
             self::log_message("Current time: " . date('Y-m-d H:i:s', time()), 'xero_auth');
-            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $token_expires), 'xero_auth');
-            self::log_message("New token expires at: " . date('Y-m-d H:i:s', time() + $newAccessToken->getExpires()), 'xero_auth');                       
+            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $token_expires), 'xero_auth');                      
         
             // Now initialize with the (potentially new) access token
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
