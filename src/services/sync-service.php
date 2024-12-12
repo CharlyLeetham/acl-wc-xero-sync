@@ -57,11 +57,11 @@ class ACLSyncService {
                 ],
             ];
 
-            $xero = new \XeroPHP\Application($client_id, $client_secret);
-            return $xero;
+            //$xero = new \XeroPHP\Application($client_id, $client_secret);
+            //return $xero;
 
             // Instantiate Xero client
-            //return new \XeroPHP\Application($config);
+            return new \XeroPHP\Application($config);
         } catch ( \Exception $e ) {
             self::log_message( 'Error initializing Xero client: ' . $e->getMessage() );
             throw $e;
