@@ -59,6 +59,7 @@ class ACLSyncService {
             ];
 
             $xero = new \XeroPHP\Application($client_id, $client_secret);
+            self::log_message( "Xero initialised correctly. id: ".$client_id." Secret: ".$client_secret);
             return $xero;
 
             // Instantiate Xero client
