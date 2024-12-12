@@ -58,23 +58,35 @@ class ACLSyncService {
                 throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
             }
     
-            $xero = new \XeroPHP\Application($accessToken, $tenantId);
+            // Check if the token is expired (assuming token expiration is stored)
+            $token_expires = get_option('xero_token_expires', 0);
+            if (time() > $token_expires) {
+                $client_id = get_option('acl_xero_consumer_key');
+                $client_secret = get_option('acl_xero_consumer_secret');
     
-            // Check if the token is expired and refresh if necessary
-            if ($xero->getOAuth2Token()->isExpired()) {
-                $newToken = $xero->refreshToken($refreshToken);
-                
-                if ($newToken) {
-                    update_option('xero_access_token', $newToken->getAccessToken());
-                    update_option('xero_refresh_token', $newToken->getRefreshToken());
-                    update_option('xero_token_expires', time() + $newToken->getExpiresIn());
-                    
-                    // Re-initialize with the new token
-                    $xero->setOAuth2Token($newToken);
+                // Use the provider to refresh the token
+                $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
+                    'clientId' => $client_id,
+                    'clientSecret' => $client_secret,
+                ]);
+    
+                $existingAccessToken = (object)['getRefreshToken' => function() use ($refreshToken) { return $refreshToken; }];
+                $newAccessToken = $provider->getAccessToken('refresh_token', [
+                    'refresh_token' => $existingAccessToken->getRefreshToken()
+                ]);
+    
+                if ($newAccessToken) {
+                    $accessToken = $newAccessToken->getToken();
+                    update_option('xero_access_token', $accessToken);
+                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
+                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
                 } else {
                     throw new \Exception("Failed to refresh the Xero access token.");
                 }
             }
+    
+            // Now initialize with the (potentially new) access token
+            $xero = new \XeroPHP\Application($accessToken, $tenantId);
     
             self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId);
             return $xero;
