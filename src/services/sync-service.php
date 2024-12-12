@@ -57,7 +57,7 @@ class ACLSyncService {
                 ],
             ];
 
-            $xero = new \XeroPHP\Application\PrivateApplication($client_id, $client_secret);
+            $xero = new \XeroPHP\Application($client_id, $client_secret);
             return $xero;
 
             // Instantiate Xero client
