@@ -111,8 +111,14 @@ class ACLSyncService {
     private static function check_if_sku_exists( $xero, $sku ) {
         try {
             $existing_items = $xero->load( 'Accounting\\Item' )
-                                   ->where( 'Code', $sku )
-                                   ->execute();
+                                   ->where( 'Code', $sku );
+
+            $client = $xero->getClient();
+            $request = $client->getConfig('handler')->__invoke($query->createRequest(), [])->wait();
+            
+            self::log_request_details($request);
+            
+            $existing_items = $query->execute();                                   
             return ! empty( $existing_items );
         } catch ( \Exception $e ) {
             self::log_message( "Error querying Xero for SKU {$sku}: {$e->getMessage()}" );
