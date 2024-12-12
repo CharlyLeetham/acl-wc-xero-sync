@@ -110,7 +110,7 @@ class ACLSyncService {
      */
     private static function check_if_sku_exists( $xero, $sku ) {
         try {
-            $existing_items = $xero->load( 'Accounting\\Item' )
+            $query = $xero->load( 'Accounting\\Item' )
                                    ->where( 'Code', $sku );
           
             self::log_message($request);
