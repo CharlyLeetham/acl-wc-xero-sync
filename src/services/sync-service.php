@@ -53,28 +53,28 @@ class ACLSyncService {
             $accessToken = get_option('xero_access_token');
             $refreshToken = get_option('xero_refresh_token');
             $tenantId = get_option('xero_tenant_id');
-    
+        
             if (empty($accessToken) || empty($refreshToken) || empty($tenantId)) {
                 throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
             }
-    
+        
             // Check if the token is expired (assuming token expiration is stored)
             $token_expires = get_option('xero_token_expires', 0);
             if (time() > $token_expires) {
                 $client_id = get_option('acl_xero_consumer_key');
                 $client_secret = get_option('acl_xero_consumer_secret');
-    
+        
                 // Use the provider to refresh the token
                 $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
                     'clientId' => $client_id,
                     'clientSecret' => $client_secret,
                 ]);
-    
-                $existingAccessToken = (object)['getRefreshToken' => function() use ($refreshToken) { return $refreshToken; }];
+
+                // Directly use the refresh token string instead of creating an object
                 $newAccessToken = $provider->getAccessToken('refresh_token', [
-                    'refresh_token' => $existingAccessToken->getRefreshToken()
+                    'refresh_token' => $refreshToken
                 ]);
-    
+
                 if ($newAccessToken) {
                     $accessToken = $newAccessToken->getToken();
                     update_option('xero_access_token', $accessToken);
@@ -84,14 +84,14 @@ class ACLSyncService {
                     throw new \Exception("Failed to refresh the Xero access token.");
                 }
             }
-    
+        
             // Now initialize with the (potentially new) access token
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
-    
+        
             self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
             return $xero;
         } catch (\Exception $e) {
-            self::log_message('Error initializing Xero client: ' . $e->getMessage());
+            self::log_message('Error initializing Xero client: ' . $e->getMessage(), 'xero_auth');
             throw $e;
         }
     }
