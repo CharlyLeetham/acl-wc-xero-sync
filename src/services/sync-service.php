@@ -87,9 +87,11 @@ class ACLSyncService {
         
             // Now initialize with the (potentially new) access token
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
+
+            $myaccesstoken = get_option('xero_token_expires');
         
             self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
-            self::log_message("Token Expires " . $newAccessToken, 'xero_auth');
+            self::log_message("Token Expires " . $myaccesstoken, 'xero_auth');
             return $xero;
         } catch (\Exception $e) {
             self::log_message('Error initializing Xero client: ' . $e->getMessage(), 'xero_auth');
