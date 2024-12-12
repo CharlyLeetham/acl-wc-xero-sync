@@ -85,15 +85,18 @@ class ACLSyncService {
                     update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
                     update_option('xero_token_expires', time() + $newAccessToken->getExpires());
                     self::log_message('Tokens refreshed.', 'xero_auth');
+                    self::log_message("New token expires at: " . date('Y-m-d H:i:s', time() + $newAccessToken->getExpires()), 'xero_auth');                    
                 } else {
+                    self::log_message('Tokens not refreshed', 'xero_auth');                    
                     throw new \Exception("Failed to refresh the Xero access token.");
-                    self::log_message('Tokens not refreshed', 'xero_auth');
+
                 }
             }
 
             $token_expires = get_option('xero_token_expires', 0);
             self::log_message("Current time: " . date('Y-m-d H:i:s', time()), 'xero_auth');
-            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $token_expires), 'xero_auth');            
+            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $token_expires), 'xero_auth');
+            self::log_message("New token expires at: " . date('Y-m-d H:i:s', time() + $newAccessToken->getExpires()), 'xero_auth');                       
         
             // Now initialize with the (potentially new) access token
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
