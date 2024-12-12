@@ -49,6 +49,7 @@ class ACLSyncService {
      * @return \XeroPHP\Application
      */
     private static function initialize_xero_client() {
+        self::log_message('Initialising Xero.', 'xero_auth');
         try {
             $accessToken = get_option('xero_access_token');
             $refreshToken = get_option('xero_refresh_token');
