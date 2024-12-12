@@ -29,7 +29,7 @@ class ACLSyncService {
                 throw new \Exception( 'Missing Xero Consumer Key or Secret. Please update the settings.' );
             }
 
-            $xero = self::initialize_xero_client( $client_id, $client_secret );
+            $xero = self::initialize_xero_client();
 
             // Step 3: Process Each Product
             foreach ( $products as $product ) {
@@ -61,6 +61,7 @@ class ACLSyncService {
             // Check if the token is expired (assuming token expiration is stored)
             $token_expires = get_option('xero_token_expires', 0);
             if (time() > $token_expires) {
+                self::log_message('Token has exired.', 'xero_auth');
                 $client_id = get_option('acl_xero_consumer_key');
                 $client_secret = get_option('acl_xero_consumer_secret');
         
@@ -80,8 +81,10 @@ class ACLSyncService {
                     update_option('xero_access_token', $accessToken);
                     update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
                     update_option('xero_token_expires', time() + $newAccessToken->getExpires());
+                    self::log_message('Tokens refreshed.', 'xero_auth');
                 } else {
                     throw new \Exception("Failed to refresh the Xero access token.");
+                    self::log_message('Tokens not refreshed', 'xero_auth');
                 }
             }
         
@@ -91,7 +94,6 @@ class ACLSyncService {
             $myaccesstoken = get_option('xero_token_expires');
         
             self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
-            self::log_message("Token Expires " . $myaccesstoken, 'xero_auth');
             return $xero;
         } catch (\Exception $e) {
             self::log_message('Error initializing Xero client: ' . $e->getMessage(), 'xero_auth');
