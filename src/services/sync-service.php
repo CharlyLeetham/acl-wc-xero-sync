@@ -119,15 +119,14 @@ class ACLSyncService {
 
             if ( $exists ) {
                 self::log_message("Product [SKU: {$sku}] exists in Xero.", 'product_sync');
-                //self::add_admin_notice("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
-                self::add_admin_notice();
+                self::add_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
             } else {
                 self::log_message("Product [SKU: {$sku}] does not exist in Xero.", 'product_sync');
-                //self::add_admin_notice("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'warning');
+                self::add_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'warning');
             }
         } catch ( \Exception $e ) {
             self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
-            //self::add_admin_notice("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
+            self::add_add_message("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
         }
     }
 
@@ -203,26 +202,31 @@ class ACLSyncService {
             throw new \Exception("Xero connection test failed: " . $e->getMessage());
         }
     } 
-    
+
     /**
-     * Adds an admin notice to be displayed on the admin screen.
+     * Adds a message to be displayed on the Sync Products page.
      *
      * @param string $message The message to display.
-     * @param string $type The type of notice (error, warning, info, success).
+     * @param string $type The type of message (error, warning, info).
      */
-    private static function add_admin_notice() {
-        error_log("Adding notice: " . $message); // This will log to your server's error log        
+    private static function add_message($message, $type = 'info') {
+        self::$messages[] = ['message' => $message, 'type' => $type];
+    }    
 
-        add_action('admin_notices', 'display_hello_world_notice');
-
-        error_log("After add_admin_notice call");
-    } 
-    
-    /**
-     * Displays the admin notices.
+   /**
+     * Displays all collected messages on the Sync Products page.
      */
-    function display_hello_world_notice() {
-        echo '<div class="notice notice-info"><p>Hello World</p></div>';
-    }
+    public static function display_messages() {
+        foreach (self::$messages as $message) {
+            ?>
+            <div class="notice notice-<?php echo esc_attr($message['type']); ?>">
+                <p><?php echo esc_html($message['message']); ?></p>
+            </div>
+            <?php
+        }
+        // Clear messages after displaying
+        self::$messages = [];
+    }    
+
   
 }
