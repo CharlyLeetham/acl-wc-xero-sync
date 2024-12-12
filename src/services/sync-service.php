@@ -210,7 +210,7 @@ class ACLSyncService {
      * @param string $message The message to display.
      * @param string $type The type of notice (error, warning, info, success).
      */
-    private static function add_admin_notice($message, $type = 'info') {
+    private static function add_admin_notice() {
         error_log("Adding notice: " . $message); // This will log to your server's error log        
 
         add_action('admin_notices', 'display_hello_world_notice');
