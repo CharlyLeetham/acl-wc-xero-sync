@@ -214,6 +214,8 @@ class ACLSyncService {
         error_log("Adding notice: " . $message); // This will log to your server's error log        
 
         add_action('admin_notices', 'display_hello_world_notice');
+
+        error_log("After add_admin_notice call");
     } 
     
     /**
