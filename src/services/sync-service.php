@@ -121,8 +121,7 @@ class ACLSyncService {
         $sku = $product['sku'];
 
         try {
-
-            self::test_xero_connection($xero);            
+         
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
