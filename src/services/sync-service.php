@@ -208,7 +208,7 @@ class ACLSyncService {
             $errorDetails = json_decode($e->getMessage(), true);  
             echo '<pre>'; 
             var_dump($e->getMessage());
-            echo $errorDetails.'<br />';         
+            echo 'Error: '.$errorDetails.'<br />';         
             echo '</pre>';
             if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
                 self::log_message("Attempting to refresh token due to: " . $e->getMessage(), 'xero_connection');
