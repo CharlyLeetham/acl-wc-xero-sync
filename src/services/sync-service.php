@@ -126,7 +126,7 @@ class ACLSyncService {
             }
         } catch ( \Exception $e ) {
             self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
-            self::add_add_message("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
+            self::add_message("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
         }
     }
 
