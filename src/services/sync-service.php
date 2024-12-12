@@ -96,6 +96,10 @@ class ACLSyncService {
         }
     }
 
+
+    // Class property to store messages
+    private static $messages = [];    
+
     /**
      * Processes a single product, checking its existence in Xero.
      *
