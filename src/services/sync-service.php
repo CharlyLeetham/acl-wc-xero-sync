@@ -119,14 +119,14 @@ class ACLSyncService {
 
             if ( $exists ) {
                 self::log_message("Product [SKU: {$sku}] exists in Xero.", 'product_sync');
-                echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
+                self::add_admin_notice("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
             } else {
                 self::log_message("Product [SKU: {$sku}] does not exist in Xero.", 'product_sync');
-                echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
+                self::add_admin_notice("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'warning');
             }
         } catch ( \Exception $e ) {
             self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
-            echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
+            self::add_admin_notice("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
         }
     }
 
