@@ -14,12 +14,12 @@ class ACLSyncService {
             // Step 1: Fetch WooCommerce Products
             $products = self::get_wc_products();
             if ( empty( $products ) ) {
-                self::log_message( 'No products found in WooCommerce.' );
+                self::log_message('No products found in WooCommerce.', 'product_sync');
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";
                 return;
             }
 
-            self::log_message( count( $products ) . ' products fetched from WooCommerce.' );
+            self::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
 
             // Step 2: Initialize Xero Client
             $client_id = get_option( 'acl_xero_consumer_key' );
@@ -36,7 +36,7 @@ class ACLSyncService {
                 self::process_product( $xero, $product );
             }
         } catch ( \Exception $e ) {
-            self::log_message( 'Fatal error in sync process: ' . $e->getMessage() );
+            self::log_message('Fatal error in sync process: ' . $e->getMessage(), 'product_sync');
             echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
         }
     }
@@ -88,7 +88,7 @@ class ACLSyncService {
             // Now initialize with the (potentially new) access token
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
     
-            self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId);
+            self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
             return $xero;
         } catch (\Exception $e) {
             self::log_message('Error initializing Xero client: ' . $e->getMessage());
@@ -104,7 +104,7 @@ class ACLSyncService {
      */
     private static function process_product( $xero, $product ) {
         if ( empty( $product['sku'] ) ) {
-            self::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU." );
+            self::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
             echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
             return;
         }
@@ -118,14 +118,14 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                self::log_message( "Product [SKU: {$sku}] exists in Xero." );
+                self::log_message("Product [SKU: {$sku}] exists in Xero.", 'product_sync');
                 echo "<div class='notice notice-info'><p>Product SKU <strong>{$sku}</strong> exists in Xero.</p></div>";
             } else {
-                self::log_message( "Product [SKU: {$sku}] does not exist in Xero." );
+                self::log_message("Product [SKU: {$sku}] does not exist in Xero.", 'product_sync');
                 echo "<div class='notice notice-warning'><p>Product SKU <strong>{$sku}</strong> does not exist in Xero.</p></div>";
             }
         } catch ( \Exception $e ) {
-            self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}" );
+            self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
             echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
         }
     }
@@ -142,12 +142,12 @@ class ACLSyncService {
             $query = $xero->load( 'Accounting\\Item' )
                                    ->where( 'Code', $sku );
           
-            self::log_message(" SKU: ".$sku);
+            self::log_message(" SKU: " . $sku, 'product_sync');
             
             $existing_items = $query->execute();                                   
             return ! empty( $existing_items );
         } catch ( \Exception $e ) {
-            self::log_message( "Error querying Xero for SKU {$sku}: {$e->getMessage()}" );
+            self::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');;
             throw $e;
         }
     }
@@ -175,10 +175,14 @@ class ACLSyncService {
      *
      * @param string $message The message to log.
      */
-    private static function log_message( $message ) {
+    private static function log_message($message, $level = 'none') {
         $log_file = WP_CONTENT_DIR . '/uploads/acl-xero-sync.log';
-        $timestamp = date( 'Y-m-d H:i:s' );
-        file_put_contents( $log_file, "[{$timestamp}] {$message}\n", FILE_APPEND );
+        $log_enabled = get_option('acl_xero_log_' . $level, '0') == '1'; // Default to disabled if not set
+    
+        if ($log_enabled) {
+            $timestamp = date('Y-m-d H:i:s');
+            file_put_contents($log_file, "[{$timestamp}] [{$level}] {$message}\n", FILE_APPEND);
+        }
     }
 
     // Add this new method to test the Xero connection
@@ -192,9 +196,9 @@ class ACLSyncService {
                 throw new \Exception("No organizations found, Xero connection might be invalid.");
             }
             
-            self::log_message("Xero connection test passed. Organization name: " . $orgs[0]->getName());
+            self::log_message("Xero connection test passed. Organization name: " . $orgs[0]->getName(), 'xero_connection');
         } catch (\Exception $e) {
-            self::log_message("Xero connection test failed: " . $e->getMessage());
+            self::log_message("Xero connection test failed: " . $e->getMessage(), 'xero_connection');
             throw new \Exception("Xero connection test failed: " . $e->getMessage());
         }
     }    

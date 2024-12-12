@@ -189,6 +189,15 @@ class ACLProductSyncPage {
         if ( isset( $_POST['acl_xero_settings'] ) ) {
             update_option( 'acl_xero_consumer_key', sanitize_text_field( $_POST['acl_xero_consumer_key'] ) );
             update_option( 'acl_xero_consumer_secret', sanitize_text_field( $_POST['acl_xero_consumer_secret'] ) );
+            // Handle logging settings
+            $logging_levels = [
+                'xero_auth' => 'Xero Authorisation',
+                'xero_connection' => 'Xero Connection for Sync',
+                'product_sync' => 'Product Sync'
+            ];
+            foreach ($logging_levels as $key => $label) {
+                update_option('acl_xero_log_' . $key, isset($_POST['acl_xero_log_' . $key]) ? '1' : '0');
+            }            
             echo '<div class="updated"><p>Settings updated successfully!</p></div>';
         }
 
@@ -237,6 +246,27 @@ class ACLProductSyncPage {
                         <td><input type="text" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text" /></td>
                     </tr>
                 </table>
+
+                <!-- Logging Options -->
+                <h2>Logging Options</h2>
+                    <table class="form-table">
+                        <?php 
+                        $logging_levels = [
+                            'xero_auth' => 'Xero Authorisation',
+                            'xero_connection' => 'Xero Connection for Sync',
+                            'product_sync' => 'Product Sync'
+                        ];
+                        foreach ($logging_levels as $key => $label):
+                            $checked = get_option('acl_xero_log_' . $key) ? 'checked' : '';
+                            ?>
+                            <tr>
+                                <th scope="row"><label for="acl_xero_log_<?php echo $key; ?>"><?php echo esc_html($label); ?> Logging</label></th>
+                                <td>
+                                    <input type="checkbox" id="acl_xero_log_<?php echo $key; ?>" name="acl_xero_log_<?php echo $key; ?>" <?php echo $checked; ?>>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>                
                 <p class="submit">
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
