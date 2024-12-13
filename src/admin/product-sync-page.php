@@ -306,11 +306,11 @@ class ACLProductSyncPage {
             </form>
             <?php
             // Assuming sync_products() is triggered by the form submission above
-            if (isset($_POST['sync_xero_products'])) {
-                echo "Sync process started...";
+           // if (isset($_POST['sync_xero_products'])) {
+               // echo "Sync process started...";
                 //ACLSyncService::sync_products();
                 ///ACLSyncService::display_messages();
-            }
+            // }
             ?>            
         </div>
         <?php
