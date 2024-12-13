@@ -303,7 +303,16 @@ class ACLProductSyncPage {
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_sync_products' ) ); ?>">
                 <input type="hidden" name="sync_xero_products" value="1">
                 <button type="submit" class="button button-primary">Start Sync</button>
-            </form>          
+            </form>   
+            
+            <?php
+            // Assuming sync_products() is triggered by the form submission above
+            if (isset($_POST['sync_xero_products'])) {
+                echo "Sync process started...";
+                ACLSyncService::sync_products();
+                ACLSyncService::display_messages();
+             }
+            ?>              
         </div>
         <?php
     }

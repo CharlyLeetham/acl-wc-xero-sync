@@ -15,7 +15,7 @@ class ACLSyncService {
             $products = self::get_wc_products();
             if ( empty( $products ) ) {
                 self::log_message('No products found in WooCommerce.', 'product_sync');
-                echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";
+                //echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";
                 return;
             }
 
@@ -37,7 +37,7 @@ class ACLSyncService {
             }
         } catch ( \Exception $e ) {
             self::log_message('Fatal error in sync process: ' . $e->getMessage(), 'product_sync');
-            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
+            //echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";
         }
     }
 
