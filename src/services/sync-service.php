@@ -264,9 +264,9 @@ class ACLSyncService {
      * Displays all collected messages on the Sync Products page.
      */
     public static function display_messages() {
-        self::log_message("Displaying Messages " . $e->getMessage(), 'xero_connection');
+
         foreach (self::$messages as $message) {
-            self::log_message("foreach " . $e->getMessage(), 'xero_connection');
+            self::log_message("foreach " . $message, 'product_sync');
             ?>
             <div class="notice notice-<?php echo esc_attr($message['type']); ?>">
                 <p><?php echo esc_html($message['message']); ?></p>
@@ -274,9 +274,8 @@ class ACLSyncService {
             <?php
         }
         // Clear messages after displaying
-        self::log_message("after loop" . $e->getMessage(), 'xero_connection');
+        self::log_message("after loop" , 'product_sync');
         self::$messages = [];
-        self::log_message("last " . $e->getMessage(), 'xero_connection');
     }    
 
   
