@@ -309,7 +309,7 @@ class ACLProductSyncPage {
             if (isset($_POST['sync_xero_products'])) {
                 echo "Sync process started...";
                 ACLSyncService::sync_products();
-                ACLSyncService::display_messages();
+                ///ACLSyncService::display_messages();
             }
             ?>            
         </div>
