@@ -10,8 +10,20 @@ class ACLProductSyncPage {
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
         //add_action( 'admin_post_acl_xero_sync_products', [ 'ACLWcXeroSync\Services\ACLSyncService', 'sync_products' ] );
-        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);        
+        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);
+    
+        // Enqueue scripts and localize AJAX URL
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
+    }       
     }
+
+    /**
+     * Enqueues scripts for admin area.
+     */
+    public static function enqueue_scripts() {
+        wp_enqueue_script('jquery');
+        wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+    }    
 
     /**
      * Adds ACL Xero Sync and its submenus under WooCommerce.
@@ -301,39 +313,45 @@ class ACLProductSyncPage {
         ?>
         <div class="wrap">
             <h1>Sync Products to Xero</h1>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_sync_products' ) ); ?>">
+            <form method="post" id="sync-products-form">
                 <input type="hidden" name="sync_xero_products" value="1">
-                <button type="submit" class="button button-primary">Start Sync</button>
-            </form> 
-            <div id="sync-results"></div>  
+                <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+            </form>
+            <div id="sync-results"></div>
         </div>
         <script type="text/javascript">
-        jQuery(document).ready(function($) {
-            $('#start-sync').on('click', function(e) {
-                e.preventDefault();
-                $('#sync-results').html('<p>Syncing...</p>');
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    data: {
-                        'action': 'acl_xero_sync_products_ajax',
-                        'sync_xero_products': '1'
-                    },
-                    success: function(response) {
-                        $('#sync-results').html(response);
-                    },
-                    error: function(xhr, status, error) {
-                        $('#sync-results').html('<p>An error occurred: ' + error + '</p>');
-                    }
+            jQuery(document).ready(function($) {
+                $('#start-sync').on('click', function(e) {
+                    e.preventDefault();
+                    $('#sync-results').html('<p>Syncing...</p>');
+                    $.ajax({
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        type: 'POST',
+                        data: {
+                            'action': 'acl_xero_sync_products_ajax',
+                            'sync_xero_products': '1'
+                        },
+                        success: function(response) {
+                            $('#sync-results').html(response);
+                        },
+                        error: function(xhr, status, error) {
+                            var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                            $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
+                        }
+                    });
                 });
             });
-        });
-    </script>
-
+        </script>
         <?php
     }
+
     
     public static function handle_sync_ajax() {
+        // Check if the user has permission to perform this action
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die('You do not have sufficient permissions to access this page.');
+        }
+    
         ob_start(); // Start output buffering
         ACLSyncService::sync_products();
         $output = ob_get_clean(); // Capture the output
@@ -344,5 +362,5 @@ class ACLProductSyncPage {
             echo "No output from sync process.";
         }
         wp_die(); // This is required to end the AJAX call properly
-    }    
+    }
 }
