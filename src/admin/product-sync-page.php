@@ -357,14 +357,18 @@ class ACLProductSyncPage {
 
     
     public static function handle_sync_ajax() {
+
+        error_log("handle_sync_ajax function reached");        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
             wp_die('You do not have sufficient permissions to access this page.');
         }
     
+        error_log("User has permission, before sync_products call");
         ob_start(); // Start output buffering
         ACLSyncService::sync_products();
         $output = ob_get_clean(); // Capture the output
+        error_log("After sync_products call, output captured");
         
         if (!empty($output)) {
             echo $output; // Echo the captured output
