@@ -140,7 +140,7 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
+                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} skipped: Already in Xero.</p></div>";
                 self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'product_sync');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
