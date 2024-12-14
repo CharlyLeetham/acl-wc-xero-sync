@@ -9,7 +9,7 @@ class ACLProductSyncPage {
         add_action( 'admin_menu', [ __CLASS__, 'add_admin_pages' ] );
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
-        add_action( 'admin_post_acl_xero_sync_products', [ 'ACLWcXeroSync\Services\ACLSyncService', 'sync_products' ] );
+        //add_action( 'admin_post_acl_xero_sync_products', [ 'ACLWcXeroSync\Services\ACLSyncService', 'sync_products' ] );
     }
 
     /**
@@ -303,23 +303,50 @@ class ACLProductSyncPage {
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_sync_products' ) ); ?>">
                 <input type="hidden" name="sync_xero_products" value="1">
                 <button type="submit" class="button button-primary">Start Sync</button>
-            </form>   
-            
-            <?php
-            // Assuming sync_products() is triggered by the form submission above
-            if (isset($_POST['sync_xero_products'])) {
-                ob_start(); // Start output buffering
-                ACLSyncService::sync_products();
-                $output = ob_get_clean(); // Capture the output
-                
-                if (!empty($output)) {
-                    echo $output; // Echo the captured output
-                } else {
-                    echo "No output from sync process.";
-                }
-            }
-            ?>              
+            </form> 
+            <div id="sync-results"></div>  
         </div>
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            $('#start-sync').on('click', function(e) {
+                e.preventDefault();
+                $('#sync-results').html('<p>Syncing...</p>');
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        'action': 'acl_xero_sync_products_ajax',
+                        'sync_xero_products': '1'
+                    },
+                    success: function(response) {
+                        $('#sync-results').html(response);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#sync-results').html('<p>An error occurred: ' + error + '</p>');
+                    }
+                });
+            });
+        });
+    </script>
+
         <?php
     }
+
+    public static function init() {
+        // ... other actions ...
+        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);
+    }
+    
+    public static function handle_sync_ajax() {
+        ob_start(); // Start output buffering
+        ACLSyncService::sync_products();
+        $output = ob_get_clean(); // Capture the output
+        
+        if (!empty($output)) {
+            echo $output; // Echo the captured output
+        } else {
+            echo "No output from sync process.";
+        }
+        wp_die(); // This is required to end the AJAX call properly
+    }    
 }
