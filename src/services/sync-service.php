@@ -15,6 +15,7 @@ class ACLSyncService {
             $products = self::get_wc_products();
             if ( empty( $products ) ) {
                 self::log_message('No products found in WooCommerce.', 'product_sync');
+                echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
                 return;
             }
 
@@ -33,7 +34,15 @@ class ACLSyncService {
 
             // Step 3: Process Each Product
             foreach ( $products as $product ) {
-                self::process_product( $xero, $product );
+                try {
+                    self::process_product($xero, $product);
+                    $sku = $product['sku'] ?? 'No SKU';
+                    echo "<div class='notice notice-info'><p>Product SKU: <strong>{$sku}</strong> processed successfully.</p></div>";
+                } catch (\Exception $e) {
+                    $sku = $product['sku'] ?? 'No SKU';
+                    self::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
+                    echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
+                }
             }
         } catch ( \Exception $e ) {
             self::log_message('Fatal error in sync process: ' . $e->getMessage(), 'product_sync');
