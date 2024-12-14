@@ -320,6 +320,7 @@ class ACLProductSyncPage {
         </div>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
+                console.log ('Here')
                 $('#start-sync').on('click', function(e) {
                     e.preventDefault();
                     $('#sync-results').html('<p>Syncing...</p>');
