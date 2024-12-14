@@ -142,10 +142,10 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                self::log_message("Product [SKU: {$sku}] exists in Xero.", 'product_sync');
+                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
                 self::add_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
             } else {
-                self::log_message("Product [SKU: {$sku}] does not exist in Xero.", 'product_sync');
+                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
                 self::add_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'warning');
             }
         } catch ( \Exception $e ) {
@@ -267,25 +267,5 @@ class ACLSyncService {
      */
     private static function add_message($message, $type = 'info') {
         self::$messages[] = ['message' => $message, 'type' => $type];
-    }    
-
-   /**
-     * Displays all collected messages on the Sync Products page.
-     */
-    public static function display_messages() {
-
-        foreach (self::$messages as $message) {
-            self::log_message("foreach " . $message, 'product_sync');
-            ?>
-            <div class="notice notice-<?php echo esc_attr($message['type']); ?>">
-                <p><?php echo esc_html($message['message']); ?></p>
-            </div>
-            <?php
-        }
-        // Clear messages after displaying
-        self::log_message("after loop" , 'product_sync');
-        self::$messages = [];
-    }    
-
-  
+    }      
 }
