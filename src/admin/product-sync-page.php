@@ -321,9 +321,7 @@ class ACLProductSyncPage {
         </div>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
-                console.log ('Here')
                 $('#start-sync').on('click', function(e) {
-                    console.log('Button clicked');
                     e.preventDefault();
                     $('#sync-results').html('<p>Syncing...</p>');
                     console.log('AJAX call initiated');
@@ -335,19 +333,15 @@ class ACLProductSyncPage {
                             'sync_xero_products': '1'
                         },
                         beforeSend: function() {
-                            console.log('Before AJAX send');
                         },                        
-                        success: function(response) {
-                            console.log('AJAX Success:', response);                            
+                        success: function(response) {                           
                             $('#sync-results').html(response);
                         },
                         error: function(xhr, status, error) {
-                            console.error('AJAX Error:', xhr.status, xhr.statusText, error);
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
                             $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
                         },
                         complete: function() {
-                            console.log('AJAX call completed');
                         }                        
                     });
                 });
@@ -358,18 +352,15 @@ class ACLProductSyncPage {
 
     
     public static function handle_sync_ajax() {
-
-        error_log("handle_sync_ajax function reached");        
+       
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
             wp_die('You do not have sufficient permissions to access this page.');
         }
     
-        error_log("User has permission, before sync_products call");
         ob_start(); // Start output buffering
         ACLSyncService::sync_products();
         $output = ob_get_clean(); // Capture the output
-        error_log("After sync_products call, output captured");
         
         if (!empty($output)) {
             echo $output; // Echo the captured output
