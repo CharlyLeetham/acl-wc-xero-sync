@@ -344,7 +344,7 @@ class ACLProductSyncPage {
                             console.error('AJAX Error:', xhr.status, xhr.statusText, error);
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
                             $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
-                        }
+                        },
                         complete: function() {
                             console.log('AJAX call completed');
                         }                        
