@@ -308,9 +308,15 @@ class ACLProductSyncPage {
             <?php
             // Assuming sync_products() is triggered by the form submission above
             if (isset($_POST['sync_xero_products'])) {
-                echo "Sync process started...";
-                //ACLSyncService::sync_products();
-                //ACLSyncService::display_messages();
+                ob_start(); // Start output buffering
+                ACLSyncService::sync_products();
+                $output = ob_get_clean(); // Capture the output
+                
+                if (!empty($output)) {
+                    echo $output; // Echo the captured output
+                } else {
+                    echo "No output from sync process.";
+                }
             }
             ?>              
         </div>
