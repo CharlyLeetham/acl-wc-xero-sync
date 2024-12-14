@@ -366,7 +366,7 @@ class ACLProductSyncPage {
     
         error_log("User has permission, before sync_products call");
         ob_start(); // Start output buffering
-        ACLSyncService::sync_products();
+        ACLWcXeroSync\Services\ACLSyncService::sync_products();
         $output = ob_get_clean(); // Capture the output
         error_log("After sync_products call, output captured");
         
