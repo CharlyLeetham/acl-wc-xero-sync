@@ -18,7 +18,7 @@ class ACLSyncService {
                 return;
             }
 
-            echo "Syncing";
+            echo "Syncing " . count($products) . " products...<br>";
             self::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
 
             // Step 2: Initialize Xero Client
@@ -37,6 +37,7 @@ class ACLSyncService {
             }
         } catch ( \Exception $e ) {
             self::log_message('Fatal error in sync process: ' . $e->getMessage(), 'product_sync');
+            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";            
         }
     }
 
