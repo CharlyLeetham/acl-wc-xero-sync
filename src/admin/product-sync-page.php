@@ -10,6 +10,7 @@ class ACLProductSyncPage {
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
         //add_action( 'admin_post_acl_xero_sync_products', [ 'ACLWcXeroSync\Services\ACLSyncService', 'sync_products' ] );
+        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);        
     }
 
     /**
@@ -330,11 +331,6 @@ class ACLProductSyncPage {
     </script>
 
         <?php
-    }
-
-    public static function init() {
-        // ... other actions ...
-        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);
     }
     
     public static function handle_sync_ajax() {
