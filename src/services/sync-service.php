@@ -36,8 +36,6 @@ class ACLSyncService {
             foreach ( $products as $product ) {
                 try {
                     self::process_product($xero, $product);
-                    $sku = $product['sku'] ?? 'No SKU';
-                    echo "<div class='notice notice-info'><p>Product SKU: <strong>{$sku}</strong> processed successfully.</p></div>";
                 } catch (\Exception $e) {
                     $sku = $product['sku'] ?? 'No SKU';
                     self::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
@@ -143,10 +141,10 @@ class ACLSyncService {
 
             if ( $exists ) {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
-                self::add_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
+                self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'product_sync');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
-                self::add_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'warning');
+                self::log_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync');
             }
         } catch ( \Exception $e ) {
             self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
