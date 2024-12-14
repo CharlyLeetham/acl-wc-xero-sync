@@ -129,8 +129,8 @@ class ACLSyncService {
      */
     private static function process_product( $xero, $product ) {
         if ( empty( $product['sku'] ) ) {
-            self::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
-            echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+            self::log_message("Product [ID: {$product['id']}] - $sku skipped: Missing SKU.", 'product_sync');
+            echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
             return;
         }
 
@@ -142,7 +142,7 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
                 self::add_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'info');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
@@ -150,7 +150,6 @@ class ACLSyncService {
             }
         } catch ( \Exception $e ) {
             self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
-            self::add_message("Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}", 'error');
         }
     }
 
