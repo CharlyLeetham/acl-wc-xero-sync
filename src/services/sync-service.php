@@ -18,6 +18,7 @@ class ACLSyncService {
                 return;
             }
 
+            echo "Syncing";
             self::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
 
             // Step 2: Initialize Xero Client
