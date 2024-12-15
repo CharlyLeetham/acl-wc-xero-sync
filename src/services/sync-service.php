@@ -64,6 +64,7 @@ class ACLSyncService {
         
             if (empty($accessToken) || empty($refreshToken) || empty($tenantId)) {
                 throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
+                self::log_message("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.", 'xero_auth');
             }
         
             // Check if the token is expired (assuming token expiration is stored)
@@ -86,33 +87,37 @@ class ACLSyncService {
                     'refresh_token' => $refreshToken
                 ]);
 
-                if ($newAccessToken) {
-                    $accessToken = $newAccessToken->getToken();
-                    update_option('xero_access_token', $accessToken);
-                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
-                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
-                    self::log_message('Tokens refreshed.', 'xero_auth');
-                    self::log_message("New token expires at: " . date('Y-m-d H:i:s', time() + $newAccessToken->getExpires()), 'xero_auth');                    
-                } else {
-                    self::log_message('Tokens not refreshed', 'xero_auth');                    
-                    throw new \Exception("Failed to refresh the Xero access token.");
-
+                try {
+                    $newAccessToken = $provider->getAccessToken('refresh_token', [
+                        'refresh_token' => $refreshToken
+                    ]);
+    
+                    if ($newAccessToken) {
+                        $accessToken = $newAccessToken->getToken();
+                        update_option('xero_access_token', $accessToken);
+                        update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
+                        $newExpiration = time() + $newAccessToken->getExpires();
+                        update_option('xero_token_expires', $newExpiration);
+                        self::log_message('Tokens refreshed.', 'xero_auth');
+                        self::log_message("New token expires at: " . date('Y-m-d H:i:s', $newExpiration), 'xero_auth');
+                    } else {
+                        throw new \Exception("Failed to refresh the Xero access token.");
+                    }
+                } catch (\Exception $e) {
+                    self::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Failed to refresh Xero token. Please re-authorize the connection.");
                 }
             }
 
-            $token_expires = get_option('xero_token_expires', 0);
-            self::log_message("Current time: " . date('Y-m-d H:i:s', time()), 'xero_auth');
-            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $token_expires), 'xero_auth');                      
-        
-            // Now initialize with the (potentially new) access token
-            $xero = new \XeroPHP\Application($accessToken, $tenantId);
-       
-            self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
-            return $xero;
-        } catch (\Exception $e) {
-            self::log_message('Error initializing Xero client: ' . $e->getMessage(), 'xero_auth');
-            throw $e;
-        }
+                // Initialize with the (potentially new) access token
+                $xero = new \XeroPHP\Application($accessToken, $tenantId);
+            
+                self::log_message("Xero initialized correctly. Tenant ID: " . $tenantId, 'xero_auth');
+                return $xero;
+            } catch (\Exception $e) {
+                self::log_message('Error initializing Xero client: ' . $e->getMessage(), 'xero_auth');
+                throw $e;
+            }
     }
 
 
