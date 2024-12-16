@@ -10,8 +10,8 @@ class ACLProductSyncPage {
         add_action( 'admin_menu', [ __CLASS__, 'add_admin_pages' ] );
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
-        add_action('wp_ajax_acl_xero_test_connection', [__CLASS__, 'handle_test_connection']);
-        add_action('wp_ajax_acl_xero_sync_products_ajax', [__CLASS__, 'handle_sync_ajax']);
+        add_action( 'wp_ajax_acl_xero_test_connection', [ __CLASS__, 'handle_test_connection' ] );
+        add_action( 'wp_ajax_acl_xero_sync_products_ajax', [ __CLASS__, 'handle_sync_ajax' ] );
     
         // Enqueue scripts and localize AJAX URL
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
@@ -298,7 +298,26 @@ class ACLProductSyncPage {
             </a>
             <button type="button" id="test-xero-connection" class="button button-secondary" style="margin-left: 10px;">
                 Test Xero Connection
-            </button>            
+            </button>
+            <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
+            <script type="text/javascript">
+                jQuery(document).ready(function ($) {
+                    $('#test-xero-connection').on('click', function () {
+                        $('#xero-test-connection-result').html('<p>Testing connection...</p>');
+                        $.ajax({
+                            url: ajax_object.ajaxurl,
+                            type: 'POST',
+                            data: { action: 'acl_xero_test_connection' },
+                            success: function (response) {
+                                $('#xero-test-connection-result').html('<p style="color: green;">' + response.data + '</p>');
+                            },
+                            error: function () {
+                                $('#xero-test-connection-result').html('<p style="color: red;">An error occurred while testing the connection.</p>');
+                            }
+                        });
+                    });
+                });
+            </script>        
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
                 <button type="submit" class="button">Reset Authorization</button>
             </form>
@@ -358,18 +377,11 @@ class ACLProductSyncPage {
      */
     public static function handle_test_connection() {
         if (!current_user_can('manage_woocommerce')) {
-            wp_die('Unauthorized', '403');
+            wp_send_json_error('You do not have sufficient permissions to perform this action.');
         }
-
-        ACLSyncService::test_xero_connection();
-        $output = ob_get_clean(); // Capture the output
-        
-        if (!empty($output)) {
-            echo $output; // Echo the captured output
-        } else {
-            echo "Connection ok?.";
-        }
-        wp_die(); // End AJAX request
+    
+        $response = ACLSyncService::test_xero_connection();
+        wp_send_json_success($response);
     }
     
     public static function handle_sync_ajax() {
