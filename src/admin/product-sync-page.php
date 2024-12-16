@@ -315,7 +315,7 @@ class ACLProductSyncPage {
                             },
                             error: function(xhr, status, error) {                              
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('#xero-test-connection-result').html('<div class="notice notice-error"><p>Fatal Error:' + errorMessage + '</p></div>');
+                                $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
 
                             },
                         });
@@ -364,7 +364,7 @@ class ACLProductSyncPage {
                         },
                         error: function(xhr, status, error) {
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                            $('#sync-results').html('<div class="notice notice-error"><p>Fatal Error:' + errorMessage + '</p></div>');
+                            $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
                         },
                         complete: function() {
                         }                        
@@ -401,7 +401,7 @@ class ACLProductSyncPage {
     }
     
     public static function handle_sync_ajax() {
-        self::log_message("Entering sync ajax", 'test_xero');
+        ACLSyncService::log_message("Entering sync ajax", 'test_xero');
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
