@@ -96,7 +96,7 @@ class ACLSyncService {
             }
     
             self::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
-            return $xero;
+            return "Xero client initialized successfully with Tenant ID: ".$tenantId;
     
         } catch (\Exception $e) {
             self::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
