@@ -55,7 +55,7 @@ class ACLSyncService {
      * @param string $client_secret The Consumer Secret.
      * @return \XeroPHP\Application
      */
-    private static function initialize_xero_client() {
+    public static function initialize_xero_client() {
         self::log_message('Initialising Xero.', 'xero_auth');
         try {
             $accessToken = get_option('xero_access_token');
