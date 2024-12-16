@@ -85,7 +85,35 @@ class ACLSyncService {
             // Refresh token if expired
             if (time() > $tokenExpires) {
                 self::log_message('Access token expired. Attempting to refresh...', 'xero_auth');
-                $accessToken = self::refresh_access_token($refreshToken);
+                //$accessToken = self::refresh_access_token($refreshToken);
+                $clientId = get_option('acl_xero_consumer_key');
+                $clientSecret = get_option('acl_xero_consumer_secret');
+    
+                if (!$clientId || !$clientSecret) {
+                    throw new \Exception("Xero Client ID or Secret is missing. Please configure your settings.");
+                }
+    
+                $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
+                    'clientId' => $clientId,
+                    'clientSecret' => $clientSecret,
+                ]);
+    
+                try {
+                    $newAccessToken = $provider->getAccessToken('refresh_token', [
+                        'refresh_token' => $refreshToken,
+                    ]);
+    
+                    // Update stored credentials
+                    $accessToken = $newAccessToken->getToken();
+                    update_option('xero_access_token', $accessToken);
+                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
+                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
+    
+                    self::log_message('Tokens refreshed successfully.', 'xero_auth');
+                } catch (\Exception $e) {
+                    self::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Failed to refresh the Xero access token. Please reauthorize.");
+                }                
             }
     
             // Initialize the Xero client
