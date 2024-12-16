@@ -78,16 +78,21 @@ class ACLSyncService {
                 $accessToken = self::refresh_access_token($refreshToken);
             }
     
-            // Initialize and verify the Xero client
+            // Initialize the Xero client
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
     
+            // Test client connection
             try {
                 $xero->load('Accounting\\Organisation')->execute();
             } catch (\XeroPHP\Remote\Exception $e) {
-                if ($e->getResponse()->getStatusCode() === 401) {
-                    throw new \Exception("Access token is invalid. Please reauthorize.");
+                // Handle 401 Unauthorized error gracefully
+                if (strpos($e->getMessage(), '401 Unauthorized') !== false) {
+                    self::log_message("Unauthorized access detected: " . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Access token is invalid. Please reauthorize the Xero connection.");
                 }
-                throw $e;
+    
+                // Re-throw other exceptions
+                throw new \Exception("Failed to verify Xero connection: " . $e->getMessage());
             }
     
             self::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
@@ -98,6 +103,7 @@ class ACLSyncService {
             throw $e;
         }
     }
+    
     
     
 
