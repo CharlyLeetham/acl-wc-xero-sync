@@ -99,8 +99,9 @@ class ACLSyncService {
             return $xero;
     
         } catch (\Exception $e) {
-            self::log_message("Error555 initializing Xero client: " . $e->getMessage(), 'xero_auth');
-            throw $e;
+            self::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
+            echo "Error initializing Xero client: " . $e->getMessage();
+            return false;
         }
     }
     
