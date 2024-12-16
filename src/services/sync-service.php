@@ -180,17 +180,42 @@ class ACLSyncService {
      */
     private static function check_if_sku_exists( $xero, $sku ) {
         try {
-            $query = $xero->load( 'Accounting\\Item' )
-                                   ->where( 'Code', $sku );
-          
+            $query = $xero->load('Accounting\\Item')
+                          ->where('Code', $sku);
+    
             self::log_message(" SKU: " . $sku, 'product_sync');
             
             $existing_items = $query->execute();                                   
-            return ! empty( $existing_items );
-        } catch ( \Exception $e ) {
-            self::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');
-            echo "<div class='notice notice-error'><p>Token expired. Please reauthorize to sync product SKU: <strong>{$sku}</strong>.</p></div>";
-            throw $e;
+            return !empty($existing_items);
+        } catch (\Exception $e) {
+            $errorDetails = json_decode($e->getMessage(), true);
+            if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
+                self::log_message("Token expired during SKU check for " . $sku, 'product_sync');
+                
+                try {
+                    // Attempt to refresh the token
+                    $xero = self::initialize_xero_client(); // This should handle token refresh
+                    self::log_message("Attempting to refresh token for SKU check.", 'xero_auth');
+                    
+                    // Retry the query with the potentially refreshed token
+                    $query = $xero->load('Accounting\\Item')
+                                  ->where('Code', $sku);
+                    
+                    $existing_items = $query->execute();
+                    self::log_message("Token refresh and query retry successful for SKU " . $sku, 'xero_auth');
+                    return !empty($existing_items);
+                } catch (\Exception $refreshException) {
+                    // If refresh fails, notify user to reauthorize
+                    self::log_message("Failed to refresh token for SKU " . $sku . ": " . $refreshException->getMessage(), 'xero_auth');
+                    echo "<div class='notice notice-error'><p>Token expired and could not be refreshed. Please reauthorize to sync product SKU: <strong>{$sku}</strong>.</p></div>";
+                    return false; // Return false since we couldn't check the SKU
+                }
+            } else {
+                // Log and display other types of errors
+                self::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');
+                echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
+                throw $e; // Re-throw to let the calling function know there was an error
+            }
         }
     }
 
