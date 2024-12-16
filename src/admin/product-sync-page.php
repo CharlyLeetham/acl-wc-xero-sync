@@ -380,7 +380,7 @@ class ACLProductSyncPage {
      */
     public static function handle_test_connection() {
         if (!current_user_can('manage_woocommerce')) {
-            wp_send_json_error('You do not have sufficient permissions to perform this action.');
+            wp_die('You do not have sufficient permissions to access this page.');
         }
     
         ACLSyncService::test_xero_connection();
