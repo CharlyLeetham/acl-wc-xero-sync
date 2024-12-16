@@ -315,7 +315,8 @@ class ACLProductSyncPage {
                             },
                             error: function(xhr, status, error) {                              
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('xero-test-connection-result').html('echo <div class="notice notice-error">'.$xero.'</p></div>'; // Echo the captured output<p>An error occurred: ' + errorMessage + '</p>');
+                                $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
+
                             },
                         });
                     });
@@ -363,7 +364,7 @@ class ACLProductSyncPage {
                         },
                         error: function(xhr, status, error) {
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                            $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
+                            $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
                         },
                         complete: function() {
                         }                        
