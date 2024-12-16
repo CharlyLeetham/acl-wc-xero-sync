@@ -100,8 +100,7 @@ class ACLSyncService {
     
         } catch (\Exception $e) {
             self::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
-            echo "Error initializing Xero client: " . $e->getMessage();
-            return false;
+            return "Error initializing Xero client: " . $e->getMessage();
         }
     }
     
