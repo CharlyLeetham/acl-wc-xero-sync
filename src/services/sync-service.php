@@ -157,11 +157,11 @@ class ACLSyncService {
 
                 // Compare prices
                 if ((float)$xeroPrice !== (float)$wcPrice) {
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero sale price: {$xeroPrice}. WooCommerce price: {$wcPrice} </p></div>";
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero sale price: ${$xeroPrice}. WooCommerce price: ${$wcPrice} </p></div>";
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                 }
-                self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, WooCommerce Price: {$wcPrice}", 'product_sync');
+                self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: ${$xeroPrice}, WooCommerce Price: ${$wcPrice}", 'product_sync');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
                 self::log_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync');
@@ -188,7 +188,8 @@ class ACLSyncService {
             $existing_items = $query->execute();                                   
             return ! empty( $existing_items );
         } catch ( \Exception $e ) {
-            self::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');;
+            self::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');
+            echo "<div class='notice notice-error'><p>Token expired. Please reauthorize to sync product SKU: <strong>{$sku}</strong>.</p></div>";
             throw $e;
         }
     }
