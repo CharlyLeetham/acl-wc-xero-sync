@@ -392,7 +392,7 @@ class ACLProductSyncPage {
             wp_die('You do not have sufficient permissions to access this page.');
         }
     
-        ob_start();
+        //ob_start();
         $xero = ACLSyncService::initialize_xero_client();
 
         // Check for errors
@@ -402,7 +402,7 @@ class ACLProductSyncPage {
         }
         
         if (!empty($xero)) {
-            echo $xero; // Echo the captured output
+            echo "<div class='notice notice-error'>".$xero."</div>"; // Echo the captured output
         } else {
             echo "No output from sync process.";
         }
