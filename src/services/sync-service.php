@@ -57,54 +57,71 @@ class ACLSyncService {
      */
 
     
-    public static function initialize_xero_client() {
+     public static function initialize_xero_client() {
         self::log_message('Initializing Xero client.', 'xero_auth');
-
+    
         try {
             // Retrieve necessary credentials
             $accessToken = get_option('xero_access_token');
             $refreshToken = get_option('xero_refresh_token');
             $tenantId = get_option('xero_tenant_id');
             $tokenExpires = get_option('xero_token_expires', 0);
-
+    
             if (empty($accessToken) || empty($refreshToken) || empty($tenantId)) {
                 self::log_message('Missing Xero credentials. Please authorize.', 'xero_auth');
                 throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
             }
-
+    
             // Check token expiration and refresh if necessary
             if (time() > $tokenExpires) {
                 self::log_message('Access token expired. Refreshing...', 'xero_auth');
-
+    
                 $clientId = get_option('acl_xero_consumer_key');
                 $clientSecret = get_option('acl_xero_consumer_secret');
-
+    
                 $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
                     'clientId' => $clientId,
                     'clientSecret' => $clientSecret,
                 ]);
-
-                $newAccessToken = $provider->getAccessToken('refresh_token', [
-                    'refresh_token' => $refreshToken,
-                ]);
-
-                $accessToken = $newAccessToken->getToken();
-                update_option('xero_access_token', $accessToken);
-                update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
-                update_option('xero_token_expires', time() + $newAccessToken->getExpires());
-
-                self::log_message('Tokens refreshed successfully.', 'xero_auth');
+    
+                try {
+                    $newAccessToken = $provider->getAccessToken('refresh_token', [
+                        'refresh_token' => $refreshToken,
+                    ]);
+    
+                    $accessToken = $newAccessToken->getToken();
+                    update_option('xero_access_token', $accessToken);
+                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
+                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
+    
+                    self::log_message('Tokens refreshed successfully.', 'xero_auth');
+                } catch (\Exception $e) {
+                    self::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Failed to refresh the Xero access token. Please reauthorize the connection.");
+                }
             }
-
+    
             // Initialize Xero client
             $xero = new \XeroPHP\Application($accessToken, $tenantId);
+    
+            // Test client connection
+            try {
+                $xero->load('Accounting\\Organisation')->execute();
+            } catch (\XeroPHP\Remote\Exception $e) {
+                if (strpos($e->getMessage(), '401 Unauthorized') !== false) {
+                    self::log_message("Unauthorized access: " . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Failed to initialize Xero client. Access token is invalid. Please reauthorize.");
+                }
+                throw $e; // Re-throw other exceptions
+            }
+    
             self::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
-
+    
             return $xero;
-
+    
         } catch (\Exception $e) {
             self::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
-            throw new \Exception("Failed to initialize Xero client: " . $e->getMessage());
+            throw $e;
         }
     }
     
