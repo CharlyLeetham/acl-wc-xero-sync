@@ -206,7 +206,8 @@ class ACLProductSyncPage {
             $logging_levels = [
                 'xero_auth' => 'Xero Authorisation',
                 'xero_connection' => 'Xero Connection for Sync',
-                'product_sync' => 'Product Sync'
+                'product_sync' => 'Product Sync',
+                'test_xero' => 'Test Xero'
             ];
             foreach ($logging_levels as $key => $label) {
                 update_option('acl_xero_log_' . $key, isset($_POST['acl_xero_log_' . $key]) ? '1' : '0');
@@ -267,7 +268,8 @@ class ACLProductSyncPage {
                         $logging_levels = [
                             'xero_auth' => 'Xero Authorisation',
                             'xero_connection' => 'Xero Connection for Sync',
-                            'product_sync' => 'Product Sync'
+                            'product_sync' => 'Product Sync',
+                            'test_xero' => 'Test Xero'
                         ];
                         foreach ($logging_levels as $key => $label):
                             $checked = get_option('acl_xero_log_' . $key) ? 'checked' : '';

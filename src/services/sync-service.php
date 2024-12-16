@@ -281,6 +281,7 @@ class ACLSyncService {
 
     // Add this new method to test the Xero connection
     private static function test_xero_connection($xero) {
+        self::log_message("Testing Xero Connection", 'test_xero');
         try {
             // Attempt to get the organization details, which should be a basic, low-impact query
             $orgs = $xero->load('Accounting\\Organisation')
@@ -288,19 +289,18 @@ class ACLSyncService {
             
             if (empty($orgs)) {
                 throw new \Exception("No organizations found, Xero connection might be invalid.");
+                echo "<div class='notice notice-info'><p>No organizations found, Xero connection might be invalid.</p></div>";
             }
             
-            self::log_message("Xero connection test passed. Organization name: " . $orgs[0]->getName(), 'xero_connection');
+            self::log_message("Xero connection test passed. Organization name: " . $orgs[0]->getName(), 'test_xero');
+            echo "<div class='notice notice-info'><p>Xero connection test passed. Organization name: " . $orgs[0]->getName()."</p></div>";
         } catch (\Exception $e) {
             $parts = explode(':', $e->getMessage(), 2); // Split into 2 parts: everything before the first colon, and everything after            
-            echo '<pre>'; 
-            var_dump ($e);
-            var_dump($parts);  
-            echo '</pre>';
+
             if (count($parts) > 1) {
                 $detailPart = trim($parts[1]); // Trim to remove any leading/trailing whitespace
                 if (strpos($detailPart, 'TokenExpired') !== false) {
-                    self::log_message("Xero Connection Test Failed. Token Expired", 'xero_connection');
+                    self::log_message("Xero Connection Test Failed. Token Expired", 'test_xero');
                     try {
                         // Reinitialize with a potentially refreshed token
                         $xero = self::initialize_xero_client();
@@ -313,17 +313,17 @@ class ACLSyncService {
                             throw new \Exception("No organizations found after token refresh, connection still invalid.");
                         }
                         
-                        self::log_message("Token refreshed successfully. Organization name: " . $orgs[0]->getName(), 'xero_connection');
+                        self::log_message("Token refreshed successfully. Organization name: " . $orgs[0]->getName(), 'test_xero');
                     } catch (\Exception $refreshException) {
-                        self::log_message("Failed to refresh token or connection still invalid: " . $refreshException->getMessage(), 'xero_connection');
+                        self::log_message("Failed to refresh token or connection still invalid: " . $refreshException->getMessage(), 'test_xero');
                         throw $refreshException;
                     }
                 } else {
-                    self::log_message("Xero connection test failed: " . $e->getMessage(), 'xero_connection');
+                    self::log_message("Xero connection test failed: " . $e->getMessage(), 'test_xero');
                     throw $e;
                 }
             } else {
-                self::log_message("Xero connection test failed: " . $e->getMessage(), 'xero_connection');
+                self::log_message("Xero connection test failed: " . $e->getMessage(), 'test_xero');
                 throw $e;
             }
         }
