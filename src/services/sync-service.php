@@ -145,8 +145,23 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} skipped: Already in Xero.</p></div>";
-                self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero.", 'product_sync');
+
+                // Fetch item details from Xero
+                $item = self::get_xero_item($xero, $sku);
+                
+                // Assuming 'UnitPrice' is the field for sale price in Xero
+                $xeroPrice = $item->getSalesDetails()->getUnitPrice();
+                
+                // Get WooCommerce price
+                $wcPrice = get_post_meta($product['id'], '_price', true);  
+                              
+                // Compare prices
+                if ((float)$xeroPrice !== (float)$wcPrice) {
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero sale price: {$xeroPrice}. WooCommerce price: {$wcPrice} </p></div>";
+                } else {
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
+                }
+                self::log_message("Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, WooCommerce Price: {$wcPrice}", 'product_sync');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
                 self::log_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync');
