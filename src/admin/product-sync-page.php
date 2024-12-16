@@ -10,7 +10,7 @@ class ACLProductSyncPage {
         add_action( 'admin_menu', [ __CLASS__, 'add_admin_pages' ] );
         add_action( 'admin_post_acl_xero_sync_callback', [ __CLASS__, 'handle_xero_callback' ] );
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
-        add_action( 'wp_ajax_acl_xero_test_connection', [ __CLASS__, 'handle_test_connection' ] );
+        add_action( 'wp_ajax_acl_xero_test_connection_ajax', [ __CLASS__, 'handle_test_connection' ] );
         add_action( 'wp_ajax_acl_xero_sync_products_ajax', [ __CLASS__, 'handle_sync_ajax' ] );
     
         // Enqueue scripts and localize AJAX URL
@@ -305,21 +305,22 @@ class ACLProductSyncPage {
             <script type="text/javascript">
                 jQuery(document).ready(function ($) {
                     $('#test-xero-connection').on('click', function () {
-                        $('#xero-test-connection-result').html('<p>Testing connection...</p>');
+                        $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
                         $.ajax({
-                            url: ajax_object.ajaxurl,
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
                             type: 'POST',
-                            data: { action: 'acl_xero_test_connection' },
+                            data: { action: 'acl_xero_test_connection_ajax' },
                             success: function (response) {
-                                $('#xero-test-connection-result').html('<p style="color: green;">' + response.data + '</p>');
+                                $('#sync-results').html(response);
                             },
-                            error: function () {
-                                $('#xero-test-connection-result').html('<p style="color: red;">An error occurred while testing the connection.</p>');
-                            }
+                            error: function(xhr, status, error) {
+                                var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                                $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
+                            },
                         });
                     });
                 });
-            </script>        
+            </script>           
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
                 <button type="submit" class="button">Reset Authorization</button>
             </form>

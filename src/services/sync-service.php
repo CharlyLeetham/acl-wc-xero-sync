@@ -327,15 +327,5 @@ class ACLSyncService {
                 throw $e;
             }
         }
-    } 
-
-    /**
-     * Adds a message to be displayed on the Sync Products page.
-     *
-     * @param string $message The message to display.
-     * @param string $type The type of message (error, warning, info).
-     */
-    private static function add_message($message, $type = 'info') {
-        self::$messages[] = ['message' => $message, 'type' => $type];
-    }      
+    }    
 }
