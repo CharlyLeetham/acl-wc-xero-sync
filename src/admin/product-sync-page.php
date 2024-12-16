@@ -401,7 +401,7 @@ class ACLProductSyncPage {
     }
     
     public static function handle_sync_ajax() {
-        ACLSyncService::log_message("Entering sync ajax", 'test_xero');
+        ACLSyncService::log_message("Entering sync ajax", 'product_sync');
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
