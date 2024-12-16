@@ -387,12 +387,12 @@ class ACLProductSyncPage {
 
         // Check for errors
         if (is_wp_error($xero)) {
-            echo "<div class='notice notice-error'>".$xero->get_error_message()."</div>"; // Display the error message
+            echo "<div class='notice notice-error'><p>".$xero->get_error_message()."</p></div>"; // Display the error message
             wp_die(); // Stop further execution
         }
         
         if (!empty($xero)) {
-            echo "<div class='notice notice-info'>".$xero."</div>"; // Echo the captured output
+            echo "<div class='notice notice-info'><p>".$xero."</p></div>"; // Echo the captured output
         } else {
             echo "No output from sync process.";
         }
@@ -414,7 +414,7 @@ class ACLProductSyncPage {
         if (!empty($output)) {
             echo $output; // Echo the captured output
         } else {
-            echo "No output from sync process.";
+            echo "<div class='notice notice-info'><p>No output from sync process.</p>";
         }
         wp_die(); // This is required to end the AJAX call properly
     }

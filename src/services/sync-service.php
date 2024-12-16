@@ -31,6 +31,16 @@ class ACLSyncService {
             }
 
             $xero = self::initialize_xero_client();
+            // Check for errors
+            if (is_wp_error($xero)) {
+                echo "<div class='notice notice-error'><p>".$xero->get_error_message()."</p></div>"; // Display the error message
+                wp_die(); // Stop further execution
+            }  
+            
+            if (!empty($xero)) {
+                echo "<div class='notice notice-info'><p>".$xero."</p></div>"; // Echo the captured output
+                echo "<div class='notice notice-info'><p>Now syncing products</p></div>"; // Echo the captured output
+            }            
 
             // Step 3: Process Each Product
             foreach ( $products as $product ) {
