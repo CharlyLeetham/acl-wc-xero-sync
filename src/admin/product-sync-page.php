@@ -318,13 +318,13 @@ class ACLProductSyncPage {
                             success: function (response) {
                                 console.log('4'); // Logging successful AJAX response
                                 console.log('Response:', response);                                
-                                $('#test-xero-connection').html(response);
+                                $('#xero-test-connection-result').html(response);
                             },
                             error: function(xhr, status, error) {
                                 console.log('5'); // Logging that an error occurred in AJAX request
                                 console.error('Error details:', xhr, status, error);                                
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('test-xero-connection').html('<p>An error occurred: ' + errorMessage + '</p>');
+                                $('xero-test-connection-result').html('<p>An error occurred: ' + errorMessage + '</p>');
                             },
                         });
                     });
