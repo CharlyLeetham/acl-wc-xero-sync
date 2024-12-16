@@ -304,18 +304,27 @@ class ACLProductSyncPage {
             <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
             <script type="text/javascript">
                 jQuery(document).ready(function ($) {
+                    console.log ('1');
                     $('#test-xero-connection').on('click', function () {
+                        console.log ('2');
                         $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
                         $.ajax({
                             url: '<?php echo admin_url('admin-ajax.php'); ?>',
                             type: 'POST',
                             data: { action: 'acl_xero_test_connection_ajax' },
+                            beforeSend: function() {
+                                console.log('3'); // Before sending AJAX request
+                            },                            
                             success: function (response) {
-                                $('#sync-results').html(response);
+                                console.log('4'); // Logging successful AJAX response
+                                console.log('Response:', response);                                
+                                $('#test-xero-connection').html(response);
                             },
                             error: function(xhr, status, error) {
+                                console.log('5'); // Logging that an error occurred in AJAX request
+                                console.error('Error details:', xhr, status, error);                                
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('#sync-results').html('<p>An error occurred: ' + errorMessage + '</p>');
+                                $('test-xero-connection').html('<p>An error occurred: ' + errorMessage + '</p>');
                             },
                         });
                     });
