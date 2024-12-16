@@ -315,7 +315,7 @@ class ACLProductSyncPage {
                             },
                             error: function(xhr, status, error) {                              
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('xero-test-connection-result').html('<p>An error occurred: ' + errorMessage + '</p>');
+                                $('xero-test-connection-result').html('echo <div class="notice notice-error">'.$xero.'</p></div>'; // Echo the captured output<p>An error occurred: ' + errorMessage + '</p>');
                             },
                         });
                     });
