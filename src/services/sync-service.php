@@ -154,7 +154,7 @@ class ACLSyncService {
                 
                 // Get WooCommerce price
                 $wcPrice = get_post_meta($product['id'], '_price', true);  
-                              
+
                 // Compare prices
                 if ((float)$xeroPrice !== (float)$wcPrice) {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero sale price: {$xeroPrice}. WooCommerce price: {$wcPrice} </p></div>";
@@ -192,6 +192,33 @@ class ACLSyncService {
             throw $e;
         }
     }
+
+    /**
+     * Retrieves Xero item by SKU.
+     *
+     * @param \XeroPHP\Application $xero
+     * @param string $sku
+     * @return \XeroPHP\Models\Accounting\Item
+     * @throws \Exception
+     */
+    private static function get_xero_item($xero, $sku) {
+        try {
+            $query = $xero->load('Accounting\\Item')
+                        ->where('Code', $sku);
+
+            $items = $query->execute();
+            
+            if (empty($items)) {
+                throw new \Exception("Item with SKU {$sku} not found in Xero.");
+            }
+
+            return $items[0]; // Assuming there's only one item with this SKU
+        } catch (\Exception $e) {
+            self::log_message("Error fetching item [SKU: {$sku}] from Xero: {$e->getMessage()}", 'product_sync');
+            throw $e;
+        }
+    }
+
 
     /**
      * Fetches products from WooCommerce using a direct database query.
