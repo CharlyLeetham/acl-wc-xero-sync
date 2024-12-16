@@ -100,7 +100,6 @@ class ACLSyncService {
     
         } catch (\Exception $e) {
             self::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
-            //echo "Error initializing Xero client: " . $e->getMessage();  
             return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
         }
     }

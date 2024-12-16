@@ -302,25 +302,18 @@ class ACLProductSyncPage {
             <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
             <script type="text/javascript">
                 jQuery(document).ready(function ($) {
-                    console.log ('1');
                     $('#test-xero-connection').on('click', function () {
-                        console.log ('2');
                         $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
                         $.ajax({
                             url: '<?php echo admin_url('admin-ajax.php'); ?>',
                             type: 'POST',
                             data: { action: 'acl_xero_test_connection_ajax' },
                             beforeSend: function() {
-                                console.log('3'); // Before sending AJAX request
                             },                            
-                            success: function (response) {
-                                console.log('4'); // Logging successful AJAX response
-                                console.log('Response:', response);                                
+                            success: function (response) {                              
                                 $('#xero-test-connection-result').html(response);
                             },
-                            error: function(xhr, status, error) {
-                                console.log('5'); // Logging that an error occurred in AJAX request
-                                console.error('Error details:', xhr, status, error);                                
+                            error: function(xhr, status, error) {                              
                                 var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
                                 $('xero-test-connection-result').html('<p>An error occurred: ' + errorMessage + '</p>');
                             },
@@ -356,7 +349,6 @@ class ACLProductSyncPage {
                 $('#start-sync').on('click', function(e) {
                     e.preventDefault();
                     $('#sync-results').html('<p>Syncing...</p>');
-                    console.log('AJAX call initiated');
                     $.ajax({
                         url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         type: 'POST',
