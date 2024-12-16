@@ -383,8 +383,15 @@ class ACLProductSyncPage {
             wp_send_json_error('You do not have sufficient permissions to perform this action.');
         }
     
-        $response = ACLSyncService::test_xero_connection();
-        wp_send_json_success($response);
+        ACLSyncService::test_xero_connection();
+        $output = ob_get_clean(); // Capture the output
+        
+        if (!empty($output)) {
+            echo $output; // Echo the captured output
+        } else {
+            echo "No output from sync process.";
+        }
+        wp_die(); // This is required to end the AJAX call properly
     }
     
     public static function handle_sync_ajax() {
