@@ -395,20 +395,14 @@ class ACLProductSyncPage {
         ob_start();
         $xero = ACLSyncService::initialize_xero_client();
 
-        var_dump($xero);
-        echo "<br />";
-
         // Check for errors
         if (is_wp_error($xero)) {
             echo "<div class='notice notice-error'>".$xero->get_error_message()."</div>"; // Display the error message
             wp_die(); // Stop further execution
         }
-
-        //ACLSyncService::test_xero_connection($xero);
-        $output = ob_get_clean(); // Capture the output
         
-        if (!empty($output)) {
-            echo $output; // Echo the captured output
+        if (!empty($xero)) {
+            echo $xero; // Echo the captured output
         } else {
             echo "No output from sync process.";
         }
