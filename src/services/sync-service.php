@@ -280,7 +280,7 @@ class ACLSyncService {
     }
 
     // Add this new method to test the Xero connection
-    private static function test_xero_connection($xero) {
+    public static function test_xero_connection($xero) {
         self::log_message("Testing Xero Connection", 'test_xero');
         try {
             // Attempt to get the organization details, which should be a basic, low-impact query
