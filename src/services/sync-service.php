@@ -262,7 +262,7 @@ class ACLSyncService {
      *
      * @param string $message The message to log.
      */
-    private static function log_message($message, $level = 'none') {
+    public static function log_message($message, $level = 'none') {
         $log_file = WP_CONTENT_DIR . '/uploads/acl-xero-sync.log';
         $log_enabled = get_option('acl_xero_log_' . $level, '0') == '1'; // Default to disabled if not set
     
