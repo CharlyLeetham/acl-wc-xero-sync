@@ -55,7 +55,43 @@ class ACLSyncService {
      * @param string $client_secret The Consumer Secret.
      * @return \XeroPHP\Application
      */
+
+    
     public static function initialize_xero_client() {
+        self::log_message('Initializing Xero client.', 'xero_auth');
+    
+        try {
+            $accessToken = get_option('xero_access_token');
+            $refreshToken = get_option('xero_refresh_token');
+            $tenantId = get_option('xero_tenant_id');
+            $tokenExpires = get_option('xero_token_expires', 0);
+    
+            if (empty($accessToken) || empty($refreshToken) || empty($tenantId)) {
+                throw new \Exception("Xero Access Token, Refresh Token, or Tenant ID missing. Please authorize.");
+            }
+    
+            self::log_message("Current time: " . date('Y-m-d H:i:s'), 'xero_auth');
+            self::log_message("Token expires at: " . date('Y-m-d H:i:s', $tokenExpires), 'xero_auth');
+    
+            if (time() > $tokenExpires) {
+                self::log_message('Token has expired. Refreshing...', 'xero_auth');
+                $accessToken = self::refresh_xero_token($refreshToken);
+            }
+    
+            $xero = new \XeroPHP\Application($accessToken, $tenantId);
+            self::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
+    
+            return $xero;
+    
+        } catch (\Exception $e) {
+            self::log_message("Failed to initialize Xero client: " . $e->getMessage(), 'xero_auth');
+            throw $e;
+        }
+    }     
+
+
+
+    public static function old_initialize_xero_client() {
         self::log_message('Initialising Xero.', 'xero_auth');
         try {
             $accessToken = get_option('xero_access_token');
