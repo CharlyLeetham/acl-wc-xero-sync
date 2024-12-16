@@ -395,6 +395,8 @@ class ACLProductSyncPage {
         ob_start();
         $xero = ACLSyncService::initialize_xero_client();
 
+        echo $xero."<br />";
+
         // Check for errors
         if (is_wp_error($xero)) {
             echo "<div class='notice notice-error'>".$xero->get_error_message()."</div>"; // Display the error message
