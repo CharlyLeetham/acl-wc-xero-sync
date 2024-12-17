@@ -355,7 +355,7 @@ class ACLSyncService {
             }
         } 
 
-        $csv_file = $folder_path . $filename;
+        $csv_file = $folder_path .'/'. $filename;
 
         if (!file_exists($csv_file)) {
             // Write the first line if the file does not exist
