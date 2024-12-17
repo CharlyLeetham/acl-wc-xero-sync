@@ -12,7 +12,7 @@ class ACLProductSyncPage {
         add_action( 'admin_post_acl_xero_reset_authorization', [ __CLASS__, 'reset_authorization' ] );
         add_action( 'wp_ajax_acl_xero_test_connection_ajax', [ __CLASS__, 'handle_test_connection' ] );
         add_action( 'wp_ajax_acl_xero_sync_products_ajax', [ __CLASS__, 'handle_sync_ajax' ] );
-        add_action( 'wp_ajax_acl_download_csv', [ __CLASS__, 'handle_csv_download' ] );
+        //add_action( 'wp_ajax_acl_download_csv', [ __CLASS__, 'handle_csv_download' ] );
 
         // Enqueue scripts and localize AJAX URL
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
