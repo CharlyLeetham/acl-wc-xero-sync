@@ -19,7 +19,7 @@ class ACLSyncService {
                 return;
             }
 
-            echo "Syncing " . count($products) . " products...<br>";
+            echo "<p>Syncing " . count($products) . " products...</p>";
             self::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
 
             // Step 2: Initialize Xero Client
@@ -43,17 +43,44 @@ class ACLSyncService {
             }            
 
             // Step 3: Process Each Product
+            $count = 0;
             foreach ( $products as $product ) {
                 try {
-                    self::process_product($xero, $product);
+                    self::process_product( $xero, $product );
+                    $count++;                    
                 } catch (\Exception $e) {
                     $sku = $product['sku'] ?? 'No SKU';
-                    self::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
+                    self::log_message( "Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
                     echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
                 }
             }
+
+            // (a) Echo the number of successfully synced products
+            echo "<div class='notice notice-success'><p>{$count} Products Successfully Sync'd</p></div>"; 
+
+            // (b) Display list of CSV files in specified directory
+            $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
+            if (is_dir($folder_path)) {
+                $files = glob($folder_path . '/*.csv');
+                
+                // Sort files in reverse chronological order
+                usort($files, function($a, $b) {
+                    return filemtime($b) - filemtime($a);
+                });
+
+                echo "<h3>CSV Files:</h3>";
+                echo "<ul>";
+                foreach ($files as $file) {
+                    $filename = basename($file);
+                    echo "<li>{$filename} ";
+                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button'>Download</a></li>";
+                }
+                echo "</ul>";
+            } else {
+                echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
+            }           
         } catch ( \Exception $e ) {
-            self::log_message('Fatal error in sync process: ' . $e->getMessage(), 'product_sync');
+            self::log_message( 'Fatal error in sync process: ' . $e->getMessage(), 'product_sync' );
             echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";            
         }
     }
@@ -165,30 +192,40 @@ class ACLSyncService {
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
+            /* Set up the csv files to export the results. */
+
+            $nopricechange_csv = "nopricechange"; // Your base filename without extension
+            $pricechange_csv = "pricechange"
+            $date = date("Y-m-d"); // Format: Year-Month-Day, adjust as needed
+            $nopricechange_csv = $nopricechange_csv . "_" . $date . ".csv"; // Assuming CSV file
+            $pricechange_csv = $pricechange_csv . "_" . $date . ".csv"; // Assuming CSV file            
+
             if ( $exists ) {
 
                 // Fetch item details from Xero
-                $item = self::get_xero_item($xero, $sku);
+                $item = self::get_xero_item( $xero, $sku );
                 
                 // Assuming 'UnitPrice' is the field for sale price in Xero
                 $xeroPrice = $item->getSalesDetails()->getUnitPrice();
                 
                 // Get WooCommerce price
-                $wcPrice = get_post_meta($product['id'], '_price', true);  
+                $wcPrice = get_post_meta( $product['id'], '_price', true );  
 
                 // Compare prices
                 if ((float)$xeroPrice !== (float)$wcPrice) {
                     echo "<div class='notice notice-info'><p>Product [ID: ".$product['id']."] - ".$sku." already in Xero. Price differs. Xero Price: $".$xeroPrice.". WooCommerce Price: $".$wcPrice." </p></div>";
+                    self::csv_file( $pricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
+                    self::csv_file( $nopricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
                 }
-                self::log_message("Product SKU <strong>".$sku."</strong> exists in Xero. Xero Price: $".$xeroPrice.", WooCommerce Price: $".$wcPrice, 'product_sync');
+                self::log_message ( "Product SKU <strong>".$sku."</strong> exists in Xero. Xero Price: $".$xeroPrice.", WooCommerce Price: $".$wcPrice, 'product_sync' );
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
-                self::log_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync');
+                self::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync' );
             }
         } catch ( \Exception $e ) {
-            self::log_message("Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
+            self::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
         }
     }
 
@@ -302,11 +339,27 @@ class ACLSyncService {
     }  
 
     private static function csv_file($filename, $message) {
-        $csv_file = WP_CONTENT_DIR . '/uploads/' . $filename;
+
+        /* Check to see if folder for csv's exist. If not create it */
+
+        $upload_dir = WP_CONTENT_DIR . '/uploads/';
+        $folder_name = 'acl-wc-xero-sync';
+        $folder_path = $upload_dir . $folder_name;
+        
+        if (!is_dir($folder_path)) {
+            if (mkdir($folder_path, 0755, true)) {
+                self::log_message("Create directory $folder_path", 'product_sync');
+            } else {
+                // Handle the error, e.g., log it
+                self::log_message("Failed to create directory $folder_path", 'product_sync');
+            }
+        } 
+
+        $csv_file = $folder_path . $filename;
 
         if (!file_exists($csv_file)) {
             // Write the first line if the file does not exist
-            $initial_content = "SKU,Description,Price\n"; // Define what should be the first line
+            $initial_content = "SKU,Xero Price,WC Price\n"; // Define what should be the first line
             if (file_put_contents($csv_file, $initial_content) === false) {
                 self::log_message("Failed to create $csv_file", 'product_sync');
                 return; // Exit the function if we couldn't create the file
