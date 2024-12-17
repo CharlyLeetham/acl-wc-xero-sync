@@ -182,7 +182,7 @@ class ACLSyncService {
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                 }
-                self::log_message("Product SKU <strong>."$sku."</strong> exists in Xero. Xero Price: $."$xeroPrice.", WooCommerce Price: $."$wcPrice, 'product_sync');
+                self::log_message("Product SKU <strong>".$sku."</strong> exists in Xero. Xero Price: $".$xeroPrice.", WooCommerce Price: $".$wcPrice, 'product_sync');
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
                 self::log_message("Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync');
