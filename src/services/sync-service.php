@@ -201,6 +201,7 @@ class ACLSyncService {
      */
     private static function check_if_sku_exists( $xero, $sku ) {
         try {
+            
             $query = $xero->load('Accounting\\Item')
                           ->where('Code', $sku);
     
