@@ -178,7 +178,7 @@ class ACLSyncService {
 
                 // Compare prices
                 if ((float)$xeroPrice !== (float)$wcPrice) {
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero sale price: ${$xeroPrice}. WooCommerce price: ${$wcPrice} </p></div>";
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. Xero Price: {$xeroPrice}. WooCommerce Price: {$wcPrice} </p></div>";
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                 }
