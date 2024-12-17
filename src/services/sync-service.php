@@ -195,7 +195,7 @@ class ACLSyncService {
             /* Set up the csv files to export the results. */
 
             $nopricechange_csv = "nopricechange"; // Your base filename without extension
-            $pricechange_csv = "pricechange"
+            $pricechange_csv = "pricechange";
             $date = date("Y-m-d"); // Format: Year-Month-Day, adjust as needed
             $nopricechange_csv = $nopricechange_csv . "_" . $date . ".csv"; // Assuming CSV file
             $pricechange_csv = $pricechange_csv . "_" . $date . ".csv"; // Assuming CSV file            
