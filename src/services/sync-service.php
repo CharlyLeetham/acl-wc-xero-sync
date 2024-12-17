@@ -300,4 +300,22 @@ class ACLSyncService {
             file_put_contents($log_file, "[{$timestamp}] [{$level}] {$message}\n", FILE_APPEND);
         }
     }  
+
+    private static function csv_file($filename, $message) {
+        $csv_file = WP_CONTENT_DIR . '/uploads/' . $filename;
+
+        if (!file_exists($csv_file)) {
+            // Write the first line if the file does not exist
+            $initial_content = "SKU,Description,Price\n"; // Define what should be the first line
+            if (file_put_contents($csv_file, $initial_content) === false) {
+                self::log_message("Failed to create $csv_file", 'product_sync');
+                return; // Exit the function if we couldn't create the file
+            }
+        }
+
+        if (file_put_contents( $csv_file, $message . "\n", FILE_APPEND ) === false) {
+            // Handle error, perhaps log it or throw an exception
+            self::log_message( "Failed to write to $csv_file", 'product_sync' );
+        }
+    }    
 }
