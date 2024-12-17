@@ -38,7 +38,7 @@ class ACLSyncService {
             }  
             
             if (!empty($xero)) {
-                echo "<div class='notice notice-info'><p>".$xero."</p></div>"; // Echo the captured output
+                echo "<div class='notice notice-info'><p>Xero client initialized successfully with Tenant ID: ".get_option('xero_tenant_id')."</p></div>"; // Echo the captured output
                 echo "<div class='notice notice-info'><p>Now syncing products</p></div>"; // Echo the captured output
             }            
 
