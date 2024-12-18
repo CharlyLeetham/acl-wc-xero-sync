@@ -112,7 +112,7 @@ class ACLSyncService {
 
             $nopricechange_csv = "nopricechange"; // Your base filename without extension
             $pricechange_csv = "pricechange";
-            $date = date("Y-m-d-H-i-s"); // Format: Year-Month-Day-hour-minutes-seconds, adjust as needed
+            $date = current_time( "Y-m-d-H-i-s" ); // Format: Year-Month-Day-hour-minutes-seconds, adjust as needed
             $nopricechange_csv = $nopricechange_csv . "_" . $date . ".csv"; // Assuming CSV file
             $pricechange_csv = $pricechange_csv . "_" . $date . ".csv"; // Assuming CSV file            
 
