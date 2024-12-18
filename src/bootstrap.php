@@ -28,7 +28,7 @@ class ACLBootstrap {
         
         // Enqueue styles for admin area
         add_action('admin_enqueue_scripts', [ __CLASS__, 'enqueue_styles']);
-                
+
         Admin\ACLProductSyncPage::init();
     }
 
@@ -56,6 +56,8 @@ class ACLBootstrap {
     }
 
     public static function enqueue_styles() {
-        wp_enqueue_style('acl-wc-xero-sync-admin', plugins_url('assets/css/admin-style.css', __FILE__), array(), '1.0', 'all');
+        $stylesheet_path = plugin_dir_path(__FILE__) . 'assets/css/admin-style.css';
+        $version = filemtime( $stylesheet_path );
+        wp_enqueue_style('acl-wc-xero-sync-admin', plugins_url('assets/css/admin-style.css', __FILE__), array(), $version, 'all');
     }    
 }
