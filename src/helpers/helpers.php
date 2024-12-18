@@ -152,7 +152,7 @@ class ACLXeroHelper {
         }
     
         //ob_start();
-        $xero = ACLSyncService::initialize_xero_client();
+        $xero = ACLXeroHelper::initialize_xero_client();
 
         // Check for errors
         if (is_wp_error($xero)) {
