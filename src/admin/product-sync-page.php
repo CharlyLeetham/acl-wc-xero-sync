@@ -350,6 +350,7 @@ class ACLProductSyncPage {
                 <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
             </form>
             <div id="sync-results"></div>
+            <div id="csv-file-updates"></div> <!-- Placeholder for updates -->            
             <div id="csv-file-container">
                 <?php ACLXeroHelper::display_csv(); ?>
             </div>            
