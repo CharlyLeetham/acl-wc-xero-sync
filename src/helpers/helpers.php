@@ -2,6 +2,7 @@
 namespace ACLWcXeroSync\Helpers;
 use ACLWcXeroSync\Services\ACLSyncService;
 use ACLWcXeroSync\Admin\ACLProductSyncPage;
+use ACLWcXeroSync\Helpers\ACLXeroLoggers;
 
 class ACLXeroHelper {
 
@@ -51,7 +52,7 @@ class ACLXeroHelper {
     }    
 
     public static function handle_sync_ajax() {
-        ACLSyncService::log_message("Entering sync ajax", 'product_sync');
+        ACLXeroLoggers::log_message("Entering sync ajax", 'product_sync');
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
