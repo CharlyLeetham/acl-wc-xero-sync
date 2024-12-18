@@ -15,19 +15,20 @@ class ACLProductSyncPage {
         add_action( 'wp_ajax_acl_xero_test_connection_ajax', [ ACLXeroHelper::class, 'handle_test_connection' ] );
         add_action( 'wp_ajax_acl_xero_sync_products_ajax', [ ACLXeroHelper::class, 'handle_sync_ajax' ] );
         add_action( 'wp_ajax_acl_download_csv', [ ACLXeroHelper::class, 'handle_csv_download' ] );
-        add_action('wp_ajax_acl_delete_csv', [ACLXeroHelper::class, 'handle_delete_csv']); 
-        add_action('wp_ajax_acl_delete_csv_multiple', [ACLXeroHelper::class, 'handle_delete_csv_multiple']);               
+        add_action( 'wp_ajax_acl_delete_csv', [ACLXeroHelper::class, 'handle_delete_csv'] ); 
+        add_action( 'wp_ajax_acl_delete_csv_multiple', [ACLXeroHelper::class, 'handle_delete_csv_multiple'] );
+        add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );                       
 
         // Enqueue scripts and localize AJAX URL
-        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts']);
+        add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
     }       
 
     /**
      * Enqueues scripts for admin area.
      */
     public static function enqueue_scripts() {
-        wp_enqueue_script('jquery');
-        wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+        wp_enqueue_script( 'jquery' );
+        wp_localize_script( 'jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')) );
     }    
 
     /**
@@ -366,6 +367,19 @@ class ACLProductSyncPage {
                         },                        
                         success: function(response) {                           
                             $('#sync-results').html(response);
+                        // Update CSV file display after sync
+                        $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: { action: 'acl_update_csv_display' },
+                                success: function(csvResponse) {
+                                    $('#csv-file-list').html(csvResponse);
+                                    $('#csv-file-updates').html('<p>CSV list updated.</p>');
+                                },
+                                error: function() {
+                                    $('#csv-file-updates').html('<p>Failed to update CSV list.</p>');
+                                }
+                            });                            
                         },
                         error: function(xhr, status, error) {
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
