@@ -359,7 +359,7 @@ class ACLProductSyncPage {
             jQuery(document).ready(function($) {
                 $('#start-sync').on('click', function(e) {
                     e.preventDefault();
-                    $('#sync-results').html('<p>Syncing...</p>');
+                    $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
                     $.ajax({
                         url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         type: 'POST',
@@ -378,10 +378,10 @@ class ACLProductSyncPage {
                                 data: { action: 'acl_update_csv_display' },
                                 success: function(csvResponse) {
                                     $('#csv-file-container').html(csvResponse.data);
-                                    $('#csv-file-updates').html('<p>CSV list updated.</p>');
+                                    $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
                                 },
                                 error: function() {
-                                    $('#csv-file-updates').html('<p>Failed to update CSV list.</p>');
+                                    $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
                                 }
                             });                            
                         },
