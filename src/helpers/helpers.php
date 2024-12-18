@@ -159,6 +159,42 @@ class ACLXeroHelper {
             wp_send_json_error('File not found or not a CSV.');
         }
         wp_die();
+    }
+    
+    public static function handle_delete_csv_multiple() {
+        check_ajax_referer('delete_csv_multiple');
+
+        $files = $_POST['files'] ?? [];
+        $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
+        $deleted_files = [];
+        $error_files = [];
+
+        foreach ($files as $file) {
+            $file = sanitize_file_name($file);
+            $file_path = $folder_path . '/' . $file;
+            
+            if (file_exists($file_path) && pathinfo($file_path, PATHINFO_EXTENSION) === 'csv') {
+                if (unlink($file_path)) {
+                    $deleted_files[] = $file;
+                } else {
+                    $error_files[] = $file;
+                }
+            } else {
+                $error_files[] = $file; // File doesn't exist or not a CSV
+            }
+        }
+
+        if (empty($error_files)) {
+            wp_send_json_success('Files deleted successfully: ' . implode(', ', $deleted_files));
+        } else {
+            $error_message = 'Some files could not be deleted: ' . implode(', ', $error_files);
+            if (!empty($deleted_files)) {
+                $error_message .= '. Successfully deleted: ' . implode(', ', $deleted_files);
+            }
+            wp_send_json_error($error_message);
+        }
+
+        wp_die();
     }    
 
 

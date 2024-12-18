@@ -75,14 +75,16 @@ class ACLSyncService {
                 echo "<ul>";
                 foreach ($files as $file) {
                     $filename = basename($file);
-                    echo "<li>{$filename} ";
+                    echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
                     echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button'>Download</a>";
                     echo "<button class='button delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
+                echo "<button id='delete-selected' class='button'>Delete Selected</button>";
                 ?>
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
+                    // Single file deletion
                     $('.delete-file').on('click', function(e) {
                         e.preventDefault();
                         var filename = $(this).data('file');
@@ -98,8 +100,44 @@ class ACLSyncService {
                                 success: function(response) {
                                     if (response.success) {
                                         alert('File deleted successfully!');
-                                        // Optionally, you might want to refresh the list or remove the item from the DOM
                                         $(e.target).closest('li').remove();
+                                    } else {
+                                        alert('Error: ' + response.data);
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    alert('An error occurred: ' + error);
+                                }
+                            });
+                        }
+                    });
+
+                    // Multiple file deletion
+                    $('#delete-selected').on('click', function(e) {
+                        e.preventDefault();
+                        var selectedFiles = $('input[name="delete_files[]"]:checked').map(function() {
+                            return $(this).val();
+                        }).get();
+                        
+                        if (selectedFiles.length === 0) {
+                            alert('Please select at least one file to delete.');
+                            return;
+                        }
+
+                        if (confirm('Are you sure you want to delete these ' + selectedFiles.length + ' files?')) {
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_delete_csv_multiple',
+                                    files: selectedFiles,
+                                    _ajax_nonce: '<?php echo wp_create_nonce('delete_csv_multiple'); ?>'
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        alert('Selected files deleted successfully!');
+                                        // Remove all checked items
+                                        $('input[name="delete_files[]"]:checked').closest('li').remove();
                                     } else {
                                         alert('Error: ' + response.data);
                                     }
