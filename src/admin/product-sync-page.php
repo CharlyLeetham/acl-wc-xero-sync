@@ -1,6 +1,7 @@
 <?php
 namespace ACLWcXeroSync\Admin;
 use ACLWcXeroSync\Services\ACLSyncService;
+use ACLWcXeroSync\Helpers\ACLXeroHelper;
 
 class ACLProductSyncPage {
     /**
