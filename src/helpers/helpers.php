@@ -136,6 +136,7 @@ class ACLXeroHelper {
 
             echo "<h3>CSV Files:</h3>";
             echo "<ul>";
+            echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";            
             foreach ($files as $file) {
                 $filename = basename($file);
                 echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
@@ -211,6 +212,20 @@ class ACLXeroHelper {
                         });
                     }
                 });
+
+                // Select All checkbox functionality
+                $('#select-all').on('click', function() {
+                    $('input[name="delete_files[]"]').prop('checked', this.checked);
+                });
+
+                // If all checkboxes are checked or unchecked, check or uncheck the "Select All" checkbox
+                $('input[name="delete_files[]"]').on('change', function() {
+                    if ($('input[name="delete_files[]"]').length === $('input[name="delete_files[]"]:checked').length) {
+                        $('#select-all').prop('checked', true);
+                    } else {
+                        $('#select-all').prop('checked', false);
+                    }
+                });                
             });
             </script>
             <?php                
