@@ -140,8 +140,8 @@ class ACLXeroHelper {
             foreach ($files as $file) {
                 $filename = basename($file);
                 echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
-                echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button'>Download</a>";
-                echo "<button class='button delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
+                echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button acl-download-file'>Download</a>";
+                echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
             }
             echo "</ul>";
             echo "<button id='delete-selected' class='button'>Delete Selected</button>";

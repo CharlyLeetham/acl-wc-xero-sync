@@ -24,7 +24,11 @@ class ACLBootstrap {
         if ( ! class_exists( 'ACLWcXeroSync\Admin\ACLProductSyncPage' ) ) {
             error_log( 'Class ACLProductSyncPage not found' );
             return; // Exit initialization to avoid further errors
-        }        
+        }
+        
+        // Enqueue styles for admin area
+        add_action('admin_enqueue_scripts', [ __CLASS__, 'enqueue_styles']);
+                
         Admin\ACLProductSyncPage::init();
     }
 
@@ -50,4 +54,8 @@ class ACLBootstrap {
         </div>
         <?php
     }
+
+    public static function enqueue_styles() {
+        wp_enqueue_style('acl-wc-xero-sync-admin', plugins_url('assets/css/admin-style.css', __FILE__), array(), '1.0', 'all');
+    }    
 }
