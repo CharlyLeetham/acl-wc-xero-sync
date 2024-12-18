@@ -87,6 +87,40 @@ class ACLXeroHelper {
             ACLXeroLogger::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
             return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
         }
+    }
+    
+    public static function csv_file($filename, $message) {
+
+        /* Check to see if folder for csv's exist. If not create it */
+
+        $upload_dir = WP_CONTENT_DIR . '/uploads/';
+        $folder_name = 'acl-wc-xero-sync';
+        $folder_path = $upload_dir . $folder_name;
+        
+        if (!is_dir($folder_path)) {
+            if (mkdir($folder_path, 0755, true)) {
+                self::log_message("Create directory $folder_path", 'product_sync');
+            } else {
+                // Handle the error, e.g., log it
+                self::log_message("Failed to create directory $folder_path", 'product_sync');
+            }
+        } 
+
+        $csv_file = $folder_path .'/'. $filename;
+
+        if (!file_exists($csv_file)) {
+            // Write the first line if the file does not exist
+            $initial_content = "SKU,Xero Price,WC Price\n"; // Define what should be the first line
+            if (file_put_contents($csv_file, $initial_content) === false) {
+                self::log_message("Failed to create $csv_file", 'product_sync');
+                return; // Exit the function if we couldn't create the file
+            }
+        }
+
+        if (file_put_contents( $csv_file, $message . "\n", FILE_APPEND ) === false) {
+            // Handle error, perhaps log it or throw an exception
+            self::log_message( "Failed to write to $csv_file", 'product_sync' );
+        }
     }    
 
 
