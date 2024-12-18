@@ -1,7 +1,7 @@
 <?php
 namespace ACLWcXeroSync\Loggers;
 
-class ACLXeroLoggers {
+class ACLXeroLogger {
 
         /**
      * Logs a message to a custom log file.

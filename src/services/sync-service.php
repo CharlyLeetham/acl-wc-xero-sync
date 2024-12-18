@@ -5,7 +5,7 @@
 
 namespace ACLWcXeroSync\Services;
 use ACLWcXeroSync\Helpers\ACLXeroHelper;
-use ACLWcXeroSync\Helpers\ACLXeroLoggers;
+use ACLWcXeroSync\Helpers\ACLXeroLogger;
 
 
 class ACLSyncService {
@@ -17,13 +17,13 @@ class ACLSyncService {
             // Step 1: Fetch WooCommerce Products
             $products = self::get_wc_products();
             if ( empty( $products ) ) {
-                ACLXeroLoggers::log_message('No products found in WooCommerce.', 'product_sync');
+                ACLXeroLogger::log_message('No products found in WooCommerce.', 'product_sync');
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
                 return;
             }
 
             echo "<p>Syncing " . count($products) . " products...</p>";
-            ACLXeroLoggers::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
+            ACLXeroLogger::log_message(count($products) . ' products fetched from WooCommerce.', 'product_sync');
 
             // Step 2: Initialize Xero Client
             $client_id = get_option( 'acl_xero_consumer_key' );
@@ -53,7 +53,7 @@ class ACLSyncService {
                     $count++;                    
                 } catch (\Exception $e) {
                     $sku = $product['sku'] ?? 'No SKU';
-                    ACLXeroLoggers::log_message( "Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
+                    ACLXeroLogger::log_message( "Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
                     echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
                 }
             }
@@ -83,7 +83,7 @@ class ACLSyncService {
                 echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
             }           
         } catch ( \Exception $e ) {
-            ACLXeroLoggers::log_message( 'Fatal error in sync process: ' . $e->getMessage(), 'product_sync' );
+            ACLXeroLogger::log_message( 'Fatal error in sync process: ' . $e->getMessage(), 'product_sync' );
             echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";            
         }
     }
@@ -98,7 +98,7 @@ class ACLSyncService {
 
     
      public static function initialize_xero_client() {
-        ACLXeroLoggers::log_message('Initializing Xero client.', 'xero_auth');
+        ACLXeroLogger::log_message('Initializing Xero client.', 'xero_auth');
     
         try {
             // Retrieve stored credentials
@@ -114,7 +114,7 @@ class ACLSyncService {
     
             // Refresh token if expired
             if (time() > $tokenExpires) {
-                ACLXeroLoggers::log_message('Access token expired. Attempting to refresh...', 'xero_auth');
+                ACLXeroLogger::log_message('Access token expired. Attempting to refresh...', 'xero_auth');
                 //$accessToken = self::refresh_access_token($refreshToken);
                 $clientId = get_option('acl_xero_consumer_key');
                 $clientSecret = get_option('acl_xero_consumer_secret');
@@ -139,9 +139,9 @@ class ACLSyncService {
                     update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
                     update_option('xero_token_expires', time() + $newAccessToken->getExpires());
     
-                    ACLXeroLoggers::log_message('Tokens refreshed successfully.', 'xero_auth');
+                    ACLXeroLogger::log_message('Tokens refreshed successfully.', 'xero_auth');
                 } catch (\Exception $e) {
-                    ACLXeroLoggers::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
+                    ACLXeroLogger::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
                     throw new \Exception("Failed to refresh the Xero access token. Please reauthorize.");
                 }                
             }
@@ -155,7 +155,7 @@ class ACLSyncService {
             } catch (\XeroPHP\Remote\Exception $e) {
                 // Handle 401 Unauthorized error gracefully
                 if (strpos($e->getMessage(), '401 Unauthorized') !== false) {
-                    ACLXeroLoggers::log_message("Unauthorized access detected: " . $e->getMessage(), 'xero_auth');
+                    ACLXeroLogger::log_message("Unauthorized access detected: " . $e->getMessage(), 'xero_auth');
                     throw new \Exception("Access token is invalid. Please reauthorize the Xero connection.");
                 }
     
@@ -163,11 +163,11 @@ class ACLSyncService {
                 throw new \Exception("Failed to verify Xero connection: " . $e->getMessage());
             }
     
-            ACLXeroLoggers::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
+            ACLXeroLogger::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
             return $xero;
     
         } catch (\Exception $e) {
-            ACLXeroLoggers::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
+            ACLXeroLogger::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
             return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
         }
     }
@@ -183,7 +183,7 @@ class ACLSyncService {
      */
     private static function process_product( $xero, $product ) {
         if ( empty( $product['sku'] ) ) {
-            ACLXeroLoggers::log_message("Product [ID: {$product['id']}] - $sku skipped: Missing SKU.", 'product_sync');
+            ACLXeroLogger::log_message("Product [ID: {$product['id']}] - $sku skipped: Missing SKU.", 'product_sync');
             echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
             return;
         }
@@ -222,13 +222,13 @@ class ACLSyncService {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                     self::csv_file( $nopricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
                 }
-                ACLXeroLoggers::log_message ( "Product SKU <strong>".$sku."</strong> exists in Xero. Xero Price: $".$xeroPrice.", WooCommerce Price: $".$wcPrice, 'product_sync' );
+                ACLXeroLogger::log_message ( "Product SKU <strong>".$sku."</strong> exists in Xero. Xero Price: $".$xeroPrice.", WooCommerce Price: $".$wcPrice, 'product_sync' );
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
-                ACLXeroLoggers::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync' );
+                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync' );
             }
         } catch ( \Exception $e ) {
-            ACLXeroLoggers::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
+            ACLXeroLogger::log_message( "Error checking product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
         }
     }
 
@@ -245,36 +245,36 @@ class ACLSyncService {
             $query = $xero->load('Accounting\\Item')
                           ->where('Code', $sku);
     
-            ACLXeroLoggers::log_message(" SKU: " . $sku, 'product_sync');
+            ACLXeroLogger::log_message(" SKU: " . $sku, 'product_sync');
             
             $existing_items = $query->execute();                                   
             return !empty($existing_items);
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);
             if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
-                ACLXeroLoggers::log_message("Token expired during SKU check for " . $sku, 'product_sync');
+                ACLXeroLogger::log_message("Token expired during SKU check for " . $sku, 'product_sync');
                 
                 try {
                     // Attempt to refresh the token
                     $xero = self::initialize_xero_client(); // This should handle token refresh
-                    ACLXeroLoggers::log_message("Attempting to refresh token for SKU check.", 'xero_auth');
+                    ACLXeroLogger::log_message("Attempting to refresh token for SKU check.", 'xero_auth');
                     
                     // Retry the query with the potentially refreshed token
                     $query = $xero->load('Accounting\\Item')
                                   ->where('Code', $sku);
                     
                     $existing_items = $query->execute();
-                    ACLXeroLoggers::log_message("Token refresh and query retry successful for SKU " . $sku, 'xero_auth');
+                    ACLXeroLogger::log_message("Token refresh and query retry successful for SKU " . $sku, 'xero_auth');
                     return !empty($existing_items);
                 } catch (\Exception $refreshException) {
                     // If refresh fails, notify user to reauthorize
-                    ACLXeroLoggers::log_message("Failed to refresh token for SKU " . $sku . ": " . $refreshException->getMessage(), 'xero_auth');
+                    ACLXeroLogger::log_message("Failed to refresh token for SKU " . $sku . ": " . $refreshException->getMessage(), 'xero_auth');
                     echo "<div class='notice notice-error'><p>Token expired and could not be refreshed. Please reauthorize to sync product SKU: <strong>{$sku}</strong>.</p></div>";
                     return false; // Return false since we couldn't check the SKU
                 }
             } else {
                 // Log and display other types of errors
-                ACLXeroLoggers::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');
+                ACLXeroLogger::log_message("Error querying Xero for SKU {$sku}: {$e->getMessage()}", 'product_sync');
                 echo "<div class='notice notice-error'><p>Error checking product SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
                 throw $e; // Re-throw to let the calling function know there was an error
             }
@@ -302,7 +302,7 @@ class ACLSyncService {
 
             return $items[0]; // Assuming there's only one item with this SKU
         } catch (\Exception $e) {
-            ACLXeroLoggers::log_message("Error fetching item [SKU: {$sku}] from Xero: {$e->getMessage()}", 'product_sync');
+            ACLXeroLogger::log_message("Error fetching item [SKU: {$sku}] from Xero: {$e->getMessage()}", 'product_sync');
             throw $e;
         }
     }
