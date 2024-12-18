@@ -1,5 +1,5 @@
 <?php
-namespace ACLWcXeroSync\Loggers;
+namespace ACLWcXeroSync\Helpers;
 
 class ACLXeroLogger {
 
