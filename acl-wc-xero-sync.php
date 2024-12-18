@@ -41,6 +41,7 @@ require_once __DIR__ . '/lib/xero-php/vendor/autoload.php';
 require_once __DIR__ . '/src/admin/product-sync-page.php';
 require_once __DIR__ . '/src/services/wc-service.php';
 require_once __DIR__ . '/src/services/sync-service.php';
+require_once __DIR__ . '/src/helpers/helpers.php';
 require_once __DIR__ . '/src/bootstrap.php';
 
 // Initialize the plugin
