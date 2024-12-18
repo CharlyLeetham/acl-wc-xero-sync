@@ -7,6 +7,10 @@ class ACLXeroLogger {
      * Logs a message to a custom log file.
      *
      * @param string $message The message to log.
+     *  'xero_auth' => 'Xero Authorisation',
+     *  'xero_connection' => 'Xero Connection for Sync',
+     *  'product_sync' => 'Product Sync',
+     * 
      */
     public static function log_message($message, $level = 'none') {
         $log_file = WP_CONTENT_DIR . '/uploads/acl-xero-sync.log';

@@ -2,6 +2,7 @@
 namespace ACLWcXeroSync\Admin;
 use ACLWcXeroSync\Services\ACLSyncService;
 use ACLWcXeroSync\Helpers\ACLXeroHelper;
+use ACLWcXeroSync\Helpers\ACLXeroLogger;
 
 class ACLProductSyncPage {
     /**
@@ -79,9 +80,9 @@ class ACLProductSyncPage {
                 if ($tenants && !empty($tenants)) {
                     // Assuming you want to use the first tenant; adjust if needed for multi-tenant support
                     $tenant_id = $tenants[0]['tenantId'];
-                    update_option('xero_tenant_id', $tenant_id);
+                    update_option( 'xero_tenant_id', $tenant_id );
                 } else {
-                    error_log('No tenants found or error fetching tenants.');
+                    ACLXeroLogger::log_message( 'No tenants found or error fetching tenants.', 'xero_auth' );
                     wp_redirect( admin_url( 'admin.php?page=acl-xero-sync-settings&auth=error' ) );
                     exit;
                 }  
@@ -113,7 +114,7 @@ class ACLProductSyncPage {
         ]);
 
         if ( is_wp_error( $response ) ) {
-            error_log( 'Xero Tenant Fetch Error: ' . $response->get_error_message() );
+            ACLXeroLogger::log_message( 'Xero Tenant Fetch Error: ' . $response->get_error_message(), 'xero_auth' );
             return null;
         }
 
@@ -143,7 +144,7 @@ class ACLProductSyncPage {
         ] );
 
         if ( is_wp_error( $response ) ) {
-            error_log( 'Xero Token Exchange Error: ' . $response->get_error_message() );
+            ACLXeroLogger::log_message( 'Xero Token Exchange Error: ' . $response->get_error_message(), 'xero_auth' );
             return false;
         }
 
@@ -153,7 +154,7 @@ class ACLProductSyncPage {
             return $body;
         }
 
-        error_log( 'Xero Token Exchange Response: ' . print_r( $body, true ) );
+        ACLXeroLogger::log_message( 'Xero Token Exchange Response: ' . print_r( $body, true ), 'xero_auth' );
         return false;
     }    
 
