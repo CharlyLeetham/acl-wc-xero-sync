@@ -6,6 +6,89 @@ use ACLWcXeroSync\Helpers\ACLXeroLoggers;
 
 class ACLXeroHelper {
 
+    /**
+     * Initializes the Xero client using Consumer Key and Secret.
+     *
+     * @param string $client_id The Consumer Key.
+     * @param string $client_secret The Consumer Secret.
+     * @return \XeroPHP\Application
+     */    
+
+    public static function initialize_xero_client() {
+        ACLXeroLogger::log_message('Initializing Xero client.', 'xero_auth');
+    
+        try {
+            // Retrieve stored credentials
+            $accessToken = get_option('xero_access_token');
+            $refreshToken = get_option('xero_refresh_token');
+            $tenantId = get_option('xero_tenant_id');
+            $tokenExpires = get_option('xero_token_expires', 0);
+    
+            // Validate credentials
+            if (!$accessToken || !$refreshToken || !$tenantId) {
+                throw new \Exception("Missing Xero credentials. Please reauthorize.");
+            }
+    
+            // Refresh token if expired
+            if (time() > $tokenExpires) {
+                ACLXeroLogger::log_message('Access token expired. Attempting to refresh...', 'xero_auth');
+                //$accessToken = self::refresh_access_token($refreshToken);
+                $clientId = get_option('acl_xero_consumer_key');
+                $clientSecret = get_option('acl_xero_consumer_secret');
+    
+                if (!$clientId || !$clientSecret) {
+                    throw new \Exception("Xero Client ID or Secret is missing. Please configure your settings.");
+                }
+    
+                $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
+                    'clientId' => $clientId,
+                    'clientSecret' => $clientSecret,
+                ]);
+    
+                try {
+                    $newAccessToken = $provider->getAccessToken('refresh_token', [
+                        'refresh_token' => $refreshToken,
+                    ]);
+    
+                    // Update stored credentials
+                    $accessToken = $newAccessToken->getToken();
+                    update_option('xero_access_token', $accessToken);
+                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
+                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
+    
+                    ACLXeroLogger::log_message('Tokens refreshed successfully.', 'xero_auth');
+                } catch (\Exception $e) {
+                    ACLXeroLogger::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Failed to refresh the Xero access token. Please reauthorize.");
+                }                
+            }
+    
+            // Initialize the Xero client
+            $xero = new \XeroPHP\Application($accessToken, $tenantId);
+    
+            // Test client connection
+            try {
+                $xero->load('Accounting\\Organisation')->execute();
+            } catch (\XeroPHP\Remote\Exception $e) {
+                // Handle 401 Unauthorized error gracefully
+                if (strpos($e->getMessage(), '401 Unauthorized') !== false) {
+                    ACLXeroLogger::log_message("Unauthorized access detected: " . $e->getMessage(), 'xero_auth');
+                    throw new \Exception("Access token is invalid. Please reauthorize the Xero connection.");
+                }
+    
+                // Re-throw other exceptions
+                throw new \Exception("Failed to verify Xero connection: " . $e->getMessage());
+            }
+    
+            ACLXeroLogger::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
+            return $xero;
+    
+        } catch (\Exception $e) {
+            ACLXeroLogger::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
+            return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
+        }
+    }    
+
 
     public static function handle_csv_download() {
         check_ajax_referer('download_csv');
