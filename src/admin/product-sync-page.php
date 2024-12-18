@@ -376,7 +376,7 @@ class ACLProductSyncPage {
                                 type: 'POST',
                                 data: { action: 'acl_update_csv_display' },
                                 success: function(csvResponse) {
-                                    $('#csv-file-list').html(csvResponse);
+                                    $('#csv-file-container').html(csvResponse);
                                     $('#csv-file-updates').html('<p>CSV list updated.</p>');
                                 },
                                 error: function() {
