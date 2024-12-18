@@ -140,6 +140,25 @@ class ACLXeroHelper {
             wp_die('File not found or not a CSV.');
         }
         exit;
+    } 
+    
+    public static function handle_delete_csv() {
+        check_ajax_referer('delete_csv');
+
+        $file = sanitize_file_name($_POST['file']);
+        $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
+        $file_path = $folder_path . '/' . $file;
+
+        if (file_exists($file_path) && pathinfo($file_path, PATHINFO_EXTENSION) === 'csv') {
+            if (unlink($file_path)) {
+                wp_send_json_success('File deleted successfully.');
+            } else {
+                wp_send_json_error('Failed to delete the file.');
+            }
+        } else {
+            wp_send_json_error('File not found or not a CSV.');
+        }
+        wp_die();
     }    
 
 

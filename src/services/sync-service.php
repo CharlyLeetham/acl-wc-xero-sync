@@ -76,9 +76,43 @@ class ACLSyncService {
                 foreach ($files as $file) {
                     $filename = basename($file);
                     echo "<li>{$filename} ";
-                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button'>Download</a></li>";
+                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button'>Download</a>";
+                    echo "<button class='button delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
+                ?>
+                <script type="text/javascript">
+                jQuery(document).ready(function($) {
+                    $('.delete-file').on('click', function(e) {
+                        e.preventDefault();
+                        var filename = $(this).data('file');
+                        if (confirm('Are you sure you want to delete ' + filename + '?')) {
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_delete_csv',
+                                    file: filename,
+                                    _ajax_nonce: '<?php echo wp_create_nonce('delete_csv'); ?>'
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        alert('File deleted successfully!');
+                                        // Optionally, you might want to refresh the list or remove the item from the DOM
+                                        $(e.target).closest('li').remove();
+                                    } else {
+                                        alert('Error: ' + response.data);
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    alert('An error occurred: ' + error);
+                                }
+                            });
+                        }
+                    });
+                });
+                </script>
+                <?php                
             } else {
                 echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
             }           
