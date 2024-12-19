@@ -22,6 +22,7 @@ class ACLXeroLogger {
         }         
 
         $log_file = $folder_path .'acl-xero-sync.log';
+        error_log ('here', 'info');
         $log_enabled = get_option('acl_xero_log_' . $level, '0') == '1'; // Default to disabled if not set
     
         if ($log_enabled) {
