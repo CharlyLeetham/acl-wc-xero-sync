@@ -447,7 +447,27 @@ class ACLXeroHelper {
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
         }        
-    }    
+    } 
+
+
+    //Display the contents of the log file
+    
+    public static function get_log_content() {
+        $upload_dir = WP_CONTENT_DIR . '/uploads/';
+        $folder_name = 'acl-wc-xero-sync';
+        $log_file = $upload_dir . $folder_name . '/acl-xero-sync.log';
+    
+        if (file_exists($log_file)) {
+            $content = file_get_contents($log_file);
+            // We'll limit the log to the last 1000 lines to prevent memory issues with large logs
+            $lines = explode("\n", $content);
+            $limited_content = implode("\n", array_slice($lines, -1000));
+            return $limited_content;
+        } else {
+            return "Log file not found.";
+        }
+    }
+        
 
 
     /**
