@@ -371,7 +371,7 @@ class ACLXeroHelper {
                                 url: '<?php echo admin_url('admin-ajax.php'); ?>',
                                 type: 'POST',
                                 data: {
-                                    action: 'acl_get_log_content',
+                                    action: 'get_log_content',
                                     file: filename,
                                     _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
                                 },
@@ -388,7 +388,7 @@ class ACLXeroHelper {
                             });
                         }
                     };
-                                        
+
                     // Display the default log content when the page loads
                     var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
                     if (defaultLog) {
