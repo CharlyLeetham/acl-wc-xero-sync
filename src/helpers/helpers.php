@@ -153,7 +153,7 @@ class ACLXeroHelper {
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
                     // Single file deletion
-                    $('.delete-file').on('click', function(e) {
+                    $('.acl-delete-file').on('click', function(e) {
                         e.preventDefault();
                         var filename = $(this).data('file');
                         if (confirm('Are you sure you want to delete ' + filename + '?')) {
