@@ -17,7 +17,9 @@ class ACLProductSyncPage {
         add_action( 'wp_ajax_acl_download_csv', [ ACLXeroHelper::class, 'handle_csv_download' ] );
         add_action( 'wp_ajax_acl_delete_csv', [ACLXeroHelper::class, 'handle_delete_csv'] ); 
         add_action( 'wp_ajax_acl_delete_csv_multiple', [ACLXeroHelper::class, 'handle_delete_csv_multiple'] );
-        add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );                       
+        add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );   
+        add_action( 'acl_xero_log_rotation_event', [ACLXeroLogger::class, 'acl_xero_log_rotation'] );
+                    
 
         // Enqueue scripts and localize AJAX URL
         add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );

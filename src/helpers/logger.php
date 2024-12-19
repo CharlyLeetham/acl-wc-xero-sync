@@ -43,5 +43,21 @@ class ACLXeroLogger {
         } else {
             //
         }
-    }  
+    } 
+    
+    public static function log_rotation_init() {
+        if (!wp_next_scheduled('acl_xero_log_rotation_event')) {
+            wp_schedule_event(time(), 'daily', 'self::acl_xero_log_rotation_event');
+        }
+    }
+      
+    public static function log_rotation() {
+        $log_file = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync/acl-xero-sync.log';
+        $max_size = 10 * 1024 * 1024; // 10MB
+        if (file_exists($log_file) && filesize($log_file) > $max_size) {
+            $old_log = $log_file . '.' . date('Y-m-d-H-i-s');
+            rename($log_file, $old_log);
+            // Here, you might compress or delete old logs
+        }
+    }    
 }
