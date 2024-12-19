@@ -368,6 +368,9 @@ class ACLXeroHelper {
                 }
                 echo "</ul>";
                 echo "<button id='delete-selected' class='button'>Delete Selected</button>";
+
+                // Add error container to display messages
+                echo '<div id="error-container" style="display: none;"></div>';                
                 ?>
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
@@ -395,7 +398,39 @@ class ACLXeroHelper {
                                 }
                             });
                         }
-                    };
+
+                        downloadFile: function(filename) {
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'GET',
+                                data: {
+                                    action: 'acl_download_file',
+                                    file: filename,
+                                    _ajax_nonce: '<?php echo wp_create_nonce('download_file'); ?>'
+                                },
+                                success: function(response) {
+                                    try {
+                                        var data = JSON.parse(response);
+                                        if (!data.success) {
+                                            $('#error-container').html('<div class="notice notice-error"><p>' + data.message + '</p></div>').show();
+                                            setTimeout(function() {
+                                                $('#error-container').hide();
+                                            }, 5000);
+                                        } else {
+                                            // Trigger actual download if needed, but typically, this would just open the download link
+                                            window.location.href = '<?php echo admin_url('admin-ajax.php'); ?>?action=acl_download_file&file=' + encodeURIComponent(filename) + '&_wpnonce=' + '<?php echo wp_create_nonce('download_file'); ?>';
+                                        }
+                                    } catch(e) {
+                                        // If JSON parsing fails, assume it's a direct file download
+                                        window.location.href = '<?php echo admin_url('admin-ajax.php'); ?>?action=acl_download_file&file=' + encodeURIComponent(filename) + '&_wpnonce=' + '<?php echo wp_create_nonce('download_file'); ?>';
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file.</p></div>').show();
+                                }
+                            });
+                        }
+                    };                    
 
                     // Display the default log content when the page loads
                     var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
