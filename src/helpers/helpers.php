@@ -354,7 +354,7 @@ class ACLXeroHelper {
                 foreach ($files as $file) {
                     $filename = basename($file);
                     echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
-                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button></li>";                    
+                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";                    
                     echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button acl-download-file'>Download</a>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
