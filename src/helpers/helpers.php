@@ -354,6 +354,7 @@ class ACLXeroHelper {
                 foreach ($files as $file) {
                     $filename = basename($file);
                     echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
+                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button></li>";                    
                     echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button acl-download-file'>Download</a>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
@@ -362,6 +363,12 @@ class ACLXeroHelper {
                 ?>
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
+
+                    // Display the default log content when the page loads
+                    var defaultLog = '<?php echo esc_js(basename($files[0])); ?>';
+                    ACLWcXeroSync.displayLog(defaultLog);
+
+
                     // Single file deletion
                     $('.acl-delete-file').on('click', function(e) {
                         e.preventDefault();
@@ -439,10 +446,42 @@ class ACLXeroHelper {
                         } else {
                             $('#select-all').prop('checked', false);
                         }
-                    });                
+                    }); 
+
+                    // Display log file content when "Display" button is clicked
+                    $('.acl-display-file').on('click', function(e) {
+                        e.preventDefault();
+                        var filename = $(this).data('file');
+                        ACLWcXeroSync.displayLog(filename);
+                    });                    
                 });
-                </script>
-                <?php 
+
+                var ACLWcXeroSync = {
+                displayLog: function(filename) {
+                    $.ajax({
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        type: 'POST',
+                        data: {
+                            action: 'acl_get_log_content',
+                            file: filename,
+                            _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                $('#log-content').text(response.data);
+                            } else {
+                                $('#log-content').text('Error loading log file: ' + response.data);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            $('#log-content').text('An error occurred while fetching the log content: ' + error);
+                        }
+                    });
+                }
+            };                
+                
+            </script>
+            <?php 
             }              
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
@@ -453,16 +492,19 @@ class ACLXeroHelper {
     //Display the contents of the log file
     
     public static function get_log_content() {
+        check_ajax_referer('get_log_content', '_ajax_nonce');
+
         $upload_dir = WP_CONTENT_DIR . '/uploads/';
         $folder_name = 'acl-wc-xero-sync';
-        $log_file = $upload_dir . $folder_name . '/acl-xero-sync.log';
+        $filename = sanitize_file_name($_POST['file']);        
+        $log_file = $upload_dir . $folder_name . '/' . $filename;
     
         if (file_exists($log_file)) {
             $content = file_get_contents($log_file);
             // We'll limit the log to the last 1000 lines to prevent memory issues with large logs
             $lines = explode("\n", $content);
             $limited_content = implode("\n", array_slice($lines, -1000));
-            return $limited_content;
+            wp_send_json_success($limited_content);
         } else {
             return "Log file not found.";
         }
