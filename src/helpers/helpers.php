@@ -155,7 +155,7 @@ class ACLXeroHelper {
                 foreach ($files as $file) {
                     $filename = basename($file);
                     echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
-                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button acl-download-file'>Download</a>";
+                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_file&file=' . urlencode($filename)), 'download_file') . "' class='button acl-download-file'>Download</a>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
@@ -258,7 +258,7 @@ class ACLXeroHelper {
         wp_die();
     }    
 
-    public static function handle_csv_download() {
+    public static function handle_file_download() {
         check_ajax_referer('download_csv');
         
         $file = $_GET['file'];
@@ -358,7 +358,7 @@ class ACLXeroHelper {
                     $filename = basename($file);
                     echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
                     echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";                    
-                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_csv&file=' . urlencode($filename)), 'download_csv') . "' class='button acl-download-file'>Download</a>";
+                    echo "<a href='" . wp_nonce_url(admin_url('admin-ajax.php?action=acl_download_file&file=' . urlencode($filename)), 'download_file') . "' class='button acl-download-file'>Download</a>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
