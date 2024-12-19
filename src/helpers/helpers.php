@@ -259,7 +259,7 @@ class ACLXeroHelper {
     }    
 
     public static function handle_file_download() {
-        check_ajax_referer('download_csv');
+        check_ajax_referer('download_file');
         
         $file = $_GET['file'];
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
