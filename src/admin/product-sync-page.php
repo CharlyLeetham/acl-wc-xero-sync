@@ -297,7 +297,7 @@ class ACLProductSyncPage {
                     </table>                
                 <div id="log-file-container">
                     <?php ACLXeroHelper::display_logs(); ?>
-                    <pre><?php echo esc_html( ACLXeroHelper::get_log_content(); ); ?></pre>
+                    <pre><?php echo esc_html( ACLXeroHelper::get_log_content() ); ?></pre>
                 </div>                                    
             </form>
 
