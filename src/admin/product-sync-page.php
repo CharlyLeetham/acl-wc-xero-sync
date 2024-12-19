@@ -295,17 +295,19 @@ class ACLProductSyncPage {
 
                 <!-- Log Files -->
                 <h2>Log Files</h2>
-                    <table class="form-table">
-
-                    </table>                
                 <div id="log-file-container">
-                    <?php ACLXeroHelper::display_logs(); ?>
-                    <pre>
-                        <div style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">    
-                            <?php echo esc_html( ACLXeroHelper::get_log_content() ); ?>
-                        </div>
-                    </pre>
-                </div>                                    
+                    <table class="form-table">
+                        <tr>
+                            <td colspan="2">
+                                <?php ACLXeroHelper::display_logs(); ?>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="log-display-area">
+                        <h2>Log Content:</h2>
+                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre>
+                    </div>
+                </div>                                   
             </form>
 
             <!-- Step 2: Sync with Xero -->
