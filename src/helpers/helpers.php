@@ -99,10 +99,10 @@ class ACLXeroHelper {
         
         if (!is_dir($folder_path)) {
             if (mkdir($folder_path, 0755, true)) {
-                self::log_message("Create directory $folder_path", 'product_sync');
+                ACLXeroLogger::log_message("Create directory $folder_path", 'product_sync');
             } else {
                 // Handle the error, e.g., log it
-                self::log_message("Failed to create directory $folder_path", 'product_sync');
+                ACLXeroLogger::log_message("Failed to create directory $folder_path", 'product_sync');
             }
         } 
 
@@ -111,7 +111,7 @@ class ACLXeroHelper {
         // File locking
         $fp = fopen($csv_file, 'a'); // Open file in append mode
         if ($fp === false) {
-            self::log_message("Failed to open $csv_file for appending", 'product_sync');
+            ACLXeroLogger::log_message("Failed to open $csv_file for appending", 'product_sync');
             return;
         }
 
@@ -119,14 +119,14 @@ class ACLXeroHelper {
             if (!file_exists($csv_file)) {
                 // Write the header
                 fwrite($fp, "SKU,Xero Price,WC Price\n");
-                self::log_message("Created $csv_file", 'product_sync');
+                ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
             }
             // Write the message
             fwrite($fp, $message . "\n");
-            self::log_message("Wrote line.", 'product_sync');            
+            ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
             flock($fp, LOCK_UN); // Release the lock
         } else {
-            self::log_message("Failed to acquire lock for $csv_file", 'product_sync');
+            ACLXeroLogger::log_message("Failed to acquire lock for $csv_file", 'product_sync');
         }
         fclose($fp);
     } 
