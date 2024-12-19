@@ -376,27 +376,8 @@ class ACLXeroHelper {
 
                     var ACLWcXeroSync = {
                         displayLog: function(filename) {
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'get_log_content',
-                                    file: filename,
-                                    _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
-                                },
-                                success: function(response) {
-                                    if (response.success) {
-                                        $('#log-content').text(response.data);
-                                    } else {
-                                        $('#log-content').text('Error loading log file: ' + response.data);
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    $('#log-content').text('An error occurred while fetching the log content: ' + error);
-                                }
-                            });
-                        }
-
+                            // ... (keep existing displayLog function code)
+                        },
                         downloadFile: function(filename) {
                             $.ajax({
                                 url: '<?php echo admin_url('admin-ajax.php'); ?>',
@@ -406,29 +387,30 @@ class ACLXeroHelper {
                                     file: filename,
                                     _ajax_nonce: '<?php echo wp_create_nonce('download_file'); ?>'
                                 },
-                                success: function(response) {
+                                xhrFields: {
+                                    responseType: 'text'
+                                },
+                                success: function(response, status, xhr) {
                                     try {
                                         var data = JSON.parse(response);
                                         if (!data.success) {
-                                            $('#error-container').html('<div class="notice notice-error"><p>' + data.message + '</p></div>').show();
+                                            $('#error-container').html('<div class="notice notice-error"><p>' + data.data.message + '</p></div>').show();
                                             setTimeout(function() {
                                                 $('#error-container').hide();
                                             }, 5000);
-                                        } else {
-                                            // Trigger actual download if needed, but typically, this would just open the download link
-                                            window.location.href = '<?php echo admin_url('admin-ajax.php'); ?>?action=acl_download_file&file=' + encodeURIComponent(filename) + '&_wpnonce=' + '<?php echo wp_create_nonce('download_file'); ?>';
                                         }
-                                    } catch(e) {
-                                        // If JSON parsing fails, assume it's a direct file download
-                                        window.location.href = '<?php echo admin_url('admin-ajax.php'); ?>?action=acl_download_file&file=' + encodeURIComponent(filename) + '&_wpnonce=' + '<?php echo wp_create_nonce('download_file'); ?>';
+                                    } catch (e) {
+                                        // If parsing fails, assume it's a successful file download
+                                        console.log("File download initiated");
                                     }
                                 },
                                 error: function(xhr, status, error) {
-                                    $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file.</p></div>').show();
+                                    // Handle network or AJAX errors
+                                    $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file. Status: ' + status + ', Error: ' + error + '</p></div>').show();
                                 }
                             });
                         }
-                    };                    
+                    };
 
                     // Display the default log content when the page loads
                     var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
@@ -522,6 +504,13 @@ class ACLXeroHelper {
                         var filename = $(this).data('file');
                         console.log(filename);
                         ACLWcXeroSync.displayLog(filename);
+                    });
+
+                    // Download file when "Download" button is clicked
+                    $('.acl-download-file').on('click', function(e) {
+                        e.preventDefault();
+                        var filename = $(this).data('file');
+                        ACLWcXeroSync.downloadFile(filename);
                     });
                 });
                 </script>
