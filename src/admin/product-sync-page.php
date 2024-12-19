@@ -295,9 +295,6 @@ class ACLProductSyncPage {
                     <table class="form-table">
 
                     </table>                
-                <p class="submit">
-                    <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
-                </p> 
                 <div id="log-file-container">
                     <?php //ACLXeroHelper::display_csv(); ?>
                 </div>                                    
