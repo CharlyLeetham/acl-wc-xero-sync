@@ -259,7 +259,11 @@ class ACLXeroHelper {
     }    
 
     public static function handle_file_download() {
-        check_ajax_referer('download_file');
+
+        if (!check_ajax_referer('download_csv', false, false)) {
+            wp_send_json_error(array('message' => 'Nonce verification failed. Please try again or refresh the page.'));
+            exit;
+        }
         
         $file = $_GET['file'];
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
