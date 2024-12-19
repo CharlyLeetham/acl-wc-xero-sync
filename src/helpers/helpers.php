@@ -341,7 +341,7 @@ class ACLXeroHelper {
     // Display the log files
 
     public static function display_logs() {   
-        // Display list of CSV files in specified directory
+        // Display list of Log files in specified directory
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.log');
@@ -350,7 +350,7 @@ class ACLXeroHelper {
             usort($files, function($a, $b) {
                 return filemtime($b) - filemtime($a);
             });
-
+    
             if ($files === false || empty($files)) {
                 // No files found or glob failed
                 echo "<p>There are no log files to display.</p>";
@@ -366,17 +366,36 @@ class ACLXeroHelper {
                 }
                 echo "</ul>";
                 echo "<button id='delete-selected' class='button'>Delete Selected</button>";
-
+                
                 // Add error container to display messages
-                echo '<div id="error-container" style="display: none;"></div>';                
+                echo '<div id="error-container" style="display: none;"></div>';
+                
+                // Add area to display log content
+                echo '<div id="log-display-area"><pre id="log-content"></pre></div>';
                 ?>
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
-
-
                     var ACLWcXeroSync = {
                         displayLog: function(filename) {
-                            // ... (keep existing displayLog function code)
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_get_log_content',
+                                    file: filename,
+                                    _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        $('#log-content').text(response.data);
+                                    } else {
+                                        $('#log-content').text('Error loading log file: ' + response.data);
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    $('#log-content').text('An error occurred while fetching the log content: ' + error);
+                                }
+                            });
                         },
                         downloadFile: function(filename) {
                             $.ajax({
@@ -400,25 +419,24 @@ class ACLXeroHelper {
                                             }, 5000);
                                         }
                                     } catch (e) {
-                                        // If parsing fails, assume it's a successful file download
+                                        // If JSON parsing fails, we assume it's a file download
                                         console.log("File download initiated");
                                     }
                                 },
                                 error: function(xhr, status, error) {
-                                    // Handle network or AJAX errors
                                     $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file. Status: ' + status + ', Error: ' + error + '</p></div>').show();
                                 }
                             });
                         }
                     };
-
+    
                     // Display the default log content when the page loads
                     var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
                     if (defaultLog) {
                         console.log(defaultLog);
                         ACLWcXeroSync.displayLog(defaultLog);
                     }
-
+    
                     // Single file deletion
                     $('.acl-delete-file').on('click', function(e) {
                         e.preventDefault();
@@ -446,7 +464,7 @@ class ACLXeroHelper {
                             });
                         }
                     });
-
+    
                     // Multiple file deletion
                     $('#delete-selected').on('click', function(e) {
                         e.preventDefault();
@@ -458,7 +476,7 @@ class ACLXeroHelper {
                             alert('Please select at least one file to delete.');
                             return;
                         }
-
+    
                         if (confirm('Are you sure you want to delete these ' + selectedFiles.length + ' files?')) {
                             $.ajax({
                                 url: '<?php echo admin_url('admin-ajax.php'); ?>',
@@ -483,12 +501,12 @@ class ACLXeroHelper {
                             });
                         }
                     });
-
+    
                     // Select All checkbox functionality
                     $('#select-all').on('click', function() {
                         $('input[name="delete_files[]"]').prop('checked', this.checked);
                     });
-
+    
                     // If all checkboxes are checked or unchecked, check or uncheck the "Select All" checkbox
                     $('input[name="delete_files[]"]').on('change', function() {
                         if ($('input[name="delete_files[]"]').length === $('input[name="delete_files[]"]:checked').length) {
@@ -497,7 +515,7 @@ class ACLXeroHelper {
                             $('#select-all').prop('checked', false);
                         }
                     });
-
+    
                     // Display log file content when "Display" button is clicked
                     $('.acl-display-file').on('click', function(e) {
                         e.preventDefault();
@@ -505,7 +523,7 @@ class ACLXeroHelper {
                         console.log(filename);
                         ACLWcXeroSync.displayLog(filename);
                     });
-
+    
                     // Download file when "Download" button is clicked
                     $('.acl-download-file').on('click', function(e) {
                         e.preventDefault();
@@ -519,7 +537,7 @@ class ACLXeroHelper {
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
         }        
-    } 
+    }
 
 
     //Display the contents of the log file
