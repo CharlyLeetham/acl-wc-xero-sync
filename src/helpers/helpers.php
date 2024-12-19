@@ -137,7 +137,7 @@ class ACLXeroHelper {
             echo "<h3>CSV Files:</h3>";
             if ($files === false || empty($files)) {
                 // No files found or glob failed
-                echo "<div class='notice notice-info'><p>There are no sync files to display.</p></div>";
+                echo "<p>There are no sync files to display.</p>";
             } else {                
                 echo "<ul>";
                 echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";            
