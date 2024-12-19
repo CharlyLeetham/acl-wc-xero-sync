@@ -29,7 +29,7 @@ class ACLXeroLogger {
             error_log("Log directory already exists at $folder_path");
         }         
     
-        $log_file = $folder_path . 'acl-xero-sync.log';
+        $log_file = $folder_path . '/acl-xero-sync.log';
         $log_enabled = get_option('acl_xero_log_' . $level, '0') == '1'; // Default to disabled if not set
     
         // Log whether logging is enabled for this level
