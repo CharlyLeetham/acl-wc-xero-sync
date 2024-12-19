@@ -261,8 +261,8 @@ class ACLXeroHelper {
     public static function handle_file_download() {
 
         if (!check_ajax_referer('download_csv', false, false)) {
-            wp_send_json_error(array('message' => 'Nonce verification failed. Please try again or refresh the page.'));
-            exit;
+            echo '<div class="notice notice-error"><p>Nonce verification failed. Please try again or refresh the page.</p></div>';
+            wp_die();
         }
         
         $file = $_GET['file'];
