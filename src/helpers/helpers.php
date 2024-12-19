@@ -363,12 +363,12 @@ class ACLXeroHelper {
                 ?>
                 <script type="text/javascript">
                 jQuery(document).ready(function($) {
-
                     // Display the default log content when the page loads
-                    var defaultLog = '<?php echo esc_js(basename($files[0])); ?>';
-                    console.log (defaultLog);
-                    ACLWcXeroSync.displayLog(defaultLog);
-
+                    var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
+                    if (defaultLog) {
+                        console.log(defaultLog);
+                        ACLWcXeroSync.displayLog(defaultLog);
+                    }
 
                     // Single file deletion
                     $('.acl-delete-file').on('click', function(e) {
@@ -447,42 +447,41 @@ class ACLXeroHelper {
                         } else {
                             $('#select-all').prop('checked', false);
                         }
-                    }); 
+                    });
 
                     // Display log file content when "Display" button is clicked
                     $('.acl-display-file').on('click', function(e) {
                         e.preventDefault();
                         var filename = $(this).data('file');
+                        console.log(filename);
                         ACLWcXeroSync.displayLog(filename);
-                    });                    
-                });
-
-                var ACLWcXeroSync = {
-                displayLog: function(filename) {
-                    console.log (filename);
-                    $.ajax({
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                        type: 'POST',
-                        data: {
-                            action: 'get_log_content',
-                            file: filename,
-                            _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                $('#log-content').text(response.data);
-                            } else {
-                                $('#log-content').text('Error loading log file: ' + response.data);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            $('#log-content').text('An error occurred while fetching the log content: ' + error);
-                        }
                     });
-                }
-            };                
-                
-            </script>
+
+                    var ACLWcXeroSync = {
+                        displayLog: function(filename) {
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_get_log_content',
+                                    file: filename,
+                                    _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        $('#log-content').text(response.data);
+                                    } else {
+                                        $('#log-content').text('Error loading log file: ' + response.data);
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    $('#log-content').text('An error occurred while fetching the log content: ' + error);
+                                }
+                            });
+                        }
+                    };
+                });
+                </script>
             <?php 
             }              
         } else {
