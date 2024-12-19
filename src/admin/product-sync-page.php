@@ -371,8 +371,10 @@ class ACLProductSyncPage {
                         },                        
                         success: function(response) {                           
                             $('#sync-results').html(response);
-                        // Update CSV file display after sync
-                        $.ajax({
+
+                        // Check specifically for the success message from the PHP code
+                        if (response.indexOf('Products Successfully Sync\'d') !== -1) {
+                            $.ajax({
                                 url: '<?php echo admin_url('admin-ajax.php'); ?>',
                                 type: 'POST',
                                 data: { action: 'acl_update_csv_display' },
@@ -383,8 +385,8 @@ class ACLProductSyncPage {
                                 error: function() {
                                     $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
                                 }
-                            });                            
-                        },
+                            });
+                        }                            
                         error: function(xhr, status, error) {
                             var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
                             $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
