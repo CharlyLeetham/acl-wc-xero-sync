@@ -265,13 +265,16 @@ class ACLXeroHelper {
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         $file_path = $folder_path . '/' . $file;
     
-        if (file_exists($file_path) && pathinfo($file_path, PATHINFO_EXTENSION) === 'csv') {
-            header('Content-Type: text/csv');
+        if (file_exists($file_path)) {
+            $file_extension = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+            $content_type = ($file_extension === 'csv') ? 'text/csv' : 'text/plain'; // Set content type based on file extension
+    
+            header('Content-Type: ' . $content_type);
             header('Content-Disposition: attachment; filename="' . $file . '"');
             header('Content-Length: ' . filesize($file_path));
             readfile($file_path);
         } else {
-            wp_die('File not found or not a CSV.');
+            wp_die('File not found.');
         }
         exit;
     } 
