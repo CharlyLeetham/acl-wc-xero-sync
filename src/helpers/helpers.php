@@ -417,6 +417,7 @@ class ACLXeroHelper {
                                     try {
                                         var data = JSON.parse(response);
                                         if (!data.success) {
+                                            console.log ("Success");
                                             $('#error-container').html('<div class="notice notice-error"><p>' + data.data.message + '</p></div>').show();
                                             setTimeout(function() {
                                                 $('#error-container').hide();
