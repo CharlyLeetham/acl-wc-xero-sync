@@ -414,6 +414,7 @@ class ACLXeroHelper {
                                     responseType: 'text'
                                 },
                                 success: function(response, status, xhr) {
+                                    console.log ("Response "+response);
                                     try {
                                         var data = JSON.parse(response);
                                         if (!data.success) {
