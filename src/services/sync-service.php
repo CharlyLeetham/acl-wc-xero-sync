@@ -43,13 +43,21 @@ class ACLSyncService {
             if (!empty($xero)) {
                 echo "<div class='notice notice-info'><p>Xero client initialized successfully with Tenant ID: ".get_option('xero_tenant_id')."</p></div>"; // Echo the captured output
                 echo "<div class='notice notice-info'><p>Now syncing products</p></div>"; // Echo the captured output
-            }            
+            } 
+            
+            //Setup the csv files
+
+            $nopricechange_csv = "nopricechange"; // Captures synd'd products that have no changes
+            $pricechange_csv = "pricechange";  // Captures sync'd products that have changes.
+            $date = current_time( "Y-m-d-H-i-s" ); // Format: Year-Month-Day-hour-minutes-seconds, adjust as needed
+            $nopricechange_csv = $nopricechange_csv . "_" . $date . ".csv"; // Assuming CSV file
+            $pricechange_csv = $pricechange_csv . "_" . $date . ".csv"; // Assuming CSV file              
 
             // Step 3: Process Each Product
             $count = 0;
             foreach ( $products as $product ) {
                 try {
-                    self::process_product( $xero, $product );
+                    self::process_product( $xero, $product, $pricechange_csv, $nopricechange_csv );
                     $count++;                    
                 } catch (\Exception $e) {
                     $sku = $product['sku'] ?? 'No SKU';
@@ -72,7 +80,7 @@ class ACLSyncService {
      * @param \XeroPHP\Application $xero
      * @param array $product
      */
-    private static function process_product( $xero, $product ) {
+    private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv ) {
         if ( empty( $product['sku'] ) ) {
             ACLXeroLogger::log_message("Product [ID: {$product['id']}] - $sku skipped: Missing SKU.", 'product_sync');
             echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] - {$sku} skipped: Missing SKU.</p></div>";
@@ -87,12 +95,7 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             /* Set up the csv files to export the results. */
-
-            $nopricechange_csv = "nopricechange"; // Your base filename without extension
-            $pricechange_csv = "pricechange";
-            $date = current_time( "Y-m-d-H-i-s" ); // Format: Year-Month-Day-hour-minutes-seconds, adjust as needed
-            $nopricechange_csv = $nopricechange_csv . "_" . $date . ".csv"; // Assuming CSV file
-            $pricechange_csv = $pricechange_csv . "_" . $date . ".csv"; // Assuming CSV file            
+        
 
             if ( $exists ) {
 
