@@ -108,20 +108,30 @@ class ACLXeroHelper {
 
         $csv_file = $folder_path .'/'. $filename;
 
-        if (!file_exists($csv_file)) {
-            // Write the first line if the file does not exist
-            $initial_content = "SKU,Xero Price,WC Price\n"; // Define what should be the first line
-            if (file_put_contents($csv_file, $initial_content) === false) {
-                self::log_message("Failed to create $csv_file", 'product_sync');
-                return; // Exit the function if we couldn't create the file
-            }
+        // File locking
+        $fp = fopen($csv_file, 'a'); // Open file in append mode
+        if ($fp === false) {
+            self::log_message("Failed to open $csv_file for appending", 'product_sync');
+            return;
         }
 
-        if (file_put_contents( $csv_file, $message . "\n", FILE_APPEND ) === false) {
-            // Handle error, perhaps log it or throw an exception
-            self::log_message( "Failed to write to $csv_file", 'product_sync' );
+        if (flock($fp, LOCK_EX)) { // Attempt to acquire an exclusive lock
+            if (!file_exists($csv_file)) {
+                // Write the header
+                fwrite($fp, "SKU,Xero Price,WC Price\n");
+                self::log_message("Created $csv_file", 'product_sync');
+            }
+            // Write the message
+            fwrite($fp, $message . "\n");
+            flock($fp, LOCK_UN); // Release the lock
+        } else {
+            self::log_message("Failed to acquire lock for $csv_file", 'product_sync');
         }
+        fclose($fp);
     } 
+
+
+    
 
     public static function display_csv() {   
         // Display list of CSV files in specified directory
