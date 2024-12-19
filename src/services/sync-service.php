@@ -95,7 +95,8 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             /* Set up the csv files to export the results. */
-        
+
+          
 
             if ( $exists ) {
 

@@ -366,6 +366,7 @@ class ACLXeroHelper {
 
                     // Display the default log content when the page loads
                     var defaultLog = '<?php echo esc_js(basename($files[0])); ?>';
+                    console.log (defaultLog);
                     ACLWcXeroSync.displayLog(defaultLog);
 
 
@@ -458,11 +459,12 @@ class ACLXeroHelper {
 
                 var ACLWcXeroSync = {
                 displayLog: function(filename) {
+                    console.log (filename);
                     $.ajax({
                         url: '<?php echo admin_url('admin-ajax.php'); ?>',
                         type: 'POST',
                         data: {
-                            action: 'acl_get_log_content',
+                            action: 'get_log_content',
                             file: filename,
                             _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
                         },
