@@ -34,15 +34,14 @@ class ACLXeroLogger {
     
         // Log whether logging is enabled for this level
         if ($log_enabled) {
-            error_log("Logging is enabled for level $level");
             $timestamp = current_time('Y-m-d H:i:s');
             if (file_put_contents($log_file, "[{$timestamp}] [{$level}] {$message}\n", FILE_APPEND) !== false) {
-                error_log("Successfully logged message: $message to $log_file");
+                //
             } else {
-                error_log("Failed to log message: $message to $log_file");
+                //
             }
         } else {
-            error_log("Logging is disabled for level $level");
+            //
         }
     }  
 }
