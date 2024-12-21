@@ -352,7 +352,7 @@ class ACLXeroHelper {
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.'.$filetype);
-            ACLXeroLogger::log_message( "files:".var_export( $files, true ), 'xero_logging' );
+            ACLXeroLogger::log_message( "files:".$files, 'xero_logging' );
 
             if ($files !== false) {
                 usort($files, function($a, $b) {
