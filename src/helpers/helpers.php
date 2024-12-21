@@ -350,7 +350,6 @@ class ACLXeroHelper {
 
     public static function display_files($filetype) {  
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
-        ACLXeroLogger::log_message( "here here here", 'xero_settings' );
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.'.$filetype);
             ACLXeroLogger::log_message( "files:".var_export( $files, true ), 'xero_settings' );
@@ -382,7 +381,7 @@ class ACLXeroHelper {
 
                 // Set this variable for use outside this function's scope
                 $default_file = basename($files[0]);
-                ACLXeroLogger::log_message( "Default File {$default_file}", 'xero_settings' );
+                ACLXeroLogger::log_message( "Default File {$default_file}", 'xero_connections' );
  
                 // You can either echo this directly or return it for use elsewhere
                 return $default_file;
