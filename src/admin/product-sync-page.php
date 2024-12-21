@@ -357,6 +357,7 @@ class ACLProductSyncPage {
                                 console.log ("Response "+(response.data.success));                                
                                 try {
                                     if (!data.success) {
+                                        console.log ("Response part deux: "+(response.data.message));
                                         $('#error-container').html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>').show();
                                         setTimeout(function() {
                                             $('#error-container').hide();
