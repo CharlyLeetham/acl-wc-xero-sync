@@ -320,7 +320,8 @@ class ACLProductSyncPage {
                         <tr>
                             <td colspan="2">
                                 <?php 
-                                add_action('admin_enqueue_scripts', function() use ('log') {
+                                $filetype = 'log';
+                                add_action('admin_enqueue_scripts', function() use ($filetype) {
                                     enqueue_acl_wc_xero_sync_scripts($'log');
                                 });                                
                                 $defaultLog = ACLXeroHelper::display_files('log'); 
