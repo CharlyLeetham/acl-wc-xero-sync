@@ -23,7 +23,7 @@ class ACLProductSyncPage {
                     
 
         // Enqueue scripts and localize AJAX URL
-        //add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
+        add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
     }       
 
     /**
@@ -31,8 +31,12 @@ class ACLProductSyncPage {
      */
     public static function enqueue_scripts($file_type) {
         // Enqueue jQuery if you need a specific version or for some other reason
-        // wp_enqueue_script('jquery');
-    
+        wp_enqueue_script('jquery');      
+        // If you need an AJAX object for another purpose, you could do it here, but it's not necessary with the above setup
+        wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+    } 
+
+    public static function acl_xero_diplay_files($file_type) {
         // Enqueue your custom script
         wp_enqueue_script('acl-wc-xero-sync', plugins_url('src/assets/js/acl-wc-xero-sync.js', __FILE__), array('jquery'), null, true);
     
@@ -48,10 +52,7 @@ class ACLProductSyncPage {
             'nonce_delete_csv_multiple' => wp_create_nonce('delete_csv_multiple'),
             'defaultLog' => $defaultLog ? $defaultLog : null,
         ));
-        
-        // If you need an AJAX object for another purpose, you could do it here, but it's not necessary with the above setup
-        // wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
-    } 
+    }    
 
     /**
      * Adds ACL Xero Sync and its submenus under WooCommerce.
@@ -322,7 +323,7 @@ class ACLProductSyncPage {
                                 <?php 
                                 $filetype = 'log';
                                 add_action('admin_enqueue_scripts', function() use ($filetype) {
-                                    enqueue_scripts($filetype);
+                                    ACLProductSyncPage::acl_xero_display_files($filetype);
                                 });                                
                                 $defaultLog = ACLXeroHelper::display_files($filetype); 
                                 if ($defaultLog) {
