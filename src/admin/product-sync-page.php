@@ -371,7 +371,7 @@ class ACLProductSyncPage {
                 });
             });            
             </script>
-
+            
             <!-- Step 2: Sync with Xero -->
             <h2>Step 2: Sync with Xero</h2>
             <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
