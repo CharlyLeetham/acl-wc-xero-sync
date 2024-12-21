@@ -328,7 +328,7 @@ class ACLProductSyncPage {
                                 <script>
                                     var defaultLog = "<?php echo esc_js($defaultLog); ?>";
                                 </script>
-                                <script src="<?php echo $plugin_url; ?>src/admin/src/assets/js/wc-xero-sync.js"></script>
+                                <script src="<?php echo plugins_url('src/admin/src/assets/js/wc-xero-sync.js', plugin_dir_path(__FILE__)); ?>"></script>
                             </td>
                         </tr>
                     </table>
