@@ -10,6 +10,7 @@ class ACLXeroLogger {
      *  'xero_auth' => 'Xero Authorisation',
      *  'xero_connection' => 'Xero Connection for Sync',
      *  'product_sync' => 'Product Sync',
+     *  'xero_logging' => 'Xero Logging',
      * 
      */
     public static function log_message($message, $level = 'none') {
