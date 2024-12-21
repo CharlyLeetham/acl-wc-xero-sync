@@ -401,8 +401,9 @@ class ACLXeroHelper {
             $content = file_get_contents($log_file);
             // We'll limit the log to the last 1000 lines to prevent memory issues with large logs
             $lines = explode("\n", $content);
-            $limited_content = implode("\n", array_slice($lines, -1000));
-            wp_send_json_success($limited_content);
+            $limited_lines = array_slice($lines, -1000); // Get last 1000 lines
+            $reversed_content = implode("\n", array_reverse($limited_lines));
+            wp_send_json_success($reversed_content);
         } else {
             return "Log file not found.";
         }
