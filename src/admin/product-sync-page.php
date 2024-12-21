@@ -38,7 +38,7 @@ class ACLProductSyncPage {
 
     public static function acl_xero_diplay_files($file_type) {
         // Enqueue your custom script
-        wp_enqueue_script('acl-wc-xero-sync', plugins_url('src/assets/js/acl-wc-xero-sync.js', __FILE__), array('jquery'), null, true);
+        wp_enqueue_script('acl-wc-xero-sync', plugins_url('src/assets/js/wc-xero-sync.js', __FILE__), array('jquery'), null, true);
     
         // Get the default log file based on file type
         $defaultLog = ACLXeroHelper::display_files($file_type);
