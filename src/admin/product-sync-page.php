@@ -322,7 +322,7 @@ class ACLProductSyncPage {
                                 <?php 
                                 $filetype = 'log';
                                 add_action('admin_enqueue_scripts', function() use ($filetype) {
-                                    enqueue_acl_wc_xero_sync_scripts($filetype);
+                                    enqueue_scripts($filetype);
                                 });                                
                                 $defaultLog = ACLXeroHelper::display_files($filetype); 
                                 if ($defaultLog) {
