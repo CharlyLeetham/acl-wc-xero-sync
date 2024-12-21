@@ -301,7 +301,7 @@ class ACLProductSyncPage {
                         <tr>
                             <td colspan="2">
                                 <?php 
-                                ACLXeroHelper::display_logs(); 
+                                $defaultLog = ACLXeroHelper::display_logs(); 
                                 if ($defaultLog) {
                                     // Echoing the script tag here ensures it's outside of the function scope
                                     ACLXeroLogger::log_message( "Calling defaultlog", 'product_sync' );
