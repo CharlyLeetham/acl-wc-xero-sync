@@ -11,7 +11,7 @@ jQuery(document).ready(function($) {
                     _ajax_nonce: aclWcXeroSyncAjax.nonce_get_log_content
                 },
                 success: function(response) {
-                    console.log(response);
+                    //console.log(response);
                     console.log('Response success '.response.success);
                     if (response.success) {
                         console.log("Updating #log-content with:", response.data);
@@ -140,7 +140,7 @@ jQuery(document).ready(function($) {
     });
 
     $('.acl-display-file').on('click', function(e) {
-        console.log (acl-display-file);
+        console.log ('display file' acl-display-file);
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.displayLog(filename);
