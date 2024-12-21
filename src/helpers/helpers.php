@@ -88,6 +88,8 @@ class ACLXeroHelper {
             return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
         }
     }
+
+    /* CSV files for Product Sync */
     
     public static function csv_file($filename, $message) {
 
@@ -129,10 +131,7 @@ class ACLXeroHelper {
             ACLXeroLogger::log_message("Failed to acquire lock for $csv_file", 'product_sync');
         }
         fclose($fp);
-    } 
-
-
-    
+    }  
 
     public static function display_csv() {   
         // Display list of CSV files in specified directory
@@ -258,6 +257,9 @@ class ACLXeroHelper {
         wp_die();
     }    
 
+
+    /* Handle file download functions */
+
     public static function handle_file_download() {
 
         ACLXeroLogger::log_message("Handle file download", 'product_sync');
@@ -286,6 +288,8 @@ class ACLXeroHelper {
         exit;
     } 
     
+    /* Delete CSV Function */
+
     public static function handle_delete_csv() {
         check_ajax_referer('delete_csv');
 
@@ -344,10 +348,10 @@ class ACLXeroHelper {
     
     // Display the log files
 
-    public static function display_logs() {  
+    public static function display_files($filetype) {  
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         if (is_dir($folder_path)) {
-            $files = glob($folder_path . '/*.log');
+            $files = glob($folder_path . '/*.'.$filetype);
     
             if ($files !== false) {
                 usort($files, function($a, $b) {
@@ -375,18 +379,17 @@ class ACLXeroHelper {
                 echo '<div id="log-display-area"><h2>Log Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
 
                 // Set this variable for use outside this function's scope
-                $default_log_file = basename($files[0]);
-                ACLXeroLogger::log_message( "Download File {$default_log_file}", 'product_sync' );
+                $default_file = basename($files[0]);
+                ACLXeroLogger::log_message( "Default File {$default_file}", 'xero_settings' );
  
                 // You can either echo this directly or return it for use elsewhere
-                return $default_log_file;
+                return $default_file;
                 
             }
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
         }
     }
-
 
     //Display the contents of the log file
     
