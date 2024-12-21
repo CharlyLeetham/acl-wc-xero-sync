@@ -12,6 +12,7 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     console.log(response);
+                    console.log('Response success '.response.success);
                     if (response.success) {
                         console.log("Updating #log-content with:", response.data);
                         $('#log-content').text(response.data);
