@@ -321,9 +321,9 @@ class ACLProductSyncPage {
                             <td colspan="2">
                                 <?php 
                                 $filetype = 'log';
-                                add_action('admin_enqueue_scripts', function() use ($filetype) {
-                                    enqueue_scripts($filetype);
-                                });                                
+                                //add_action('admin_enqueue_scripts', function() use ($filetype) {
+                                    //enqueue_scripts($filetype);
+                                //});                                
                                 $defaultLog = ACLXeroHelper::display_files($filetype); 
                                 if ($defaultLog) {
                                     // Echoing the script tag here ensures it's outside of the function scope
