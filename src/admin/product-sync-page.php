@@ -354,6 +354,7 @@ class ACLProductSyncPage {
                             },
                             success: function(response, status, xhr) {
                                 console.log ("Response "+(response.data.message));
+                                console.log ("Response "+(response.data.success));                                
                                 try {
                                     if (!data.success) {
                                         $('#error-container').html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>').show();
@@ -380,20 +381,83 @@ class ACLProductSyncPage {
                 }
 
                 // Event handlers
+                // Single file deletion
                 $('.acl-delete-file').on('click', function(e) {
-                    // ... (keep the event handlers as they were in the original but remove the HTML)
+                    e.preventDefault();
+                    var filename = $(this).data('file');
+                    if (confirm('Are you sure you want to delete ' + filename + '?')) {
+                        $.ajax({
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                            type: 'POST',
+                            data: {
+                                action: 'acl_delete_csv',
+                                file: filename,
+                                _ajax_nonce: '<?php echo wp_create_nonce('delete_csv'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    alert('File deleted successfully!');
+                                    $(e.target).closest('li').remove();
+                                } else {
+                                    alert('Error: ' + response.data);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                alert('An error occurred: ' + error);
+                            }
+                        });
+                    }
                 });
 
+                // Multiple file deletion
                 $('#delete-selected').on('click', function(e) {
-                    // ... 
-                });
+                    e.preventDefault();
+                    var selectedFiles = $('input[name="delete_files[]"]:checked').map(function() {
+                        return $(this).val();
+                    }).get();
+                    
+                    if (selectedFiles.length === 0) {
+                        alert('Please select at least one file to delete.');
+                        return;
+                    }
 
+                    if (confirm('Are you sure you want to delete these ' + selectedFiles.length + ' files?')) {
+                        $.ajax({
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                            type: 'POST',
+                            data: {
+                                action: 'acl_delete_csv_multiple',
+                                files: selectedFiles,
+                                _ajax_nonce: '<?php echo wp_create_nonce('delete_csv_multiple'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    alert('Selected files deleted successfully!');
+                                    // Remove all checked items
+                                    $('input[name="delete_files[]"]:checked').closest('li').remove();
+                                } else {
+                                    alert('Error: ' + response.data);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                alert('An error occurred: ' + error);
+                            }
+                        });
+                    }
+                });
+    
+                // Select All checkbox functionality
                 $('#select-all').on('click', function() {
-                    // ...
+                    $('input[name="delete_files[]"]').prop('checked', this.checked);
                 });
 
+                // If all checkboxes are checked or unchecked, check or uncheck the "Select All" checkbox
                 $('input[name="delete_files[]"]').on('change', function() {
-                    // ...
+                    if ($('input[name="delete_files[]"]').length === $('input[name="delete_files[]"]:checked').length) {
+                        $('#select-all').prop('checked', true);
+                    } else {
+                        $('#select-all').prop('checked', false);
+                    }
                 });
 
                 $('.acl-display-file').on('click', function(e) {
