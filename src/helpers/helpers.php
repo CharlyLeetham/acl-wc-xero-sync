@@ -368,7 +368,7 @@ class ACLXeroHelper {
                 
                 foreach ($files as $file) {
                     $filename = basename($file);
-                    echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} 999";
+                    echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename}";
                     echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";
                     echo "<button class='button acl-download-file' data-file='" . esc_attr($filename) . "'>Download</button>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
