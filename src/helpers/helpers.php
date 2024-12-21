@@ -262,7 +262,7 @@ class ACLXeroHelper {
 
         ACLXeroLogger::log_message("Handle file download", 'product_sync');
 
-        if (!check_ajax_referer('download_csv', false, false)) {
+        if (!check_ajax_referer('download_file', false, false)) {
             ACLXeroLogger::log_message("Download Nonce failed", 'product_sync');
             wp_send_json_error(array('message' => 'Nonce verification failed. Please try again or refresh the page.'));
             exit;
