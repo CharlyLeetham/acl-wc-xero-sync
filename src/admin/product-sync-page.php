@@ -36,7 +36,7 @@ class ACLProductSyncPage {
         wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
     } 
 
-    public static function acl_xero_diplay_files($file_type) {
+    public static function acl_xero_display_files($file_type) {
         // Enqueue your custom script
         wp_enqueue_script('acl-wc-xero-sync', plugins_url('src/assets/js/wc-xero-sync.js', __FILE__), array('jquery'), null, true);
     
