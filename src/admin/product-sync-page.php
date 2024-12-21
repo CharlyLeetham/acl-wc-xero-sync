@@ -300,7 +300,13 @@ class ACLProductSyncPage {
                     <table class="form-table">
                         <tr>
                             <td colspan="2">
-                                <?php ACLXeroHelper::display_logs(); ?>
+                                <?php 
+                                ACLXeroHelper::display_logs(); 
+                                if ($defaultLog) {
+                                    // Echoing the script tag here ensures it's outside of the function scope
+                                    echo '<script>var defaultLog = "' . esc_js($defaultLog) . '";</script>';
+                                }                                
+                                ?>
                             </td>
                         </tr>
                     </table>
