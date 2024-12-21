@@ -25,6 +25,7 @@ class ACLProductSyncPage {
         // Enqueue scripts and localize AJAX URL
         add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
         add_action( 'admin_enqueue_scripts', [__CLASS__, 'acl_xero_display_files'] );
+wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), filemtime(plugin_dir_path(__FILE__) . 'src/assets/js/wc-xero-sync.js'), true);        
     }       
 
     /**
@@ -39,8 +40,7 @@ class ACLProductSyncPage {
 
     public static function acl_xero_display_files($file_type = 'log' ) {
         // Enqueue your custom script
-        wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), null, true);
-    
+        wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), filemtime(plugin_dir_path(__FILE__) . 'src/assets/js/wc-xero-sync.js'), true);    
         // Get the default log file based on file type
         $defaultLog = ACLXeroHelper::display_files($file_type);
     
