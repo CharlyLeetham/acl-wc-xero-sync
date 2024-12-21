@@ -352,9 +352,7 @@ class ACLProductSyncPage {
                             xhrFields: {
                                 responseType: 'text'
                             },
-                            success: function(response, status, xhr) {
-                                console.log ("Response "+(response.data.message));
-                                console.log ("Response "+(response.data.success));                                
+                            success: function(response, status, xhr) {                             
                                 try {
                                     if (response.success === false || response.success === undefined) {
                                         console.log ("Response part deux: "+(response.data.message));
@@ -377,7 +375,6 @@ class ACLProductSyncPage {
 
                 // Default log display
                 if (typeof defaultLog !== 'undefined' && defaultLog) {
-                    console.log (defaultLog);
                     ACLWcXeroSync.displayLog(defaultLog);
                 }
 
