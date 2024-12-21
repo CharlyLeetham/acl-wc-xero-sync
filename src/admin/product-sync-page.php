@@ -305,7 +305,9 @@ class ACLProductSyncPage {
                     </table>
                     <div id="log-display-area">
                         <h2>Log Content:</h2>
-                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre>
+                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+                        <?php ACLXeroHelper::display_logs(); ?>
+                        </pre>
                     </div>
                 </div>                                   
             </form>
