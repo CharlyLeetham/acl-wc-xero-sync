@@ -383,8 +383,10 @@ class ACLXeroHelper {
     //Display the contents of the log file
     
     public static function get_log_content() {
+        console.log ("Into get_log_content");
         check_ajax_referer('get_log_content', '_ajax_nonce');
 
+        console.log ("After nonce check");
         $upload_dir = WP_CONTENT_DIR . '/uploads/';
         $folder_name = 'acl-wc-xero-sync';
         $filename = sanitize_file_name($_POST['file']);        
