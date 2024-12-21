@@ -51,3 +51,8 @@ try {
 } catch ( Exception $e ) {
     error_log( 'ACL WooCommerce Xero Sync failed to initialize: ' . $e->getMessage() );
 }
+
+// Define the plugin base URL
+if ( ! defined( 'ACL_XERO_PLUGIN_URL' ) ) {
+    define( 'ACL_XERO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
