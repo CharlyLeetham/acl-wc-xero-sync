@@ -304,10 +304,6 @@ class ACLProductSyncPage {
                             </td>
                         </tr>
                     </table>
-                    <div id="log-display-area">
-                        <h2>Log Content:</h2>
-                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre>
-                    </div>
                 </div>                                   
             </form>
             <script>
@@ -375,7 +371,7 @@ class ACLProductSyncPage {
                 });
             });            
             </script>
-            
+
             <!-- Step 2: Sync with Xero -->
             <h2>Step 2: Sync with Xero</h2>
             <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
