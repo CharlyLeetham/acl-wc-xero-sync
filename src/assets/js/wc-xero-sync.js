@@ -13,8 +13,10 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     console.log(response);
                     if (response.success) {
+                        console.log("Updating #log-content with:", response.data);
                         $('#log-content').text(response.data);
                     } else {
+                        console.error("Error from server:", response.data || response.message);                        
                         $('#log-content').text('Error loading log file: ' + (response.data || response.message));
                     }
                 },
