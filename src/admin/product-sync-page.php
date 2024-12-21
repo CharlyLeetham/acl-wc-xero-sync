@@ -325,9 +325,6 @@ class ACLProductSyncPage {
                                 $filetype = 'log';
                                 $defaultLog = ACLXeroHelper::display_files($filetype);                               
                                 ?>
-                                <script>
-                                    var defaultLog = "<?php echo esc_js($defaultLog); ?>";
-                                </script>
                             </td>
                         </tr>
                     </table>
