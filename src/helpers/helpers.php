@@ -361,7 +361,7 @@ class ACLXeroHelper {
             }
             
             if (empty($files)) {
-                echo "<p>There are no log files to display.</p>";
+                echo "<p>There are no log files to display hhhh.</p>";
             } else {
                 echo "<ul>";
                 echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";
