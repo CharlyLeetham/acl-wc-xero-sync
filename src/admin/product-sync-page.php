@@ -332,15 +332,41 @@ class ACLProductSyncPage {
                         });
                     },
 
-                    if (defaultLog) {
-                        ACLWcXeroSync.displayLog(defaultLog);
+                    downloadFile: function(filename) {
+                        $.ajax({
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                            type: 'GET',
+                            data: {
+                                action: 'acl_download_file',
+                                file: filename,
+                                _ajax_nonce: '<?php echo wp_create_nonce('download_file'); ?>'
+                            },
+                            xhrFields: {
+                                responseType: 'text'
+                            },
+                            success: function(response, status, xhr) {
+                                console.log ("Response "+(response.data.message));
+                                try {
+                                    if (!data.success) {
+                                        $('#error-container').html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>').show();
+                                        setTimeout(function() {
+                                            $('#error-container').hide();
+                                        }, 5000);
+                                    }
+                                } catch (e) {
+                                    // If JSON parsing fails, we assume it's a file download
+                                    console.log("File download initiated");
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file. Status: ' + status + ', Error: ' + error + '</p></div>').show();
+                            }
+                        });
                     }
-
                 };
 
                 // Default log display
-                var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
-                if (defaultLog) {
+                if (typeof defaultLog !== 'undefined' && defaultLog) {
                     ACLWcXeroSync.displayLog(defaultLog);
                 }
 

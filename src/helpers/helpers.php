@@ -378,7 +378,7 @@ class ACLXeroHelper {
                 $default_log_file = basename($files[0]);
  
                 // You can either echo this directly or return it for use elsewhere
-                echo '<script>var defaultLog = "' . esc_js($default_log_file) . '";</script>';                
+                return $default_log_file;
                 
             }
         } else {
