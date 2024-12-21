@@ -137,6 +137,7 @@ jQuery(document).ready(function($) {
     });
 
     $('.acl-display-file').on('click', function(e) {
+        console.log (acl-display-file);
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.displayLog(filename);
