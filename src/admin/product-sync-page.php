@@ -375,7 +375,7 @@ class ACLProductSyncPage {
 
                 // Default log display
                 if (typeof defaultLog !== 'undefined' && defaultLog) {
-                    console.log ($defaultLog);
+                    console.log (defaultLog);
                     ACLWcXeroSync.displayLog(defaultLog);
                 }
 
