@@ -344,203 +344,39 @@ class ACLXeroHelper {
     
     // Display the log files
 
-    public static function display_logs() {   
-        // Display list of Log files in specified directory
+    public static function display_logs() {  
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.log');
-        
-            // Sort files in reverse chronological order
-            usort($files, function($a, $b) {
-                return filemtime($b) - filemtime($a);
-            });
     
-            if ($files === false || empty($files)) {
-                // No files found or glob failed
+            if ($files !== false) {
+                usort($files, function($a, $b) {
+                    return filemtime($b) - filemtime($a);
+                });
+            }
+            
+            if (empty($files)) {
                 echo "<p>There are no log files to display.</p>";
-            } else {                
+            } else {
                 echo "<ul>";
-                echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";            
+                echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";
+                
                 foreach ($files as $file) {
                     $filename = basename($file);
                     echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename} ";
-                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";                    
+                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";
                     echo "<button class='button acl-download-file' data-file='" . esc_attr($filename) . "'>Download</button>";
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
                 echo "<button id='delete-selected' class='button'>Delete Selected</button>";
                 
-                // Add error container to display messages
                 echo '<div id="error-container" style="display: none;"></div>';
-                
-                // Add area to display log content
-                echo '<div id="log-display-area"><pre id="log-content"></pre></div>';
-                ?>
-                <script type="text/javascript">
-                jQuery(document).ready(function($) {
-                    var ACLWcXeroSync = {
-                        displayLog: function(filename) {
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'acl_get_log_content',
-                                    file: filename,
-                                    _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
-                                },
-                                success: function(response) {
-                                    if (response.success) {
-                                        $('#log-content').text(response.data);
-                                    } else {
-                                        $('#log-content').text('Error loading log file: ' + response.data);
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    $('#log-content').text('An error occurred while fetching the log content: ' + error);
-                                }
-                            });
-                        },
-                        downloadFile: function(filename) {
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'GET',
-                                data: {
-                                    action: 'acl_download_file',
-                                    file: filename,
-                                    _ajax_nonce: '<?php echo wp_create_nonce('download_file'); ?>'
-                                },
-                                xhrFields: {
-                                    responseType: 'text'
-                                },
-                                success: function(response, status, xhr) {
-                                    console.log ("Response "+(response.data.message));
-                                    try {
-                                        if (!data.success) {
-                                            $('#error-container').html('<div class="notice notice-error"><p>' + response.data.message + '</p></div>').show();
-                                            setTimeout(function() {
-                                                $('#error-container').hide();
-                                            }, 5000);
-                                        }
-                                    } catch (e) {
-                                        // If JSON parsing fails, we assume it's a file download
-                                        console.log("File download initiated");
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    $('#error-container').html('<div class="notice notice-error"><p>An error occurred while trying to download the file. Status: ' + status + ', Error: ' + error + '</p></div>').show();
-                                }
-                            });
-                        }
-                    };
-    
-                    // Display the default log content when the page loads
-                    var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
-                    if (defaultLog) {
-                        console.log(defaultLog);
-                        ACLWcXeroSync.displayLog(defaultLog);
-                    }
-    
-                    // Single file deletion
-                    $('.acl-delete-file').on('click', function(e) {
-                        e.preventDefault();
-                        var filename = $(this).data('file');
-                        if (confirm('Are you sure you want to delete ' + filename + '?')) {
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'acl_delete_csv',
-                                    file: filename,
-                                    _ajax_nonce: '<?php echo wp_create_nonce('delete_csv'); ?>'
-                                },
-                                success: function(response) {
-                                    if (response.success) {
-                                        alert('File deleted successfully!');
-                                        $(e.target).closest('li').remove();
-                                    } else {
-                                        alert('Error: ' + response.data);
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    alert('An error occurred: ' + error);
-                                }
-                            });
-                        }
-                    });
-    
-                    // Multiple file deletion
-                    $('#delete-selected').on('click', function(e) {
-                        e.preventDefault();
-                        var selectedFiles = $('input[name="delete_files[]"]:checked').map(function() {
-                            return $(this).val();
-                        }).get();
-                        
-                        if (selectedFiles.length === 0) {
-                            alert('Please select at least one file to delete.');
-                            return;
-                        }
-    
-                        if (confirm('Are you sure you want to delete these ' + selectedFiles.length + ' files?')) {
-                            $.ajax({
-                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                                type: 'POST',
-                                data: {
-                                    action: 'acl_delete_csv_multiple',
-                                    files: selectedFiles,
-                                    _ajax_nonce: '<?php echo wp_create_nonce('delete_csv_multiple'); ?>'
-                                },
-                                success: function(response) {
-                                    if (response.success) {
-                                        alert('Selected files deleted successfully!');
-                                        // Remove all checked items
-                                        $('input[name="delete_files[]"]:checked').closest('li').remove();
-                                    } else {
-                                        alert('Error: ' + response.data);
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    alert('An error occurred: ' + error);
-                                }
-                            });
-                        }
-                    });
-    
-                    // Select All checkbox functionality
-                    $('#select-all').on('click', function() {
-                        $('input[name="delete_files[]"]').prop('checked', this.checked);
-                    });
-    
-                    // If all checkboxes are checked or unchecked, check or uncheck the "Select All" checkbox
-                    $('input[name="delete_files[]"]').on('change', function() {
-                        if ($('input[name="delete_files[]"]').length === $('input[name="delete_files[]"]:checked').length) {
-                            $('#select-all').prop('checked', true);
-                        } else {
-                            $('#select-all').prop('checked', false);
-                        }
-                    });
-    
-                    // Display log file content when "Display" button is clicked
-                    $('.acl-display-file').on('click', function(e) {
-                        e.preventDefault();
-                        var filename = $(this).data('file');
-                        console.log(filename);
-                        ACLWcXeroSync.displayLog(filename);
-                    });
-    
-                    // Download file when "Download" button is clicked
-                    $('.acl-download-file').on('click', function(e) {
-                        e.preventDefault();
-                        var filename = $(this).data('file');
-                        ACLWcXeroSync.downloadFile(filename);
-                    });
-                });
-                </script>
-            <?php 
-            }              
+                echo '<div id="log-display-area"><h2>Log Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
+            }
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
-        }        
+        }
     }
 
 

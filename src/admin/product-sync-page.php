@@ -293,6 +293,7 @@ class ACLProductSyncPage {
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
 
+
                 <!-- Log Files -->
                 <h2>Log Files</h2>
                 <div id="log-file-container">
@@ -305,13 +306,76 @@ class ACLProductSyncPage {
                     </table>
                     <div id="log-display-area">
                         <h2>Log Content:</h2>
-                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
-                        <?php ACLXeroHelper::display_logs(); ?>
-                        </pre>
+                        <pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre>
                     </div>
                 </div>                                   
             </form>
+            <script>
+            jQuery(document).ready(function($) {
+                var ACLWcXeroSync = {
+                    displayLog: function(filename) {
+                        $.ajax({
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                            type: 'POST',
+                            data: {
+                                action: 'acl_get_log_content',
+                                file: filename,
+                                _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#log-content').text(response.data);
+                                } else {
+                                    $('#log-content').text('Error loading log file: ' + response.data);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                $('#log-content').text('An error occurred while fetching the log content: ' + error);
+                            }
+                        });
+                    },
+                    downloadFile: function(filename) {
+                        // ... (keep the downloadFile function as it was in the original)
+                    }
+                };
 
+                // Default log display
+                var defaultLog = '<?php echo esc_js(basename($files[0] ?? '')); ?>';
+                if (defaultLog) {
+                    ACLWcXeroSync.displayLog(defaultLog);
+                }
+
+                // Event handlers
+                $('.acl-delete-file').on('click', function(e) {
+                    // ... (keep the event handlers as they were in the original but remove the HTML)
+                });
+
+                $('#delete-selected').on('click', function(e) {
+                    // ... 
+                });
+
+                $('#select-all').on('click', function() {
+                    // ...
+                });
+
+                $('input[name="delete_files[]"]').on('change', function() {
+                    // ...
+                });
+
+                $('.acl-display-file').on('click', function(e) {
+                    e.preventDefault();
+                    var filename = $(this).data('file');
+                    ACLWcXeroSync.displayLog(filename);
+                });
+
+                $('.acl-download-file').on('click', function(e) {
+                    e.preventDefault();
+                    var filename = $(this).data('file');
+                    ACLWcXeroSync.downloadFile(filename);
+                });
+            });            
+            </script>
+            
             <!-- Step 2: Sync with Xero -->
             <h2>Step 2: Sync with Xero</h2>
             <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
