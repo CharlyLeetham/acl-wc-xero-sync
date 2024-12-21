@@ -331,6 +331,11 @@ class ACLProductSyncPage {
                             }
                         });
                     },
+
+                    if (defaultLog) {
+                        ACLWcXeroSync.displayLog(defaultLog);
+                    }
+                                        
                     downloadFile: function(filename) {
                         // ... (keep the downloadFile function as it was in the original)
                     }

@@ -373,6 +373,13 @@ class ACLXeroHelper {
                 
                 echo '<div id="error-container" style="display: none;"></div>';
                 echo '<div id="log-display-area"><h2>Log Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
+
+                // Set this variable for use outside this function's scope
+                $default_log_file = basename($files[0]);
+ 
+                // You can either echo this directly or return it for use elsewhere
+                echo '<script>var defaultLog = "' . esc_js($default_log_file) . '";</script>';                
+                
             }
         } else {
             echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
@@ -383,10 +390,7 @@ class ACLXeroHelper {
     //Display the contents of the log file
     
     public static function get_log_content() {
-        console.log ("Into get_log_content");
         check_ajax_referer('get_log_content', '_ajax_nonce');
-
-        console.log ("After nonce check");
         $upload_dir = WP_CONTENT_DIR . '/uploads/';
         $folder_name = 'acl-wc-xero-sync';
         $filename = sanitize_file_name($_POST['file']);        
