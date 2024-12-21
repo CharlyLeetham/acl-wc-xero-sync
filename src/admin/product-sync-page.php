@@ -323,11 +323,12 @@ class ACLProductSyncPage {
                                 <?php 
                                 $filetype = 'log';
                                 $defaultLog = ACLXeroHelper::display_files($filetype);
+                                $plugin_url = plugins_url('', plugin_dir_path(__FILE__) . '../../');                                
                                 ?>
                                 <script>
                                     var defaultLog = "<?php echo esc_js($defaultLog); ?>";
                                 </script>
-                                <script src="<?php echo plugins_url( 'src/assets/js/wc-xero-sync.js', __FILE__ ); ?>"></script>
+                                <script src="<?php echo $plugin_url; ?>src/admin/src/assets/js/wc-xero-sync.js"></script>
                             </td>
                         </tr>
                     </table>
