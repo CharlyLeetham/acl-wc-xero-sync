@@ -319,6 +319,7 @@ class ACLProductSyncPage {
                                 _ajax_nonce: '<?php echo wp_create_nonce('get_log_content'); ?>'
                             },
                             success: function(response) {
+                                console.log (response.inspect);
                                 if (response.success) {
                                     $('#log-content').text(response.data);
                                 } else {
