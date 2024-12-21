@@ -322,16 +322,12 @@ class ACLProductSyncPage {
                             <td colspan="2">
                                 <?php 
                                 $filetype = 'log';
-                                add_action('admin_enqueue_scripts', function() use ($filetype) {
-                                    ACLProductSyncPage::acl_xero_display_files($filetype);
-                                });                                
-                                $defaultLog = ACLXeroHelper::display_files($filetype); 
-                                if ($defaultLog) {
-                                    // Echoing the script tag here ensures it's outside of the function scope
-                                    ACLXeroLogger::log_message( "Calling defaultlog for log", 'product_sync' );
-                                    echo '<script>var defaultLog = "' . esc_js($defaultLog) . '";</script>';
-                                }                                
+                                $defaultLog = ACLXeroHelper::display_files($filetype);
                                 ?>
+                                <script>
+                                    var defaultLog = "<?php echo esc_js($defaultLog); ?>";
+                                </script>
+                                <script src="<?php echo plugins_url('src/assets/js/wc-xero-sync.js', __FILE__); ?>"></script>
                             </td>
                         </tr>
                     </table>
