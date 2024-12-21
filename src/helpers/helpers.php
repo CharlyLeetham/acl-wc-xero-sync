@@ -376,6 +376,7 @@ class ACLXeroHelper {
 
                 // Set this variable for use outside this function's scope
                 $default_log_file = basename($files[0]);
+                ACLXeroLogger::log_message( "Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
  
                 // You can either echo this directly or return it for use elsewhere
                 return $default_log_file;
