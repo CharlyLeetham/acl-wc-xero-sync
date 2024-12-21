@@ -19,26 +19,27 @@ class ACLProductSyncPage {
         add_action( 'wp_ajax_acl_delete_csv_multiple', [ACLXeroHelper::class, 'handle_delete_csv_multiple'] );
         add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );
         add_action( 'wp_ajax_acl_get_log_content', [ACLXeroHelper::class, 'get_log_content' ] );           
-        add_action( 'acl_xero_log_rotation_event', [ACLXeroLogger::class, 'acl_xero_log_rotation'] );
+        add_action( 'acl_xero_log_rotation_event', [ACLXeroLogger::class, 'acl_xero_log_rotation'] );      
                     
 
         // Enqueue scripts and localize AJAX URL
         add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
+        add_action( 'admin_enqueue_scripts', [__CLASS__, 'acl_xero_display_files'] );
     }       
 
     /**
      * Enqueues scripts for admin area.
      */
-    public static function enqueue_scripts($file_type) {
+    public static function enqueue_scripts() {
         // Enqueue jQuery if you need a specific version or for some other reason
         wp_enqueue_script('jquery');      
         // If you need an AJAX object for another purpose, you could do it here, but it's not necessary with the above setup
         wp_localize_script('jquery', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
     } 
 
-    public static function acl_xero_display_files($file_type) {
+    public static function acl_xero_display_files($file_type = 'log' ) {
         // Enqueue your custom script
-        wp_enqueue_script('acl-wc-xero-sync', plugins_url('src/assets/js/wc-xero-sync.js', __FILE__), array('jquery'), null, true);
+        wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), null, true);
     
         // Get the default log file based on file type
         $defaultLog = ACLXeroHelper::display_files($file_type);
@@ -327,7 +328,6 @@ class ACLProductSyncPage {
                                 <script>
                                     var defaultLog = "<?php echo esc_js($defaultLog); ?>";
                                 </script>
-                                 <script src="<?php echo ACL_XERO_PLUGIN_URL; ?>src/assets/js/wc-xero-sync.js"></script>
                             </td>
                         </tr>
                     </table>
