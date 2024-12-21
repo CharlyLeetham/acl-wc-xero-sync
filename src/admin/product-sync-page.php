@@ -534,7 +534,25 @@ class ACLProductSyncPage {
             <div id="csv-file-updates"></div> <!-- Placeholder for updates -->            
             <div id="csv-file-container">
                 <?php ACLXeroHelper::display_csv(); ?>
-            </div>            
+            </div> 
+            
+            
+            <div id="csv-file-container">
+                <table class="form-table">
+                    <tr>
+                        <td colspan="2">
+                            <?php 
+                            $defaultLog = ACLXeroHelper::display_files('csv'); 
+                            if ($defaultLog) {
+                                // Echoing the script tag here ensures it's outside of the function scope
+                                ACLXeroLogger::log_message( "Calling defaultlog", 'product_sync' );
+                                echo '<script>var defaultLog = "' . esc_js($defaultLog) . '";</script>';
+                            }                                
+                            ?>
+                        </td>
+                    </tr>
+                </table>
+            </div>             
         </div>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
