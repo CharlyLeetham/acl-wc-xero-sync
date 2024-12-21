@@ -23,7 +23,7 @@ class ACLProductSyncPage {
                     
 
         // Enqueue scripts and localize AJAX URL
-        add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
+        //add_action( 'admin_enqueue_scripts', [__CLASS__, 'enqueue_scripts'] );
     }       
 
     /**
