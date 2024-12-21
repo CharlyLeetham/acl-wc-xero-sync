@@ -310,7 +310,7 @@ class ACLProductSyncPage {
             jQuery(document).ready(function($) {
                 var ACLWcXeroSync = {
                     displayLog: function(filename) {
-                        console.log (filename);
+                        console.log ("Filename: ".filename);
                         $.ajax({
                             url: '<?php echo admin_url('admin-ajax.php'); ?>',
                             type: 'POST',
