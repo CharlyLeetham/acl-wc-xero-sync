@@ -10,10 +10,8 @@ jQuery(document).ready(function($) {
                     file: filename,
                     _ajax_nonce: aclWcXeroSyncAjax.nonce_get_log_content
                 },
-
-                console.log(response.inspect);
                 success: function(response) {
-                    //console.log(response);
+                    console.log(response);
                     console.log('Response success '.response.success);
                     if (response.success) {
                         console.log("Updating #log-content with:", response.data);
