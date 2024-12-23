@@ -1,7 +1,7 @@
 jQuery(document).ready(function($) {
     var ACLWcXeroSync = {
         displayLog: function(filename) {
-            console.log("Filename: " + filename);
+            console.log("Filename 1: " + filename);
             $.ajax({
                 url: aclWcXeroSyncAjax.ajax_url,
                 type: 'POST',
@@ -10,6 +10,8 @@ jQuery(document).ready(function($) {
                     file: filename,
                     _ajax_nonce: aclWcXeroSyncAjax.nonce_get_log_content
                 },
+
+                console.log(response.inspect);
                 success: function(response) {
                     //console.log(response);
                     console.log('Response success '.response.success);
