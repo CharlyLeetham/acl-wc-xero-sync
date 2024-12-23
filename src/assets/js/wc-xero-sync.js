@@ -11,8 +11,6 @@ jQuery(document).ready(function($) {
                     _ajax_nonce: aclWcXeroSyncAjax.nonce_get_log_content
                 },
                 success: function(response) {
-                    console.log(response);
-                    //console.log('Response success '.response.success);
                     if (response.success) {
                         console.log("Updating #log-content with:", response.data);
                         $('#log-content').text(response.data);
