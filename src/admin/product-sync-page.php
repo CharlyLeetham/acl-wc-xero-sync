@@ -39,7 +39,7 @@ class ACLProductSyncPage {
 
     public static function acl_xero_display_files($file_type = 'log' ) {
         // Enqueue your custom script
-        $sp = ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js';
+        $sp = ACL_XERO_PLUGIN_PATH . 'src/assets/js/wc-xero-sync.js';
 
         $version = filemtime($sp);
         echo 'Styuff: |'. $sp.'| version:'.$version;
