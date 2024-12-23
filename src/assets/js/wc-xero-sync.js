@@ -140,7 +140,7 @@ jQuery(document).ready(function($) {
     });
 
     $('.acl-display-file').on('click', function(e) {
-        console.log ('display file');
+        console.log ('display file' );
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.displayLog(filename);
