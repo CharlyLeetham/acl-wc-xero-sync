@@ -165,12 +165,12 @@ jQuery(document).ready(function($) {
     });
 
     // Default log display
-    //if (defaultLog) {
-       //ACLWcXeroSync.displayLog(defaultLog);
-   //}
-    if (typeof defaultLog !== 'undefined' && defaultLog) {
-        ACLWcXeroSync.displayLog(defaultLog);
+    if (defaultLog) {
+       ACLWcXeroSync.displayLog(defaultLog);
     }
+    //if (typeof defaultLog !== 'undefined' && defaultLog) {
+        //ACLWcXeroSync.displayLog(defaultLog);
+    //}
 
    // New code for sync functionality
    $('#start-sync').on('click', function(e) {
@@ -205,9 +205,9 @@ jQuery(document).ready(function($) {
                             $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
                         }
                     }
-                    error: function() {
-                        $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
-                    }
+                    //error: function() {
+                        //$('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
+                    //}
                 });                            
             },
             error: function(xhr, status, error) {
