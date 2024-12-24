@@ -123,12 +123,12 @@ class ACLXeroHelper {
         if (flock($fp, LOCK_EX)) { // Attempt to acquire an exclusive lock
             if (!$file_exists) {
                 // Write the header
-                fwrite($fp, "SKU,Xero Price,WC Price\n");
+                fwrite($fp, "SKU,Xero Price,WC Price"."\n");
                 ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
             }
             // Write the message
-            //fwrite($fp, $message . "\n");
-            //ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
+            fwrite($fp, $message . "\n");
+            ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
             flock($fp, LOCK_UN); // Release the lock
         } else {
             ACLXeroLogger::log_message("Failed to acquire lock for $csv_file", 'product_sync');
