@@ -152,6 +152,21 @@ jQuery(document).ready(function($) {
             });
         });
 
+        // Functionality to toggle between password and text type
+        $('.toggle-password').on('click', function () {
+            var target = $(this).data('target');
+            var input = $('#' + target);
+            var currentType = input.attr('type');
+            
+            if (currentType === 'password') {
+                input.attr('type', 'text');
+                $(this).text('Hide');
+            } else {
+                input.attr('type', 'password');
+                $(this).text('Show');
+            }
+        });        
+
     });
 
     // Select All checkbox functionality
