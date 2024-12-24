@@ -156,19 +156,16 @@ jQuery(document).ready(function($) {
         $('.password-toggle-icon').on('click', function () {
             var target = $(this).data('target');
             var input = $('#' + target);
-            var icon = $(this).find('i');
             var currentType = input.attr('type');
             
             if (currentType === 'password') {
                 input.attr('type', 'text');
-                icon.removeClass('fa-eye').addClass('fa-eye-slash');
                 $(this).addClass('show');
             } else {
                 input.attr('type', 'password');
-                icon.removeClass('fa-eye-slash').addClass('fa-eye');
                 $(this).removeClass('show');
             }
-        });     
+        });   
 
     });
 

@@ -27,23 +27,19 @@
     color: #777;  /* Change to match your theme */
 }
 
-.password-toggle-icon i {
+.eye-icon {
+    fill: currentColor;
     transition: opacity 0.2s;  /* Smooth transition for icon change */
 }
 
-.password-toggle-icon i.fa-eye-slash {
-    opacity: 0;
-}
-
-.password-toggle-icon.show i.fa-eye {
-    opacity: 0;
-}
-
-.password-toggle-icon.show i.fa-eye-slash {
-    opacity: 1;
+/* Hide the eye when showing the password */
+.password-toggle-icon.show .eye-icon {
+    /* Here you could add another SVG or change the path for an eye with a slash, or just change the visibility */
+    opacity: 0.5;  /* Dim the icon when showing password */
 }
 
 /* Adjust input padding to make room for the icon */
 .showable-password {
     padding-right: 30px; /* Enough space for the icon */
 }
+
