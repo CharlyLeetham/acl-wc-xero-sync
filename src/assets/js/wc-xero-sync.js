@@ -134,6 +134,24 @@ jQuery(document).ready(function($) {
                 }
             });
         }
+
+        // New code for testing connection with Xero
+        $('#test-xero-connection').on('click', function () {
+            $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
+            $.ajax({
+                url: '<?php echo admin_url('admin-ajax.php'); ?>', // This won't work in JS, see below for correction
+                type: 'POST',
+                data: { action: 'acl_xero_test_connection_ajax' },
+                success: function (response) {                              
+                    $('#xero-test-connection-result').html(response);
+                },
+                error: function(xhr, status, error) {                              
+                    var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                    $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
+                },
+            });
+        });
+
     });
 
     // Select All checkbox functionality

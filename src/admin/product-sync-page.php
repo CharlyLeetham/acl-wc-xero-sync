@@ -353,28 +353,7 @@ class ACLProductSyncPage {
                 Test Xero Connection
             </button>
             <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
-            <script type="text/javascript">
-                jQuery(document).ready(function ($) {
-                    $('#test-xero-connection').on('click', function () {
-                        $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
-                        $.ajax({
-                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                            type: 'POST',
-                            data: { action: 'acl_xero_test_connection_ajax' },
-                            beforeSend: function() {
-                            },                            
-                            success: function (response) {                              
-                                $('#xero-test-connection-result').html(response);
-                            },
-                            error: function(xhr, status, error) {                              
-                                var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                                $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
-
-                            },
-                        });
-                    });
-                });
-            </script>           
+         
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
                 <button type="submit" class="button">Reset Authorization</button>
             </form>
