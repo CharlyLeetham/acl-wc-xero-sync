@@ -368,6 +368,7 @@ class ACLXeroHelper {
             }
             
             if (empty($files)) {
+                ACLXeroLogger::log_message( "When do we get here?", 'xero_logging' );
                 echo "<p>There are no log files to display</p>";
             } else {
                 echo "<ul>";
