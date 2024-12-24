@@ -399,6 +399,8 @@ class ACLProductSyncPage {
             <div id="sync-results"></div>
             <div id="csv-file-updates"></div> <!-- Placeholder for updates -->                      
             
+
+            <h2>CSV Files</h2>
             <div id="csv-file-container">
                 <table class="form-table">
                     <tr>
