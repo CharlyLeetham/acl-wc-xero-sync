@@ -12,10 +12,10 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     if (response.success) {
-                        console.log("Updating #log-content with:", response.data);
+                        //console.log("Updating #log-content with:", response.data);
                         $('#log-content').text(response.data);
                     } else {
-                        console.error("Error from server:", response.data || response.message);                        
+                        //console.error("Error from server:", response.data || response.message);                        
                         $('#log-content').text('Error loading log file: ' + (response.data || response.message));
                     }
                 },
@@ -37,7 +37,8 @@ jQuery(document).ready(function($) {
                 xhrFields: {
                     responseType: 'text'
                 },
-                success: function(response, status, xhr) {                             
+                success: function(response, status, xhr) {   
+                    console.log("Updating #log-content with:", response);                          
                     try {
                         if (response.success === false || response.success === undefined) {
                             console.log("Response part deux: " + (response.data.message || response.message));
