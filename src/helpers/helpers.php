@@ -354,8 +354,12 @@ class ACLXeroHelper {
         ACLXeroLogger::log_message( "filetype:".$filetype, 'xero_logging' );
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.'.$filetype);
+
+            ob_start();
+            print_r($files);
+            $files_string = ob_get_clean();            
             
-            ACLXeroLogger::log_message( "files:".$files, 'xero_logging' );
+            ACLXeroLogger::log_message( "files:".$files_string, 'xero_logging' );
 
             if ($files !== false) {
                 usort($files, function($a, $b) {
