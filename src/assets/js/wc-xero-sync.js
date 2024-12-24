@@ -50,6 +50,16 @@ jQuery(document).ready(function($) {
                     } catch (e) {
                         // If JSON parsing fails, we assume it's a file download
                         console.log("File download initiated");
+
+                        // Here, you would implement the actual download logic:
+                        var blob = new Blob([response], {type: xhr.getResponseHeader('Content-Type') || 'application/octet-stream'});
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = filename || 'download';
+                        link.click();
+
+                        // Clean up to release memory
+                        window.URL.revokeObjectURL(link.href);                        
                     }
                 },
                 error: function(xhr, status, error) {
