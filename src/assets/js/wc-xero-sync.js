@@ -172,7 +172,7 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
         $.ajax({
-            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            url: aclWcXeroSyncAjax.ajax_url,
             type: 'POST',
             data: {
                 'action': 'acl_xero_sync_products_ajax',
@@ -183,7 +183,7 @@ jQuery(document).ready(function($) {
                 
                 // Update CSV file display after sync
                 $.ajax({
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: aclWcXeroSyncAjax.ajax_url,
                     type: 'POST',
                     data: { action: 'acl_update_csv_display' },
                     success: function(csvResponse) {
