@@ -135,41 +135,41 @@ jQuery(document).ready(function($) {
             });
         }
 
-        // New code for testing connection with Xero
-        $('#test-xero-connection').on('click', function () {
-            console.log ('HERE');
-            $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
-            $.ajax({
-                url: aclWcXeroSyncAjax.ajax_url, // This won't work in JS, see below for correction
-                type: 'POST',
-                data: { action: 'acl_xero_test_connection_ajax' },
-                success: function (response) {                              
-                    $('#xero-test-connection-result').html(response);
-                },
-                error: function(xhr, status, error) {                              
-                    var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                    $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
-                },
-            });
-        });
-
-        // Functionality to toggle between password and text type using an eye icon
-        $('.password-toggle-icon').on('click', function () {
-            console.log ('here');
-            var target = $(this).data('target');
-            var input = $('#' + target);
-            var currentType = input.attr('type');
-            
-            if (currentType === 'password') {
-                input.attr('type', 'text');
-                $(this).addClass('show');
-            } else {
-                input.attr('type', 'password');
-                $(this).removeClass('show');
-            }
-        });   
-
     });
+
+    // New code for testing connection with Xero
+    $('#test-xero-connection').on('click', function () {
+        console.log ('HERE');
+        $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
+        $.ajax({
+            url: aclWcXeroSyncAjax.ajax_url, // This won't work in JS, see below for correction
+            type: 'POST',
+            data: { action: 'acl_xero_test_connection_ajax' },
+            success: function (response) {                              
+                $('#xero-test-connection-result').html(response);
+            },
+            error: function(xhr, status, error) {                              
+                var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                $('#xero-test-connection-result').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
+            },
+        });
+    });
+
+    // Functionality to toggle between password and text type using an eye icon
+    $('.password-toggle-icon').on('click', function () {
+        console.log ('here');
+        var target = $(this).data('target');
+        var input = $('#' + target);
+        var currentType = input.attr('type');
+        
+        if (currentType === 'password') {
+            input.attr('type', 'text');
+            $(this).addClass('show');
+        } else {
+            input.attr('type', 'password');
+            $(this).removeClass('show');
+        }
+    });       
 
     // Select All checkbox functionality
     $('#select-all').on('click', function() {
