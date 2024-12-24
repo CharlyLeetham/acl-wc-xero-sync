@@ -146,6 +146,7 @@ jQuery(document).ready(function($) {
     });
 
     $('.acl-download-file').on('click', function(e) {
+        console.log(Download button pressed);
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.downloadFile(filename);
