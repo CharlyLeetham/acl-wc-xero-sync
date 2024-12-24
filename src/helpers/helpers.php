@@ -109,6 +109,8 @@ class ACLXeroHelper {
         } 
 
         $csv_file = $folder_path .'/'. $filename;
+        // Check if the file exists before opening it
+        $file_exists = file_exists($csv_file);
 
         // File locking
         $fp = fopen($csv_file, 'a'); // Open file in append mode
@@ -118,7 +120,7 @@ class ACLXeroHelper {
         }
 
         if (flock($fp, LOCK_EX)) { // Attempt to acquire an exclusive lock
-            if (!file_exists($csv_file)) {
+            if (!file_exists) {
                 // Write the header
                 fwrite($fp, "SKU,Xero Price,WC Price\n");
                 ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
