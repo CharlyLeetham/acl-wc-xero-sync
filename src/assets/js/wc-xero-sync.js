@@ -1,4 +1,6 @@
 jQuery(document).ready(function($) {
+    var defaultLog = window.defaultLog || null;
+
     var ACLWcXeroSync = {
         displayLog: function(filename) {
             console.log("Filename 1: " + filename);
@@ -163,7 +165,7 @@ jQuery(document).ready(function($) {
     });
 
     // Default log display
-    if (typeof defaultLog !== 'undefined' && defaultLog) {
+    if (defaultLog) {
         ACLWcXeroSync.displayLog(defaultLog);
     }
 
@@ -187,9 +189,19 @@ jQuery(document).ready(function($) {
                     type: 'POST',
                     data: { action: 'acl_update_csv_display' },
                     success: function(csvResponse) {
-                        $('#csv-file-container').html(csvResponse.data);
-                        $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
-                    },
+                        if (csvResponse.success) {
+                            $('#csv-file-container').html(csvResponse.data.html);
+                            $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
+                            
+                            // Update defaultLog with the new value from the server
+                            if (csvResponse.data.defaultLog) {
+                                window.defaultLog = csvResponse.data.defaultLog;
+                                ACLWcXeroSync.displayLog(window.defaultLog);
+                            }
+                        } else {
+                            $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
+                        }
+                    }
                     error: function() {
                         $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
                     }

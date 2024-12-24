@@ -135,8 +135,13 @@ class ACLXeroHelper {
 
     public static function update_csv_display() {
         ob_start();
-        self::display_files('csv');
+        $defaultLog = self::display_files('csv');
         $content = ob_get_clean();
+        // Prepare the response data
+        $response = array(
+            'html' => $content,
+            'defaultLog' => $defaultLog
+        );        
         wp_send_json_success($content);
         wp_die();
     }    
@@ -267,6 +272,7 @@ class ACLXeroHelper {
                     echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
                 }
                 echo "</ul>";
+
                 echo "<button id='delete-selected' class='button'>Delete Selected</button>";
                 
                 echo '<div id="error-container" style="display: none;"></div>';
