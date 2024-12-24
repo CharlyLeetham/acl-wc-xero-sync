@@ -283,12 +283,22 @@ class ACLProductSyncPage {
             <form method="post">
                 <table class="form-table">
                     <tr>
-                        <th><label for="acl_xero_consumer_key">Xero Consumer Key</label></th>
-                        <td><input type="password" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text showable-password" /></td>
+                        <div class="password-wrapper">
+                            <th><label for="acl_xero_consumer_key">Xero Consumer Key</label></th>
+                            <td><input type="password" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text showable-password" /></td>
+                            <span class="password-toggle-icon" data-target="acl_xero_consumer_key">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
                     </tr>
                     <tr>
-                        <th><label for="acl_xero_consumer_secret">Xero Consumer Secret</label></th>
-                        <td><input type="password" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text showable-password" /></td>
+                        <div class="password-wrapper">
+                            <th><label for="acl_xero_consumer_secret">Xero Consumer Secret</label></th>
+                            <td><input type="password" id="acl_xero_consumer_secret" name="acl_xero_consumer_secret" value="<?php echo esc_attr( $consumer_secret ); ?>" class="regular-text showable-password" /></td>
+                            <span class="password-toggle-icon" data-target="acl_xero_consumer_key">
+                                <i class="fas fa-eye"></i>
+                            </span>                        
+                        </div>
                     </tr>
                 </table>
 

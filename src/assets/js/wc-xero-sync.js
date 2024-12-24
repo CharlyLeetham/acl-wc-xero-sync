@@ -152,20 +152,23 @@ jQuery(document).ready(function($) {
             });
         });
 
-        // Functionality to toggle between password and text type
-        $('.toggle-password').on('click', function () {
+        // Functionality to toggle between password and text type using an eye icon
+        $('.password-toggle-icon').on('click', function () {
             var target = $(this).data('target');
             var input = $('#' + target);
+            var icon = $(this).find('i');
             var currentType = input.attr('type');
             
             if (currentType === 'password') {
                 input.attr('type', 'text');
-                $(this).text('Hide');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                $(this).addClass('show');
             } else {
                 input.attr('type', 'password');
-                $(this).text('Show');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                $(this).removeClass('show');
             }
-        });        
+        });      
 
     });
 

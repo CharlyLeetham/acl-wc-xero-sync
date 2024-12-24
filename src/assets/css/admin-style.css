@@ -13,3 +13,32 @@
 .wp-core-ui .button.acl-display-file, .wp-core-ui .button.acl-download-file, .wp-core-ui .button.acl-delete-file {
     margin-left: 10px;
 }
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    right: 10px;  /* Adjust as necessary */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;  /* Change to match your theme */
+}
+
+.password-toggle-icon i {
+    transition: opacity 0.2s;  /* Smooth transition for icon change */
+}
+
+.password-toggle-icon i.fa-eye-slash {
+    opacity: 0;
+}
+
+.password-toggle-icon.show i.fa-eye {
+    opacity: 0;
+}
+
+.password-toggle-icon.show i.fa-eye-slash {
+    opacity: 1;
+}
