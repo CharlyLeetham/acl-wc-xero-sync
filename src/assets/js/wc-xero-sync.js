@@ -168,9 +168,6 @@ jQuery(document).ready(function($) {
     if (defaultLog) {
        ACLWcXeroSync.displayLog(defaultLog);
     }
-    //if (typeof defaultLog !== 'undefined' && defaultLog) {
-        //ACLWcXeroSync.displayLog(defaultLog);
-    //}
 
    // New code for sync functionality
    $('#start-sync').on('click', function(e) {
