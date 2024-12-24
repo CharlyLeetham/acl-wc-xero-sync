@@ -128,7 +128,7 @@ class ACLXeroHelper {
             }
             // Write the message
             //fwrite($fp, $message . "\n");
-            ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
+            //ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
             flock($fp, LOCK_UN); // Release the lock
         } else {
             ACLXeroLogger::log_message("Failed to acquire lock for $csv_file", 'product_sync');
