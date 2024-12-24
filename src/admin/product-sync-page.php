@@ -416,7 +416,5 @@ class ACLProductSyncPage {
             </div>             
         </div>
         <?php
-    }
-    
-
+    } 
 }
