@@ -415,6 +415,47 @@ class ACLProductSyncPage {
                 </table>
             </div>             
         </div>
+       <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                $('#start-sync').on('click', function(e) {
+                    e.preventDefault();
+                    $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
+                    $.ajax({
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        type: 'POST',
+                        data: {
+                            'action': 'acl_xero_sync_products_ajax',
+                            'sync_xero_products': '1'
+                        },
+                        beforeSend: function() {
+                        },                        
+                        success: function(response) {                           
+                            $('#sync-results').html(response);
+                            
+                        // Update CSV file display after sync
+                        $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: { action: 'acl_update_csv_display' },
+                                success: function(csvResponse) {
+                                    $('#csv-file-container').html(csvResponse.data);
+                                    $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
+                                },
+                                error: function() {
+                                    $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
+                                }
+                            });                            
+                        },
+                        error: function(xhr, status, error) {
+                            var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                            $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
+                        },
+                        complete: function() {
+                        }                        
+                    });
+                });
+            });
+        </script>
         <?php
     }
     
