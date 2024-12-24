@@ -137,6 +137,7 @@ jQuery(document).ready(function($) {
 
         // New code for testing connection with Xero
         $('#test-xero-connection').on('click', function () {
+            console.log ('HERE');
             $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
             $.ajax({
                 url: aclWcXeroSyncAjax.ajax_url, // This won't work in JS, see below for correction
