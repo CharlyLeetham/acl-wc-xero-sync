@@ -1,4 +1,4 @@
-#csv-file-container li {
+#csv-file-container li, #log-file-container li {
     display: flex;
     align-items: center;
     list-style-type: none;
@@ -6,10 +6,10 @@
 }
 
 /* Style for the checkbox */
-#csv-file-container li input[type="checkbox"] {
+#csv-file-container li input[type="checkbox"], #log-file-container li input[type="checkbox"] {
     margin-right: 10px; /* Space between checkbox and filename */
 }
 
-.wp-core-ui .button.acl-download-file, .wp-core-ui .button.acl-delete-file {
+.wp-core-ui .button.acl-display-file, .wp-core-ui .button.acl-download-file, .wp-core-ui .button.acl-delete-file {
     margin-left: 10px;
 }
