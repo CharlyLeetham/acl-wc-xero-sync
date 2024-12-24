@@ -19,9 +19,8 @@
 }
 
 .password-toggle-icon {
-    position: absolute;
-    right: 10px;  /* Adjust as necessary */
-    top: 50%;
+    position: relative;
+    margin-left: 10px;  /* Adjust as necessary */
     transform: translateY(-50%);
     cursor: pointer;
     color: #777;  /* Change to match your theme */

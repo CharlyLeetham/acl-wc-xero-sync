@@ -154,6 +154,7 @@ jQuery(document).ready(function($) {
 
         // Functionality to toggle between password and text type using an eye icon
         $('.password-toggle-icon').on('click', function () {
+            console.log ('here');
             var target = $(this).data('target');
             var input = $('#' + target);
             var currentType = input.attr('type');
