@@ -165,7 +165,10 @@ jQuery(document).ready(function($) {
     });
 
     // Default log display
-    if (defaultLog) {
+    //if (defaultLog) {
+       //ACLWcXeroSync.displayLog(defaultLog);
+   //}
+    if (typeof defaultLog !== 'undefined' && defaultLog) {
         ACLWcXeroSync.displayLog(defaultLog);
     }
 
