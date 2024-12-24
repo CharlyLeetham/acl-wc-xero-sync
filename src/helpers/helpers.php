@@ -111,6 +111,7 @@ class ACLXeroHelper {
         $csv_file = $folder_path .'/'. $filename;
         // Check if the file exists before opening it
         $file_exists = file_exists($csv_file);
+        ACLXeroLogger::log_message("File_exists $file_exists", 'product_sync');
 
         // File locking
         $fp = fopen($csv_file, 'a'); // Open file in append mode
