@@ -297,7 +297,8 @@ class ACLXeroHelper {
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         $file_path = $folder_path . '/' . $file;
 
-        if (file_exists($file_path) && pathinfo($file_path, PATHINFO_EXTENSION) === 'csv') {
+        if (file_exists($file_path) && pathinfo($file_path, PATHINFO_EXTENSION) ) {
+            $content_type = ($file_extension === 'csv') ? 'text/csv' : 'text/plain'; // Set content type based on file extension
             if (unlink($file_path)) {
                 wp_send_json_success('File deleted successfully.');
             } else {
