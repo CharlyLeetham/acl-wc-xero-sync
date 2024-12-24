@@ -139,7 +139,7 @@ jQuery(document).ready(function($) {
         $('#test-xero-connection').on('click', function () {
             $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
             $.ajax({
-                url: '<?php echo admin_url('admin-ajax.php'); ?>', // This won't work in JS, see below for correction
+                url: aclWcXeroSyncAjax.ajax_url, // This won't work in JS, see below for correction
                 type: 'POST',
                 data: { action: 'acl_xero_test_connection_ajax' },
                 success: function (response) {                              
