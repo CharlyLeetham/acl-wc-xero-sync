@@ -300,18 +300,25 @@ class ACLXeroHelper {
         check_ajax_referer('get_log_content', '_ajax_nonce');
         $upload_dir = WP_CONTENT_DIR . '/uploads/';
         $folder_name = 'acl-wc-xero-sync';
-        $filename = sanitize_file_name($_POST['file']);        
+        $filename = sanitize_file_name($_POST['file']);
         $log_file = $upload_dir . $folder_name . '/' . $filename;
     
         if (file_exists($log_file)) {
             $content = file_get_contents($log_file);
-            // We'll limit the log to the last 1000 lines to prevent memory issues with large logs
+            // Limit the log to the last 1000 lines to prevent memory issues with large logs
             $lines = explode("\n", $content);
             $limited_lines = array_slice($lines, -1000); // Get last 1000 lines
-            $reversed_content = implode("\n", array_reverse($limited_lines));
-            wp_send_json_success($reversed_content);
+    
+            // Check if the file is a .log file
+            if (strtolower(substr($filename, -4)) === '.log') {
+                $processed_content = implode("\n", array_reverse($limited_lines));
+            } else {
+                $processed_content = implode("\n", $limited_lines);
+            }
+            
+            wp_send_json_success($processed_content);
         } else {
-            return "Log file not found.";
+            wp_send_json_error('Log file not found.');
         }
     }
         
