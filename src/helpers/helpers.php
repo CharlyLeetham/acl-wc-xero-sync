@@ -126,7 +126,7 @@ class ACLXeroHelper {
                 ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
             }
             // Write the message
-            fwrite($fp, $message . "\n");
+            //fwrite($fp, $message . "\n");
             ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
             flock($fp, LOCK_UN); // Release the lock
         } else {
