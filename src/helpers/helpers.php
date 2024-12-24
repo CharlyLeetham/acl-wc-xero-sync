@@ -135,7 +135,7 @@ class ACLXeroHelper {
 
     public static function update_csv_display() {
         ob_start();
-        self::display_csv();
+        self::display_files('csv');
         $content = ob_get_clean();
         wp_send_json_success($content);
         wp_die();
