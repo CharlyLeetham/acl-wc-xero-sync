@@ -287,7 +287,7 @@ class ACLProductSyncPage {
                             <th><label for="acl_xero_consumer_key">Xero Consumer Key</label></th>
                             <td><input type="password" id="acl_xero_consumer_key" name="acl_xero_consumer_key" value="<?php echo esc_attr( $consumer_key ); ?>" class="regular-text showable-password" /></td>
                             <span class="password-toggle-icon" data-target="acl_xero_consumer_key">
-                                <i class="fas fa-eye"></i>
+                                <i class="fas fa-eye"></i> 
                             </span>
                         </div>
                     </tr>
