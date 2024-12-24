@@ -43,7 +43,7 @@ class ACLProductSyncPage {
         $version = filemtime($sp);
         wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), $version , true);    
         // Get the default log file based on file type
-        $defaultLog = ACLXeroHelper::display_files($file_type);
+        //$defaultLog = ACLXeroHelper::display_files($file_type);
     
         // Localize the script with all necessary data
         wp_localize_script('acl-wc-xero-sync', 'aclWcXeroSyncAjax', array(
