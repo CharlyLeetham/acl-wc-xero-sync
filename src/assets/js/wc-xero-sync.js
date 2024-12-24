@@ -38,7 +38,7 @@ jQuery(document).ready(function($) {
                     responseType: 'text'
                 },
                 success: function(response, status, xhr) {   
-                    console.log("Updating #log-content with:", response);                          
+                    console.log("Download Response:", response);                          
                     try {
                         if (response.success === false || response.success === undefined) {
                             console.log("Response part deux: " + (response.data.message || response.message));
