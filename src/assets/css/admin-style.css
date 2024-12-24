@@ -14,7 +14,7 @@
     margin-left: 10px;
 }
 
-.password-wrapper {
+.form-table td {
     position: relative;
 }
 
@@ -41,4 +41,9 @@
 
 .password-toggle-icon.show i.fa-eye-slash {
     opacity: 1;
+}
+
+/* Adjust input padding to make room for the icon */
+.showable-password {
+    padding-right: 30px; /* Enough space for the icon */
 }

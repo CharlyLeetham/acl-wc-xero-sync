@@ -168,7 +168,7 @@ jQuery(document).ready(function($) {
                 icon.removeClass('fa-eye-slash').addClass('fa-eye');
                 $(this).removeClass('show');
             }
-        });      
+        });     
 
     });
 
