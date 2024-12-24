@@ -355,7 +355,7 @@ class ACLXeroHelper {
         if (is_dir($folder_path)) {
             $files = glob($folder_path . '/*.'.$filetype);
             
-            ACLXeroLogger::log_message( "files:", 'xero_logging' );
+            ACLXeroLogger::log_message( "files:".$files, 'xero_logging' );
 
             if ($files !== false) {
                 usort($files, function($a, $b) {
