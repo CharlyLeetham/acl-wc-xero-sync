@@ -94,10 +94,6 @@ class ACLSyncService {
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
-            /* Set up the csv files to export the results. */
-
-          
-
             if ( $exists ) {
 
                 // Fetch item details from Xero
@@ -110,9 +106,21 @@ class ACLSyncService {
                 $wcPrice = get_post_meta( $product['id'], '_price', true );  
 
                 // Compare prices
-                if ((float)$xeroPrice !== (float)$wcPrice) {
-                    echo "<div class='notice notice-info'><p>Product [ID: ".$product['id']."] - ".$sku." already in Xero. Price differs. Xero Price: $".$xeroPrice.". WooCommerce Price: $".$wcPrice." </p></div>";
-                    ACLXeroHelper::csv_file( $pricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
+                if ( (float)$xeroPrice !== (float)$wcPrice ) {
+                    try {
+                        // Update the price in Xero
+                        $updated = self::update_xero_price($xero, $sku, $wcPrice);
+                        if ( $updated ) {
+                            echo "<div class='notice notice-info'><p>Product [ID: ".$product['id']."] - ".$sku." already in Xero. Price differs. Xero Price: $".$xeroPrice.". WooCommerce Price: $".$wcPrice." </p></div>";
+                            ACLXeroHelper::csv_file( $pricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
+                        } else {
+                            echo "<div class='notice notice-error'><p>Product [SKU: ".$product['SKU']."] - ".$sku." failed to update in Xero. Xero Price: $".$xeroPrice.". WooCommerce Price: $".$wcPrice." </p></div>";
+                            ACLXeroLogger::log_message ( "Product SKU <strong>".$sku."</strong> exists in Xero. Price Updated failed.", 'product_sync' );
+                        }
+                    } catch ( \Exception $e ) {
+                        ACLXeroLogger::log_message( "Error updating price for product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
+                        echo "<div class='notice notice-error'><p>Error updating price for product [ID: ".$product['SKU']."] - ".$sku.": {$e->getMessage()}</p></div>";
+                    }
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                     ACLXeroHelper::csv_file( $nopricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
@@ -220,6 +228,28 @@ class ACLSyncService {
 
         return $wpdb->get_results( $query, ARRAY_A ) ?: [];
     }
+
+    /**
+     * Updates the price of an item in Xero
+     * 
+     * @param object $xero Xero API object
+     * @param string $sku SKU of the product
+     * @param float $newPrice New price to set
+     * @return bool Returns true if the price was updated, false otherwise
+     */
+    private static function update_xero_price( $xero, $sku, $newPrice ) {
+        try {
+            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
+            $salesDetails = $item->getSalesDetails(); //Get the Sale information from the Xero record
+            $salesDetails->setUnitPrice( $newPrice ); //Set the new price from WC to Xero
+            $item->setSalesDetails( $salesDetails ); //Set Description etc
+            $xero->save( $item ); //Save the item in Xero
+            return true;
+        } catch (\Exception $e) {
+            ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
+            return false;
+        }
+    }    
 
     
 }
