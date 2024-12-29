@@ -15,29 +15,29 @@ class ACLXeroHelper {
      */    
 
     public static function initialize_xero_client() {
-        ACLXeroLogger::log_message('Initializing Xero client.', 'xero_auth');
+        ACLXeroLogger::log_message( 'Initializing Xero client.', 'xero_auth' );
     
         try {
             // Retrieve stored credentials
-            $accessToken = get_option('xero_access_token');
-            $refreshToken = get_option('xero_refresh_token');
-            $tenantId = get_option('xero_tenant_id');
-            $tokenExpires = get_option('xero_token_expires', 0);
+            $accessToken = get_option( 'xero_access_token' );
+            $refreshToken = get_option( 'xero_refresh_token' );
+            $tenantId = get_option( 'xero_tenant_id' );
+            $tokenExpires = get_option( 'xero_token_expires', 0 );
     
             // Validate credentials
             if (!$accessToken || !$refreshToken || !$tenantId) {
-                throw new \Exception("Missing Xero credentials. Please reauthorize.");
+                throw new \Exception( "Missing Xero credentials. Please reauthorize." );
             }
     
             // Refresh token if expired
             if (time() > $tokenExpires) {
-                ACLXeroLogger::log_message('Access token expired. Attempting to refresh...', 'xero_auth');
+                ACLXeroLogger::log_message( 'Access token expired. Attempting to refresh...', 'xero_auth' );
                 //$accessToken = self::refresh_access_token($refreshToken);
-                $clientId = get_option('acl_xero_consumer_key');
-                $clientSecret = get_option('acl_xero_consumer_secret');
+                $clientId = get_option( 'acl_xero_consumer_key' );
+                $clientSecret = get_option( 'acl_xero_consumer_secret' );
     
                 if (!$clientId || !$clientSecret) {
-                    throw new \Exception("Xero Client ID or Secret is missing. Please configure your settings.");
+                    throw new \Exception( "Xero Client ID or Secret is missing. Please configure your settings." );
                 }
     
                 $provider = new \Calcinai\OAuth2\Client\Provider\Xero([
@@ -52,19 +52,22 @@ class ACLXeroHelper {
     
                     // Update stored credentials
                     $accessToken = $newAccessToken->getToken();
-                    update_option('xero_access_token', $accessToken);
-                    update_option('xero_refresh_token', $newAccessToken->getRefreshToken());
-                    update_option('xero_token_expires', time() + $newAccessToken->getExpires());
+                    update_option( 'xero_access_token', $accessToken );
+                    update_option( 'xero_refresh_token', $newAccessToken->getRefreshToken() );
+                    update_option( 'xero_token_expires', time() + $newAccessToken->getExpires() );
     
-                    ACLXeroLogger::log_message('Tokens refreshed successfully.', 'xero_auth');
+                    ACLXeroLogger::log_message( 'Tokens refreshed successfully.', 'xero_auth' );
                 } catch (\Exception $e) {
-                    ACLXeroLogger::log_message('Token refresh failed: ' . $e->getMessage(), 'xero_auth');
-                    throw new \Exception("Failed to refresh the Xero access token. Please reauthorize.");
+                    ACLXeroLogger::log_message( 'Token refresh failed: ' . $e->getMessage(), 'xero_auth' );
+                    throw new \Exception( "Failed to refresh the Xero access token. Please reauthorize." );
                 }                
             }
     
             // Initialize the Xero client
-            $xero = new \XeroPHP\Application($accessToken, $tenantId);
+            $config = [
+                'base_url' => 'https://api.xero.com/api.xro/2.0', // Ensure no extra slash
+            ];
+            $xero = new \XeroPHP\Application( $accessToken, $tenantId, $config );
     
             // Test client connection
             try {
@@ -72,20 +75,20 @@ class ACLXeroHelper {
             } catch (\XeroPHP\Remote\Exception $e) {
                 // Handle 401 Unauthorized error gracefully
                 if (strpos($e->getMessage(), '401 Unauthorized') !== false) {
-                    ACLXeroLogger::log_message("Unauthorized access detected: " . $e->getMessage(), 'xero_auth');
-                    throw new \Exception("Access token is invalid. Please reauthorize the Xero connection.");
+                    ACLXeroLogger::log_message( "Unauthorized access detected: " . $e->getMessage(), 'xero_auth' );
+                    throw new \Exception( "Access token is invalid. Please reauthorize the Xero connection." );
                 }
     
                 // Re-throw other exceptions
-                throw new \Exception("Failed to verify Xero connection: " . $e->getMessage());
+                throw new \Exception( "Failed to verify Xero connection: " . $e->getMessage() );
             }
     
-            ACLXeroLogger::log_message("Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth');
+            ACLXeroLogger::log_message( "Xero client initialized successfully with Tenant ID: $tenantId", 'xero_auth' );
             return $xero;
     
         } catch (\Exception $e) {
-            ACLXeroLogger::log_message("Error initializing Xero client: " . $e->getMessage(), 'xero_auth');
-            return new \WP_Error('initialization_error', 'Error initializing Xero client: ' . $e->getMessage());                      
+            ACLXeroLogger::log_message( "Error initializing Xero client: " . $e->getMessage(), 'xero_auth' );
+            return new \WP_Error( 'initialization_error', 'Error initializing Xero client: ' . $e->getMessage() );                      
         }
     }
 
