@@ -244,13 +244,18 @@ class ACLSyncService {
             echo "<br />";            
             $salesDetails = $item->getSalesDetails(); //Get the Sale information from the Xero record
             $salesDetails->setUnitPrice( $newPrice ); //Set the new price from WC to Xero
+            var_dump( $salesDetails );
+            echo "<br />";               
             $item->setSalesDetails( $salesDetails ); //Set Description etc
+            echo "Item Updated: <br />";
+            var_dump( $item );
+            echo "<br />";   
             $xero->save( $item ); //Save the item in Xero
             return true;
         } catch (\Exception $e) {
-            var_dump( $e );
-            echo "<br />";
-            echo $e->getMessage()."\n";
+            //var_dump( $e );
+            //echo "<br />";
+            //echo $e->getMessage()."\n";
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
             return false;
         }
