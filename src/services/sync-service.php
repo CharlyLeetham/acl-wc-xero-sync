@@ -246,7 +246,9 @@ class ACLSyncService {
             $xero->save( $item ); //Save the item in Xero
             return true;
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            echo $xero."\n";
+            echo $item."\n";
+            echo $e->getMessage()."\n";
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
             return false;
         }
