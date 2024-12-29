@@ -240,6 +240,8 @@ class ACLSyncService {
     private static function update_xero_price( $xero, $sku, $newPrice ) {
         try {
             $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
+            var_dump( $item );
+            echo "\n";            
             $salesDetails = $item->getSalesDetails(); //Get the Sale information from the Xero record
             $salesDetails->setUnitPrice( $newPrice ); //Set the new price from WC to Xero
             $item->setSalesDetails( $salesDetails ); //Set Description etc
