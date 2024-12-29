@@ -243,7 +243,7 @@ class ACLSyncService {
             var_dump( $item );
             echo "<br />";            
             $salesDetails = $item->getSalesDetails(); //Get the Sale information from the Xero record
-            $salesDetails->setUnitPrice( $newPrice ); //Set the new price from WC to Xero
+            $salesDetails->setUnitPrice( (float)$newPrice ); //Set the new price from WC to Xero
             var_dump( $salesDetails );
             echo "<br />";               
             $item->setSalesDetails( $salesDetails ); //Set Description etc
