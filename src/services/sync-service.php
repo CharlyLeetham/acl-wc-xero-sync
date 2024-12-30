@@ -252,7 +252,7 @@ class ACLSyncService {
             $request = $xero->load('Accounting\\Item')->where('Code', 'some_sku');
             //ACLXeroLogger::log_message('URL to be used: ' . $request, 'product_sync'); 
             echo 'REQUEST<br /><br />';
-            echo var_dump( $request );
+            echo var_dump( $request->getUrl() );
             echo '<br /><br />';
             echo var_dump( $e );
             echo '<br />';
