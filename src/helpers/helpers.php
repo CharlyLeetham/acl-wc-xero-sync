@@ -363,7 +363,6 @@ class ACLXeroHelper {
 
     public static function handle_sync_ajax() {
         ACLXeroLogger::log_message( "Entering sync ajax", 'product_sync' );
-        check_ajax_referer('xero_sync_products_ajax', 'nonce');
         $dry_run = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
        
         // Check if the user has permission to perform this action
