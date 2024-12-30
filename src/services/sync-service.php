@@ -237,9 +237,8 @@ class ACLSyncService {
      * @param float $newPrice New price to set
      * @return bool Returns true if the price was updated, false otherwise
      */
-    private static function update_xero_price( $xero, $sku, $newPrice ) {
-        try {
-            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)          
+    private static function update_xero_price( $xero, $sku, $newPrice, $item ) {
+        try {     
             
             // Ensure the price is formatted correctly
             $formattedPrice = (float)$newPrice;
