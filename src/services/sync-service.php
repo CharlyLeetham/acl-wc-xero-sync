@@ -254,10 +254,27 @@ class ACLSyncService {
             
             // Setup for logging middleware just for this request
             $stack = \GuzzleHttp\HandlerStack::create();
-            $stack->push(\GuzzleHttp\Middleware::log( function($message) use (&$guzzleLog ) {
-                // Capture the log message
-                $guzzleLog .= $message . "\n";
-            }, new \GuzzleHttp\MessageFormatter('{req.url} {req.method} {req.body}')));
+            $guzzleLog = ""; // Initialize the log string
+
+            // Create a simple logger that echoes to stdout
+            $logger = new class implements \Psr\Log\LoggerInterface {
+                private $log = "";
+
+                public function log($level, $message, array $context = array()) {
+                    $this->log .= $message . "\n";
+                }
+
+                public function emergency($message, array $context = array()) { $this->log($message, $context); }
+                public function alert($message, array $context = array()) { $this->log($message, $context); }
+                public function critical($message, array $context = array()) { $this->log($message, $context); }
+                public function error($message, array $context = array()) { $this->log($message, $context); }
+                public function warning($message, array $context = array()) { $this->log($message, $context); }
+                public function notice($message, array $context = array()) { $this->log($message, $context); }
+                public function info($message, array $context = array()) { $this->log($message, $context); }
+                public function debug($message, array $context = array()) { $this->log($message, $context); }
+            };            
+
+            $stack->push(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter('{req.url} {req.method} {req.body}')));
             $client = new \GuzzleHttp\Client(['handler' => $stack]);
 
             // Temporarily switch the transport for this request
@@ -271,7 +288,7 @@ class ACLSyncService {
             $xero->config['transport'] = $originalTransport;
 
             echo "Guzzle Request Log:\n";
-            echo $guzzleLog; // Echo the captured log
+            echo $logger->log; // Echo the captured log
 
             echo "Price updated for SKU $sku to $newPrice.\n";            
             
