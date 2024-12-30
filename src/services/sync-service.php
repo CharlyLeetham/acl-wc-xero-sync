@@ -246,20 +246,10 @@ class ACLSyncService {
 
             // Check if SalesDetails exists, if not, create it
             $salesDetails = $item->getSalesDetails();
-            if ( !$salesDetails ) {
-                $salesDetails = new \XeroPHP\Models\Accounting\SalesDetails();
-            }
-        
+
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
-            $item->setSalesDetails( $salesDetails );
-            
-            // Ensure all required fields for the item are set
-            // Example: Setting some common fields that might be required
-            $item->setCode( $sku );
-            
-            // Remove the extra slash manually            
-            //$correctUrl = str_replace('//api.xro', '/api.xro', $xero->config['xero']['base_url']) . '/Items/' . $sku;            
+            $item->setSalesDetails( $salesDetails );        
             
             // Save the updated item back to Xero
             $xero->save( $item, $itemUrl );          
@@ -268,14 +258,8 @@ class ACLSyncService {
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
             return true;
         } catch (\Exception $e) {
-            //echo "<br /><br />Xero<br />";
-            //echo var_dump( $xero );
-            //echo '<br /><br />';
-            $request = $xero->load('Accounting\\Item')->where('Code', 'some_sku');
-            //ACLXeroLogger::log_message('URL to be used: ' . $request, 'product_sync'); 
-            echo 'REQUEST<br /><br /><pre>';
-            echo var_dump( $request );
-            echo '</pre><br /><br />';
+
+            //echo "<br /><br />E<br /><pre>";
             //echo var_dump( $e );
             //echo '</pre><br />';
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
