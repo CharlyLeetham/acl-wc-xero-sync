@@ -259,9 +259,9 @@ class ACLSyncService {
             return true;
         } catch (\Exception $e) {
 
-            //echo "<br /><br />E<br /><pre>";
-            //echo var_dump( $e );
-            //echo '</pre><br />';
+            echo "<br /><br />E<br /><pre>";
+            echo var_dump( $e );
+            echo '</pre><br />';
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
             return false;
         }
