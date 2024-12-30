@@ -255,8 +255,51 @@ class ACLSyncService {
             echo var_dump($item);
             echo '****</pre>';
 
+            $itemData = [
+                'Code' => $sku, // The item's unique identifier in Xero
+                'SalesDetails' => [
+                    'UnitPrice' => $formattedPrice, // Your new price
+                    'AccountCode' => $salesDetails->getAccountCode(),
+                    'TaxType' => $salesDetails->getTaxType()
+                ],
+                // Include other fields as required by Xero's API for updates
+            ];
+            $jsonData = json_encode($itemData);
+
+            $accessToken = get_option( 'xero_access_token' );
+            $tenantId = get_option( 'xero_tenant_id' );
+
+            $headers = [
+                'Authorization: Bearer ' . $accessToken,
+                'Xero-tenant-id: ' . $tenantId,
+                'Content-Type: application/json'
+            ]; 
+
+            $itemId = $item->getItemID();
+            $url = "https://api.xero.com/api.xro/2.0/Items/{$itemId}";
+
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            
+            $response = curl_exec($ch);
+            
+            if (curl_errno($ch)) {
+                echo 'Curl error: ' . curl_error($ch);
+            } else {
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                echo "Response HTTP Status: " . $httpCode . "\n";
+                echo "Response Body:\n" . $response;
+            }
+            
+            curl_close($ch);
+
             // Attempt to save the item with the new price
-            $xero->save($item);
+            //$xero->save($item);
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
