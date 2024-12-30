@@ -246,20 +246,24 @@ class ACLSyncService {
 
             // Check if SalesDetails exists, if not, create it
             $salesDetails = $item->getSalesDetails();
-            if (!$salesDetails) {
+            if ( !$salesDetails ) {
                 $salesDetails = new \XeroPHP\Models\Accounting\SalesDetails();
             }
         
             // Set the new price
-            $salesDetails->setUnitPrice($formattedPrice);
-            $item->setSalesDetails($salesDetails);
+            $salesDetails->setUnitPrice( $formattedPrice );
+            $item->setSalesDetails( $salesDetails );
             
             // Ensure all required fields for the item are set
             // Example: Setting some common fields that might be required
-            $item->setCode($sku);
+            $item->setCode( $sku );
+
+            // Correct the URL manually before saving
+            $itemUrl = 'api.xro/2.0/Items/' . $sku;
+            $xero->config['xero']['base_url'] = 'https://api.xero.com/';            
             
             // Save the updated item back to Xero
-            $xero->save($item);
+            $xero->save( $item, $itemUrl );
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
