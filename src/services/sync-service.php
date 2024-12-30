@@ -239,11 +239,30 @@ class ACLSyncService {
      */
     private static function update_xero_price( $xero, $sku, $newPrice ) {
         try {
-            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)      
-            $salesDetails = $item->getSalesDetails(); //Get the Sale information from the Xero record
-            $salesDetails->setUnitPrice( (float)$newPrice ); //Set the new price from WC to Xero             
-            $item->setSalesDetails( $salesDetails ); //Set Description etc
-            $xero->save( $item ); //Save the item in Xero
+            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
+            
+            // Ensure the price is formatted correctly
+            $formattedPrice = number_format((float)$newPrice, 2, '.', '');
+
+            // Check if SalesDetails exists, if not, create it
+            $salesDetails = $item->getSalesDetails();
+            if (!$salesDetails) {
+                $salesDetails = new \XeroPHP\Models\Accounting\SalesDetails();
+            }
+        
+            // Set the new price
+            $salesDetails->setUnitPrice($formattedPrice);
+            $item->setSalesDetails($salesDetails);
+            
+            // Ensure all required fields for the item are set
+            // Example: Setting some common fields that might be required
+            $item->setCode($sku);
+            
+            // Save the updated item back to Xero
+            $xero->save($item);
+
+            ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
+            echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
             return true;
         } catch (\Exception $e) {
             echo "<br /><br />Xero<br />";
