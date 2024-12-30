@@ -259,7 +259,7 @@ class ACLSyncService {
             $item->setCode( $sku );
             
             // Remove the extra slash manually            
-            $correctUrl = str_replace('//api.xro', '/api.xro', $xero->config['xero']['base_url']) . '/Items/' . $sku;            
+            //$correctUrl = str_replace('//api.xro', '/api.xro', $xero->config['xero']['base_url']) . '/Items/' . $sku;            
             
             // Save the updated item back to Xero
             $xero->save( $item, $itemUrl );
