@@ -250,59 +250,11 @@ class ACLSyncService {
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
-            
-            
-            // Setup for logging middleware just for this request
-            $stack = \GuzzleHttp\HandlerStack::create();
-            $guzzleLog = ""; // Initialize the log string
-
-            // Create a simple logger that echoes to stdout
-            $logger = new class implements \Psr\Log\LoggerInterface {
-                private $log = "";
-
-                public function log($level, $message, array $context = array()) {
-                    $this->log .= $message . "\n";
-                }
-
-                public function emergency($message, array $context = array()) { $this->log($message, $context); }
-                public function alert($message, array $context = array()) { $this->log($message, $context); }
-                public function critical($message, array $context = array()) { $this->log($message, $context); }
-                public function error($message, array $context = array()) { $this->log($message, $context); }
-                public function warning($message, array $context = array()) { $this->log($message, $context); }
-                public function notice($message, array $context = array()) { $this->log($message, $context); }
-                public function info($message, array $context = array()) { $this->log($message, $context); }
-                public function debug($message, array $context = array()) { $this->log($message, $context); }
-            };
-
-            $stack->push(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter('{req.url} {req.method} {req.body}')));
-            $client = new \GuzzleHttp\Client(['handler' => $stack]);
-
-            // Use Reflection to temporarily change the transport
-            $reflection = new ReflectionClass($xero);
-            $property = $reflection->getProperty('config');
-            $property->setAccessible(true);
-            $config = $property->getValue($xero);
-            
-            $originalTransport = $config['transport'];
-            $config['transport'] = $client;
-            $property->setValue($xero, $config);
 
             // Attempt to save the item with the new price
             $xero->save($item);
 
-            // Restore the original transport
-            $config['transport'] = $originalTransport;
-            $property->setValue($xero, $config);
-
-            $property->setAccessible(false); // Reset access control
-
-            echo "Guzzle Request Log:\n";
-            echo $logger->log; // Echo the captured log
-
-            echo "Price updated for SKU $sku to $newPrice.\n";            
-            
-            // Save the updated item back to Xero
-            //$xero->save( $item, $itemUrl );          
+            echo "Price updated for SKU $sku to $newPrice.\n";                   
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
