@@ -362,18 +362,20 @@ class ACLXeroHelper {
     }    
 
     public static function handle_sync_ajax() {
-        ACLXeroLogger::log_message("Entering sync ajax", 'product_sync');
+        ACLXeroLogger::log_message( "Entering sync ajax", 'product_sync' );
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
             wp_die('You do not have sufficient permissions to access this page.');
         }
+
+        $dry_run = isset( $_POST['dry_run'] ) && $_POST['dry_run'] === '1';
     
         ob_start(); // Start output buffering
-        ACLSyncService::sync_products();
+        ACLSyncService::sync_products( $dry_run );
         $output = ob_get_clean(); // Capture the output
         
-        if (!empty($output)) {
+        if (!empty( $output )) {
             echo $output; // Echo the captured output
         } else {
             echo "<div class='notice notice-info'><p>No output from sync process.</p>";
