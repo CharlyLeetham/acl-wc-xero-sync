@@ -249,10 +249,34 @@ class ACLSyncService {
 
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
-            $item->setSalesDetails( $salesDetails );        
+            $item->setSalesDetails( $salesDetails ); 
+            
+            
+            // Setup for logging middleware just for this request
+            $stack = \GuzzleHttp\HandlerStack::create();
+            $stack->push(\GuzzleHttp\Middleware::log( function($message) use (&$guzzleLog ) {
+                // Capture the log message
+                $guzzleLog .= $message . "\n";
+            }, new \GuzzleHttp\MessageFormatter('{req.url} {req.method} {req.body}')));
+            $client = new \GuzzleHttp\Client(['handler' => $stack]);
+
+            // Temporarily switch the transport for this request
+            $originalTransport = $xero->config['transport'];
+            $xero->config['transport'] = $client;
+
+            // Attempt to save the item with the new price
+            $xero->save( $item );
+
+            // Restore the original transport
+            $xero->config['transport'] = $originalTransport;
+
+            echo "Guzzle Request Log:\n";
+            echo $guzzleLog; // Echo the captured log
+
+            echo "Price updated for SKU $sku to $newPrice.\n";            
             
             // Save the updated item back to Xero
-            $xero->save( $item, $itemUrl );          
+            //$xero->save( $item, $itemUrl );          
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
