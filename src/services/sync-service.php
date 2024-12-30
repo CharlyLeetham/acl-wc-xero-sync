@@ -4,8 +4,8 @@
  */
 
 namespace ACLWcXeroSync\Services;
-use ACLXeroLogger;
-use ACLXeroHelper;
+use ACLWcXeroSync\Helpers\ACLXeroHelper;
+use ACLWcXeroSync\Helpers\ACLXeroLogger;
 
 class ACLSyncService {
 
