@@ -62,9 +62,13 @@ class ACLXeroHelper {
                     throw new \Exception( "Failed to refresh the Xero access token. Please reauthorize." );
                 }                
             }
+
+            $config = [
+                'base_url' => 'https://api.xero.com/api.xro/2.0', // No trailing slash after .com
+            ];
     
             // Initialize the Xero client
-            $xero = new \XeroPHP\Application( $accessToken, $tenantId );
+            $xero = new \XeroPHP\Application( $accessToken, $tenantId, $config );
     
             // Test client connection
             try {

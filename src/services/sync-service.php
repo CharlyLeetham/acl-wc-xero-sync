@@ -262,10 +262,7 @@ class ACLSyncService {
             //$correctUrl = str_replace('//api.xro', '/api.xro', $xero->config['xero']['base_url']) . '/Items/' . $sku;            
             
             // Save the updated item back to Xero
-            $response = $xero->save( $item, $itemUrl );
-            echo "<br /><br />Response<br /><pre>";
-            echo var_dump( $response );
-            echo '</pre><br /><br />';            
+            $xero->save( $item, $itemUrl );          
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
