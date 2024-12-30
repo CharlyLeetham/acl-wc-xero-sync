@@ -254,6 +254,7 @@ class ACLSyncService {
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
+            $item->setCode( $sku );
             echo 'Item: <br /><pre>';
             echo var_dump( $item );
             echo '</pre><br />****<br />';
