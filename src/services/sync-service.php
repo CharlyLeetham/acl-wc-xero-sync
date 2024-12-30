@@ -250,9 +250,12 @@ class ACLSyncService {
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
+            echo '<pre>';
+            echo var_dump( $item );
+            echo '</pre>';
 
             // Attempt to save the item with the new price
-            $xero->save($item);
+            $xero->save( $item );
 
             echo "Price updated for SKU $sku to $newPrice.\n";                   
 
