@@ -271,16 +271,16 @@ class ACLSyncService {
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
             return true;
         } catch (\Exception $e) {
-            echo "<br /><br />Xero<br />";
-            echo var_dump( $xero );
-            echo '<br /><br />';
+            //echo "<br /><br />Xero<br />";
+            //echo var_dump( $xero );
+            //echo '<br /><br />';
             $request = $xero->load('Accounting\\Item')->where('Code', 'some_sku');
             //ACLXeroLogger::log_message('URL to be used: ' . $request, 'product_sync'); 
-            echo 'REQUEST<br /><br />';
+            echo 'REQUEST<br /><br /><pre>';
             echo var_dump( $request );
-            echo '<br /><br /><pre>';
-            echo var_dump( $e );
-            echo '</pre><br />';
+            echo '</pre><br /><br />';
+            //echo var_dump( $e );
+            //echo '</pre><br />';
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
             return false;
         }
