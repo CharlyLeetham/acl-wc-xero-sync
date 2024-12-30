@@ -242,7 +242,7 @@ class ACLSyncService {
             $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
             
             // Ensure the price is formatted correctly
-            $formattedPrice = number_format((float)$newPrice, 2, '.', '');
+            $formattedPrice = (float)$newPrice;
 
             // Check if SalesDetails exists, if not, create it
             $salesDetails = $item->getSalesDetails();
