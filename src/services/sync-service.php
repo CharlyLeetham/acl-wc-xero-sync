@@ -250,10 +250,10 @@ class ACLSyncService {
             // Set the new price
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
-            $item->setCode( $sku );
+            $item->setCode($sku);
 
             // Attempt to save the item with the new price
-            $xero->save( $item );
+            $xero->save($item);
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
