@@ -239,11 +239,7 @@ class ACLSyncService {
      */
     private static function update_xero_price( $xero, $sku, $newPrice ) {
         try {
-            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
-
-            echo 'Item: <br /><pre>';
-            echo var_dump( $item );
-            echo '</pre><br />****<br />';            
+            $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)          
             
             // Ensure the price is formatted correctly
             $formattedPrice = (float)$newPrice;
@@ -255,14 +251,9 @@ class ACLSyncService {
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
             $item->setCode( $sku );
-            echo 'Item: <br /><pre>';
-            echo var_dump( $item );
-            echo '</pre><br />****<br />';
 
             // Attempt to save the item with the new price
             $xero->save( $item );
-
-            echo "Price updated for SKU $sku to $newPrice.\n";                   
 
             ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
