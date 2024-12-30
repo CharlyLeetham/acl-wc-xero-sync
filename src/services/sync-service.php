@@ -239,7 +239,7 @@ class ACLSyncService {
      */
     private static function update_xero_price( $xero, $sku, $newPrice, $item ) {
         try {     
-            
+
             // Ensure the price is formatted correctly
             $formattedPrice = (float)$newPrice;
 
@@ -250,6 +250,10 @@ class ACLSyncService {
             $salesDetails->setUnitPrice( $formattedPrice );
             $item->setSalesDetails( $salesDetails ); 
             $item->setCode($sku);
+            
+            echo '<pre>';
+            echo var_dump($item);
+            echo '****</pre>';
 
             // Attempt to save the item with the new price
             $xero->save($item);
