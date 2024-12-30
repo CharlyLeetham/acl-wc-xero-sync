@@ -49,6 +49,7 @@ class ACLProductSyncPage {
         wp_localize_script('acl-wc-xero-sync', 'aclWcXeroSyncAjax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce_get_log_content' => wp_create_nonce('get_log_content'),
+            'nonce_update_csv_display' => wp_create_nonce('update_csv_display'),
             'nonce_download_file' => wp_create_nonce('download_file'),
             'nonce_delete_csv' => wp_create_nonce('delete_csv'),
             'nonce_delete_csv_multiple' => wp_create_nonce('delete_csv_multiple'),
