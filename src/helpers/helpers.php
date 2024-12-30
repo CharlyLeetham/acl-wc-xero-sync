@@ -141,16 +141,15 @@ class ACLXeroHelper {
     }  
 
     public static function update_csv_display() {
-        check_ajax_referer('update_csv_display', 'nonce'); // Use the correct nonce
+        check_ajax_referer('update_csv_display', 'nonce');
     
         $filetype = 'csv';
+        
+        // Start output buffering
         ob_start();
-        // Capture output of display_files in a buffer to prevent direct echoing
-        echo self::display_files($filetype);
-        $html = ob_get_clean();
-    
-        // Get the default file name returned by display_files
+        // Call display_files, which will echo directly into the buffer
         $default_file = self::display_files($filetype);
+        $html = ob_get_clean(); // Capture the buffered output
     
         if ($html) {
             wp_send_json_success([

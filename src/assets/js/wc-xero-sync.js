@@ -204,8 +204,8 @@ jQuery(document).ready(function($) {
        ACLWcXeroSync.displayLog(defaultLog);
     }
 
-    // New code for sync functionality
-    $('#start-sync').on('click', function(e) {
+     // New code for sync functionality
+     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
         $.ajax({
@@ -219,7 +219,7 @@ jQuery(document).ready(function($) {
             success: function(response) {                           
                 $('#sync-results').html(response);
                 
-                // Update CSV file display after sync
+                // Here's where the new AJAX call for updating CSV display goes:
                 $.ajax({
                     url: aclWcXeroSyncAjax.ajax_url,
                     type: 'POST',
@@ -251,5 +251,5 @@ jQuery(document).ready(function($) {
                 $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
             }
         });
-    });    
+    });     
 });
