@@ -64,10 +64,7 @@ class ACLXeroHelper {
             }
     
             // Initialize the Xero client
-            $config = [
-                'base_url' => 'https://api.xero.com/api.xro/2.0', // Ensure no extra slash
-            ];
-            $xero = new \XeroPHP\Application( $accessToken, $tenantId, $config );
+            $xero = new \XeroPHP\Application( $accessToken, $tenantId );
     
             // Test client connection
             try {

@@ -257,10 +257,9 @@ class ACLSyncService {
             // Ensure all required fields for the item are set
             // Example: Setting some common fields that might be required
             $item->setCode( $sku );
-
-            // Correct the URL manually before saving
-            $itemUrl = 'api.xro/2.0/Items/' . $sku;
-            $xero->config['xero']['base_url'] = 'https://api.xero.com/';            
+            
+            // Remove the extra slash manually            
+            $correctUrl = str_replace('//api.xro', '/api.xro', $xero->config['xero']['base_url']) . '/Items/' . $sku;            
             
             // Save the updated item back to Xero
             $xero->save( $item, $itemUrl );
