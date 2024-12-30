@@ -252,6 +252,10 @@ class ACLSyncService {
             $item->setSalesDetails( $salesDetails ); 
             $item->setCode( $sku );
 
+            echo '<pre>';
+            echo var_dump( $item );
+            echo '</pre>';
+
             // Attempt to save the item with the new price
             $xero->save( $item );
 
