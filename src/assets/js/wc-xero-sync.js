@@ -209,13 +209,15 @@ jQuery(document).ready(function($) {
      // New code for sync functionality
      $('#start-sync').on('click', function(e) {
         e.preventDefault();
-        $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
+        var dryRun = $('#dry-run').is(':checked');
+        $('#sync-results').html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
         $.ajax({
             url: aclWcXeroSyncAjax.ajax_url,
             type: 'POST',
             data: {
                 'action': 'acl_xero_sync_products_ajax',
                 'sync_xero_products': '1',
+                'dry_run': dryRun ? '1' : '0',
                 '_ajax_nonce': aclWcXeroSyncAjax.nonce_xero_sync_products_ajax
             },
             success: function(response) {                           
