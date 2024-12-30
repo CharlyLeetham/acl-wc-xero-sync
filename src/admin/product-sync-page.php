@@ -384,7 +384,8 @@ class ACLProductSyncPage {
             <h1>Sync Products to Xero</h1>
             <form method="post" id="sync-products-form">
                 <input type="hidden" name="sync_xero_products" value="1">
-                <input type="checkbox" id="dry-run" name="dry_run"> Dry Run                
+                <input type="checkbox" id="dry-run" name="dry_run">
+                <label for="dry-run">Dry Run</label>                
                 <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
             </form>
             <div id="sync-results"></div>

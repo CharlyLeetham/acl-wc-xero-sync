@@ -91,6 +91,7 @@ class ACLSyncService {
 
         try {
          
+            ACLXeroLogger::log_message("Dry Run", 'product_sync');
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
