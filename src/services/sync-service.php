@@ -275,9 +275,9 @@ class ACLSyncService {
             //ACLXeroLogger::log_message('URL to be used: ' . $request, 'product_sync'); 
             echo 'REQUEST<br /><br />';
             echo var_dump( $request );
-            echo '<br /><br />';
+            echo '<br /><br /><pre>';
             echo var_dump( $e );
-            echo '<br />';
+            echo '</pre><br />';
             ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
             return false;
         }
