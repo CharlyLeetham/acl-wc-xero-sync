@@ -213,7 +213,8 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 'action': 'acl_xero_sync_products_ajax',
-                'sync_xero_products': '1'
+                'sync_xero_products': '1',
+                '_ajax_nonce': aclWcXeroSyncAjax.nonce_xero_sync_products_ajax
             },
             success: function(response) {                           
                 $('#sync-results').html(response);
@@ -222,13 +223,15 @@ jQuery(document).ready(function($) {
                 $.ajax({
                     url: aclWcXeroSyncAjax.ajax_url,
                     type: 'POST',
-                    data: { action: 'acl_update_csv_display' },
+                    data: {
+                        action: 'acl_update_csv_display',
+                        '_ajax_nonce': aclWcXeroSyncAjax.nonce_update_csv_display
+                    },
                     success: function(csvResponse) {
                         if (csvResponse.success) {
                             $('#csv-file-container').html(csvResponse.data.html);
                             $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
                             
-                            // Update defaultLog with the new value from the server
                             if (csvResponse.data.defaultLog) {
                                 window.defaultLog = csvResponse.data.defaultLog;
                                 ACLWcXeroSync.displayLog(window.defaultLog);
@@ -248,5 +251,5 @@ jQuery(document).ready(function($) {
                 $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
             }
         });
-    });     
+    });    
 });

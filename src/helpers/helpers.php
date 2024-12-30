@@ -141,14 +141,26 @@ class ACLXeroHelper {
     }  
 
     public static function update_csv_display() {
-        $file_type = 'csv'; // Assuming you want CSV files
-        $html = self::display_files($file_type);
-        
-        wp_send_json_success(array(
-            'html' => $html,
-            'defaultLog' => null // Or set this if you need it
-        ));
-    }    
+        check_ajax_referer('update_csv_display', 'nonce'); // Use the correct nonce
+    
+        $filetype = 'csv';
+        ob_start();
+        // Capture output of display_files in a buffer to prevent direct echoing
+        echo self::display_files($filetype);
+        $html = ob_get_clean();
+    
+        // Get the default file name returned by display_files
+        $default_file = self::display_files($filetype);
+    
+        if ($html) {
+            wp_send_json_success([
+                'html' => $html,
+                'defaultLog' => $default_file
+            ]);
+        } else {
+            wp_send_json_error('Failed to fetch CSV files.');
+        }
+    }
 
 
     /* Handle file download functions */
