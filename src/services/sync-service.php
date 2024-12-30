@@ -272,20 +272,29 @@ class ACLSyncService {
                 public function notice($message, array $context = array()) { $this->log($message, $context); }
                 public function info($message, array $context = array()) { $this->log($message, $context); }
                 public function debug($message, array $context = array()) { $this->log($message, $context); }
-            };            
+            };
 
             $stack->push(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter('{req.url} {req.method} {req.body}')));
             $client = new \GuzzleHttp\Client(['handler' => $stack]);
 
-            // Temporarily switch the transport for this request
-            $originalTransport = $xero->config['transport'];
-            $xero->config['transport'] = $client;
+            // Use Reflection to temporarily change the transport
+            $reflection = new ReflectionClass($xero);
+            $property = $reflection->getProperty('config');
+            $property->setAccessible(true);
+            $config = $property->getValue($xero);
+            
+            $originalTransport = $config['transport'];
+            $config['transport'] = $client;
+            $property->setValue($xero, $config);
 
             // Attempt to save the item with the new price
-            $xero->save( $item );
+            $xero->save($item);
 
             // Restore the original transport
-            $xero->config['transport'] = $originalTransport;
+            $config['transport'] = $originalTransport;
+            $property->setValue($xero, $config);
+
+            $property->setAccessible(false); // Reset access control
 
             echo "Guzzle Request Log:\n";
             echo $logger->log; // Echo the captured log
