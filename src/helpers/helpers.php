@@ -291,7 +291,7 @@ class ACLXeroHelper {
                 echo "<button id='delete-selected' class='button'>Delete Selected</button>";
                 
                 echo '<div id="error-container" style="display: none;"></div>';
-                echo '<div id="log-display-area"><h2>Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
+                echo '<div id="log-display-area"><h2>Content: <span id="current-filename"></span></h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
 
                 // Set this variable for use outside this function's scope
                 $default_file = basename($files[0]);
