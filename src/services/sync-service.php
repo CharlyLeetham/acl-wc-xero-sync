@@ -15,7 +15,7 @@ class ACLSyncService {
     public static function sync_products() {
         try {
             // Step 1: Fetch WooCommerce Products
-            $products = self::get_wc_products();
+            $products = ACLWCService::get_products();
             if ( empty( $products ) ) {
                 ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
