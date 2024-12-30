@@ -230,44 +230,41 @@ class ACLSyncService {
     }
 
     /**
-     * Updates the price of an item in Xero
+     * Updates the price of an item in Xero.
      * 
      * @param object $xero Xero API object
      * @param string $sku SKU of the product
      * @param float $newPrice New price to set
+     * @param \XeroPHP\Models\Accounting\Item $item The item object to update
      * @return bool Returns true if the price was updated, false otherwise
      */
-    private static function update_xero_price( $xero, $sku, $newPrice, $item ) {
-        try {     
-
+    private static function update_xero_price($xero, $sku, $newPrice, $item) {
+        try {
             // Ensure the price is formatted correctly
             $formattedPrice = (float)$newPrice;
 
             // Check if SalesDetails exists, if not, create it
-            $salesDetails = $item->getSalesDetails();
+            $salesDetails = $item->getSalesDetails() ?: new \XeroPHP\Models\Accounting\SalesDetails();
 
             // Set the new price
-            $salesDetails->setUnitPrice( $formattedPrice );
-            $item->setSalesDetails( $salesDetails ); 
+            $salesDetails->setUnitPrice($formattedPrice);
+            $item->setSalesDetails($salesDetails);
             $item->setCode($sku);
-            
-            echo '<pre>';
-            echo var_dump($item);
-            echo '****</pre>';
 
+            // Construct details to send to Xero
             $itemData = [
-                'Code' => $sku, // The item's unique identifier in Xero
+                'Code' => $sku,
                 'SalesDetails' => [
-                    'UnitPrice' => $formattedPrice, // Your new price
+                    'UnitPrice' => $formattedPrice,
                     'AccountCode' => $salesDetails->getAccountCode(),
                     'TaxType' => $salesDetails->getTaxType()
                 ],
-                // Include other fields as required by Xero's API for updates
+                // Additional fields can be added here if required for the update
             ];
             $jsonData = json_encode($itemData);
 
-            $accessToken = get_option( 'xero_access_token' );
-            $tenantId = get_option( 'xero_tenant_id' );
+            $accessToken = get_option('xero_access_token');
+            $tenantId = get_option('xero_tenant_id');
 
             $headers = [
                 'Authorization: Bearer ' . $accessToken,
@@ -287,28 +284,32 @@ class ACLSyncService {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             
             $response = curl_exec($ch);
-            
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
             if (curl_errno($ch)) {
-                echo 'Curl error: ' . curl_error($ch);
-            } else {
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                echo "Response HTTP Status: " . $httpCode . "\n";
-                echo "Response Body:\n" . $response;
+                $errorMessage = 'Curl error: ' . curl_error($ch);
+                ACLXeroLogger::log_message($errorMessage, 'xero_api_error');
+                throw new \Exception($errorMessage);
+            } 
+
+            if ($httpCode !== 200) {
+                $errorMessage = "Failed to update item in Xero. HTTP Status: {$httpCode}. Response: {$response}";
+                ACLXeroLogger::log_message($errorMessage, 'xero_api_error');
+                throw new \Exception($errorMessage);
             }
-            
-            curl_close($ch);
 
-            // Attempt to save the item with the new price
-            //$xero->save($item);
-
-            ACLXeroLogger::log_message( "Updated price for SKU {$sku} to {$formattedPrice}.", 'product_sync' );
+            ACLXeroLogger::log_message("Item {$sku} updated successfully. New Price: {$formattedPrice}. HTTP Status: {$httpCode}", 'product_sync');
             echo "<div class='notice notice-info'><p>Updated price for SKU <strong>{$sku}</strong> to {$formattedPrice}.</p></div>";            
             return true;
-        } catch (\Exception $e) {
-            ACLXeroLogger::log_message( "Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync' );
-            return false;
-        }
-    }    
 
-    
+        } catch (\Exception $e) {
+            ACLXeroLogger::log_message("Error updating Xero price for SKU {$sku}: {$e->getMessage()}", 'product_sync');
+            echo "<div class='notice notice-error'><p>Error updating price for SKU <strong>{$sku}</strong>: {$e->getMessage()}</p></div>";
+            return false;
+        } finally {
+            if (isset($ch)) {
+                curl_close($ch);
+            }
+        }
+    }   
 }
