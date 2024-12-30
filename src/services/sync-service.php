@@ -240,6 +240,10 @@ class ACLSyncService {
     private static function update_xero_price( $xero, $sku, $newPrice ) {
         try {
             $item = self::get_xero_item( $xero, $sku ); //Use inbuilt function to the Xero Item (again)
+
+            echo 'Item: <br /><pre>';
+            echo var_dump( $item );
+            echo '</pre><br />****<br />';            
             
             // Ensure the price is formatted correctly
             $formattedPrice = (float)$newPrice;
