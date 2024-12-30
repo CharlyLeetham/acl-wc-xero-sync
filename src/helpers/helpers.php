@@ -141,16 +141,13 @@ class ACLXeroHelper {
     }  
 
     public static function update_csv_display() {
-        ob_start();
-        $defaultLog = self::display_files('csv');
-        $content = ob_get_clean();
-        // Prepare the response data
-        $response = array(
-            'html' => $content,
-            'defaultLog' => $defaultLog
-        );        
-        wp_send_json_success($content);
-        wp_die();
+        $file_type = 'csv'; // Assuming you want CSV files
+        $html = self::display_files($file_type);
+        
+        wp_send_json_success(array(
+            'html' => $html,
+            'defaultLog' => null // Or set this if you need it
+        ));
     }    
 
 
@@ -245,57 +242,63 @@ class ACLXeroHelper {
     
     // Display the log files
 
-    public static function display_files($filetype) {  
+    public static function display_files($filetype) {
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
-        ACLXeroLogger::log_message( "filepath:".$folder_path, 'xero_logging' );
-        ACLXeroLogger::log_message( "filetype:".$filetype, 'xero_logging' );
+        ACLXeroLogger::log_message("filepath:" . $folder_path, 'xero_logging');
+        ACLXeroLogger::log_message("filetype:" . $filetype, 'xero_logging');
+    
         if (is_dir($folder_path)) {
-            $files = glob($folder_path . '/*.'.$filetype);
-
+            $files = glob($folder_path . '/*.' . $filetype);
+    
             ob_start();
             print_r($files);
             $files_string = ob_get_clean();            
             
-            ACLXeroLogger::log_message( "files:".$files_string, 'xero_logging' );
-
+            ACLXeroLogger::log_message("files:" . $files_string, 'xero_logging');
+    
             if ($files !== false) {
+                // Sort by modification time, latest first
                 usort($files, function($a, $b) {
                     return filemtime($b) - filemtime($a);
                 });
-            }
-            
-            if (empty($files)) {
-                ACLXeroLogger::log_message( "When do we get here?", 'xero_logging' );
-                echo "<p>There are no log files to display</p>";
-            } else {
-                echo "<ul>";
-                echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";
-                
-                foreach ($files as $file) {
-                    $filename = basename($file);
-                    echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename}";
-                    echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";
-                    echo "<button class='button acl-download-file' data-file='" . esc_attr($filename) . "'>Download</button>";
-                    echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
+    
+                if (empty($files)) {
+                    ACLXeroLogger::log_message("No {$filetype} files found.", 'xero_logging');
+                    $html = "<p>There are no {$filetype} files to display</p>";
+                } else {
+                    $latest_file = basename($files[0]); // Get the name of the latest file
+    
+                    ob_start();
+                    echo "<ul>";
+                    echo "<li><input type='checkbox' id='select-all' name='select-all' value='all'> <label for='select-all'>Select All</label></li>";
+                    
+                    foreach ($files as $file) {
+                        $filename = basename($file);
+                        echo "<li><input type='checkbox' name='delete_files[]' value='" . esc_attr($filename) . "'> {$filename}";
+                        echo "<button class='button acl-display-file' data-file='" . esc_attr($filename) . "'>Display</button>";
+                        echo "<button class='button acl-download-file' data-file='" . esc_attr($filename) . "'>Download</button>";
+                        echo "<button class='button acl-delete-file' data-file='" . esc_attr($filename) . "'>Delete</button></li>";
+                    }
+                    echo "</ul>";
+    
+                    echo "<button id='delete-selected' class='button'>Delete Selected</button>";
+                    
+                    echo '<div id="error-container" style="display: none;"></div>';
+                    echo '<div id="log-display-area"><h2>Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
+    
+                    $html = ob_get_clean();
+                    
+                    // Set this variable for use outside this function's scope or return it
+                    ACLXeroLogger::log_message("Default {$filetype} File {$latest_file}", 'xero_logging');
                 }
-                echo "</ul>";
-
-                echo "<button id='delete-selected' class='button'>Delete Selected</button>";
-                
-                echo '<div id="error-container" style="display: none;"></div>';
-                echo '<div id="log-display-area"><h2>Content:</h2><pre id="log-content" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></pre></div>';
-
-                // Set this variable for use outside this function's scope
-                $default_file = basename($files[0]);
-                ACLXeroLogger::log_message( "Default File {$default_file}", 'xero_logging' );
- 
-                // You can either echo this directly or return it for use elsewhere
-                return $default_file;
-                
+            } else {
+                $html = "<p>No {$filetype} files found.</p>";
             }
         } else {
-            echo "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
+            $html = "<div class='notice notice-warning'><p>The 'acl-wc-xero-sync' folder does not exist.</p></div>";
         }
+    
+        return $html; // Return the HTML instead of echoing it
     }
 
     //Display the contents of the log file

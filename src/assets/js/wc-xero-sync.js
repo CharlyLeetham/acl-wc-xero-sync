@@ -204,8 +204,8 @@ jQuery(document).ready(function($) {
        ACLWcXeroSync.displayLog(defaultLog);
     }
 
-   // New code for sync functionality
-   $('#start-sync').on('click', function(e) {
+    // New code for sync functionality
+    $('#start-sync').on('click', function(e) {
         e.preventDefault();
         $('#sync-results').html('<div class="notice notice-info"><p>Starting the Sync process</p></div>');
         $.ajax({
@@ -234,12 +234,13 @@ jQuery(document).ready(function($) {
                                 ACLWcXeroSync.displayLog(window.defaultLog);
                             }
                         } else {
-                            $('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
+                            $('#csv-file-updates').html('<div class="notice notice-error"><p>Failed to update CSV list.</p></div>');
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+                        $('#csv-file-updates').html('<div class="notice notice-error"><p>Error updating CSV list: ' + errorMessage + '</p></div>');
                     }
-                    //error: function() {
-                        //$('#csv-file-updates').html('<div class="notice notice-info"><p>Failed to update CSV list.</p></div>');
-                    //}
                 });                            
             },
             error: function(xhr, status, error) {
@@ -247,5 +248,5 @@ jQuery(document).ready(function($) {
                 $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
             }
         });
-    });    
+    });     
 });
