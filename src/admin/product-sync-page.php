@@ -53,6 +53,7 @@ class ACLProductSyncPage {
             'nonce_download_file' => wp_create_nonce('download_file'),
             'nonce_delete_csv' => wp_create_nonce('delete_csv'),
             'nonce_delete_csv_multiple' => wp_create_nonce('delete_csv_multiple'),
+            'nonce_xero_sync_products_ajax' => wp_create_nonce('xero_sync_products_ajax'),
             'defaultLog' => $defaultLog ? $defaultLog : null,
         ));
     }    
