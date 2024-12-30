@@ -109,7 +109,7 @@ class ACLSyncService {
                 if ( (float)$xeroPrice !== (float)$wcPrice ) {
                     try {
                         // Update the price in Xero
-                        $updated = self::update_xero_price($xero, $sku, $wcPrice);
+                        $updated = self::update_xero_price($xero, $sku, $wcPrice, $item);
                         if ( $updated ) {
                             echo "<div class='notice notice-info'><p>Product [ID: ".$product['id']."] - ".$sku." already in Xero. Price differs. Xero Price: $".$xeroPrice.". WooCommerce Price: $".$wcPrice." </p></div>";
                             ACLXeroHelper::csv_file( $pricechange_csv, $sku.','.$xeroPrice.','.$wcPrice );
