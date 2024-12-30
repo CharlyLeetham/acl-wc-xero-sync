@@ -12,7 +12,7 @@ class ACLSyncService {
     /**
      * Syncs WooCommerce products with Xero by checking their existence.
      */
-    public static function sync_products() {
+    public static function sync_products( $dry_run = false ) {
         try {
             // Step 1: Fetch WooCommerce Products
             $products = ACLWCService::get_products();
@@ -53,7 +53,7 @@ class ACLSyncService {
 
                 $sku = $product['sku'];
                 try {
-                    $itemDetails = self::process_product( $xero, $product, $pricechange_csv, $nopricechange_csv );
+                    $itemDetails = self::process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run );
                     if ( !empty( $itemDetails ) ) {
                         $itemsToUpdate[] = $itemDetails;
                     }
@@ -65,7 +65,7 @@ class ACLSyncService {
             }
 
             // Perform batch update
-            if ( !empty( $itemsToUpdate ) ) {
+            if ( !$dry_run && !empty( $itemsToUpdate ) ) {
                 self::batch_update_xero_items( $itemsToUpdate );
             }
 
@@ -86,7 +86,7 @@ class ACLSyncService {
      * @param string $nopricechange_csv
      * @return array|null Returns item details if an update is needed, null otherwise
      */
-    private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv ) {
+    private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run ) {
         $sku = $product['sku'];
 
         try {
@@ -121,6 +121,12 @@ class ACLSyncService {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                     ACLXeroHelper::csv_file( $nopricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
                 }
+
+                if ( $dry_run ) {
+                    ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to {$wcPrice}.", 'product_sync');
+                    echo "<div class='notice notice-info'><p>Dry Run: Would have updated price for SKU <strong>{$sku}</strong> to {$wcPrice}.</p></div>";
+                    return null; // No actual update, so return null
+                }                
                 ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, WooCommerce Price: {$wcPrice}", 'product_sync' );
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
