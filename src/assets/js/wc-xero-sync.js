@@ -229,54 +229,28 @@ jQuery(document).ready(function($) {
         });
     }
     
+    // New code for sync functionality with loading indicator
     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         var $syncResults = $('#sync-results');
-        var $csvFileUpdates = $('#csv-file-updates');
         
+        // Clear previous results and show loading indicator
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
-        $csvFileUpdates.html(''); // Clear any previous CSV update messages
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                if (xhr.responseText.includes('Products Processed')) {
-                    $syncResults.append(xhr.responseText);
-                    
-                    // Trigger CSV update after sync completion
-                    $.ajax({
-                        url: aclWcXeroSyncAjax.ajax_url,
-                        type: 'POST',
-                        data: {
-                            action: 'acl_update_csv_display',
-                            _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
-                        },
-                        success: function(csvResponse) {
-                            if (csvResponse.success) {
-                                $csvFileUpdates.html(csvResponse.data.html);
-                                // Display the latest CSV file if it exists
-                                if (csvResponse.data.defaultLog) {
-                                    ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
-                                }
-                            } else {
-                                $csvFileUpdates.html('<div class="notice notice-error"><p>Could not update CSV list: ' + csvResponse.data + '</p></div>');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            $csvFileUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list. Status: ' + status + ', Error: ' + error + '</p></div>');
-                        }
-                    });
-                } else {
-                    $syncResults.append(xhr.responseText);
-                }
+            if (xhr.readyState > 2 && xhr.responseText) {
+                // Remove the loading indicator before appending new content
+                $('#sync-indicator').remove();
+                $syncResults.append(xhr.responseText);
+                xhr.responseText = ''; // Clear for next chunk
             }
         };
 
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
-
 });
