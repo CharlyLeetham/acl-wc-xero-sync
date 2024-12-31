@@ -42,8 +42,10 @@ class ACLSyncService {
             } 
 
             // Setup the CSV files
-            $nopricechange_csv = "nopricechange_" . current_time( "Y-m-d-H-i-s" ) . ".csv"; // Captures sync'd products that have no changes
-            $pricechange_csv = "pricechange_" . current_time( "Y-m-d-H-i-s" ) . ".csv"; // Captures sync'd products that have changes.
+            $timestamp = current_time("Y-m-d-H-i-s");
+            $dryRunSuffix = $dry_run ? '_dryrun' : '';
+            $nopricechange_csv = "nopricechange{$dryRunSuffix}_" . $timestamp . ".csv"; // Captures sync'd products that have no changes
+            $pricechange_csv = "pricechange{$dryRunSuffix}_" . $timestamp . ".csv"; // Captures sync'd products that have changes.
 
             // Step 3: Process Each Product
             $itemsToUpdate = array();
