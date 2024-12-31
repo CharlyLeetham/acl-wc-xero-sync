@@ -55,12 +55,6 @@ class ACLSyncService {
             $pricechange_csv = "pricechange{$dryRunSuffix}_" . $timestamp . ".csv"; // Captures sync'd products that have changes.
 
             // Step 3: Process Each Product
-            $itemsToUpdate = array();
-            $count = 0;
-
-            set_transient('xero_sync_status', array('progress' => 0, 'total' => count($products)), 60 * 5); // 5 minutes expiration
-
-
             do {
                 $products = ACWCService::get_products($offset, $batch_size); // Fetch in batches
                 $itemsToUpdate = [];
