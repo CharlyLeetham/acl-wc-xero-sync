@@ -234,8 +234,9 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         var $syncResults = $('#sync-results');
-        
-        // Clear previous results and show loading indicator
+        var $csvUpdates = $('#csv-file-updates'); // Assuming you have this div for CSV updates
+    
+        // Clear previous sync results, keep CSV updates
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
     
         var xhr = new XMLHttpRequest();
@@ -244,11 +245,32 @@ jQuery(document).ready(function($) {
     
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                // Remove the loading indicator
                 $('#sync-indicator').remove();
-                
-                // Ensure message is appended only once by using html() instead of append()
-                $syncResults.html(xhr.responseText);
+                // Append sync messages
+                $syncResults.append(xhr.responseText);
+    
+                // Update CSV display
+                $.ajax({
+                    url: aclWcXeroSyncAjax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'acl_update_csv_display',
+                        _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                    },
+                    success: function(csvResponse) {
+                        if (csvResponse.success) {
+                            $csvUpdates.html(csvResponse.data.html);
+                            if (csvResponse.data.defaultLog) {
+                                ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
+                            }
+                        } else {
+                            $csvUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list: ' + csvResponse.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $csvUpdates.html('<div class="notice notice-error"><p>Error updating CSV list.</p></div>');
+                    }
+                });
             }
         };
     
