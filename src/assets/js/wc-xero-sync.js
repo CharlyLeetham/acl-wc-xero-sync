@@ -234,7 +234,8 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         $('#sync-results').html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
-        $.ajax({
+        
+        var xhr = $.ajax({
             url: aclWcXeroSyncAjax.ajax_url,
             type: 'POST',
             data: {
@@ -243,42 +244,33 @@ jQuery(document).ready(function($) {
                 'dry_run': dryRun ? '1' : '0',
                 '_ajax_nonce': aclWcXeroSyncAjax.nonce_xero_sync_products_ajax
             },
-            success: function(response) {                           
-                $('#sync-results').html(response);
-                
-                // Here's where the new AJAX call for updating CSV display goes:
-                $.ajax({
-                    url: aclWcXeroSyncAjax.ajax_url,
-                    type: 'POST',
-                    data: {
-                        action: 'acl_update_csv_display',
-                        '_ajax_nonce': aclWcXeroSyncAjax.nonce_update_csv_display
-                    },
-                    success: function(csvResponse) {
-                        if (csvResponse.success) {
-                            $('#csv-file-container').html(csvResponse.data.html);
-                            $('#csv-file-updates').html('<div class="notice notice-info"><p>CSV list updated.</p></div>');
-                            
-                            if (csvResponse.data.defaultLog) {
-                                window.defaultLog = csvResponse.data.defaultLog;
-                                ACLWcXeroSync.displayLog(window.defaultLog);
+            xhrFields: {
+                onprogress: function(e) {
+                    var response = e.currentTarget.response;
+                    if (response) {
+                        try {
+                            var data = JSON.parse(response);
+                            if (data.message) {
+                                $('#sync-results').append(data.message);
                             }
-                        } else {
-                            $('#csv-file-updates').html('<div class="notice notice-error"><p>Failed to update CSV list.</p></div>');
+                            if (data.finished) {
+                                console.log("Sync process finished.");
+                                pollForStatus(); // If you need to do something after sync completes
+                            }
+                        } catch (err) {
+                            console.error('Failed to parse JSON response:', err);
                         }
-                        // Start polling for status
-                        pollForStatus();                        
-                    },
-                    error: function(xhr, status, error) {
-                        var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                        $('#csv-file-updates').html('<div class="notice notice-error"><p>Error updating CSV list: ' + errorMessage + '</p></div>');
                     }
-                });                            
-            },
-            error: function(xhr, status, error) {
-                var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-                $('#sync-results').html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
+                }
             }
+        }).done(function(response) {
+            // This will be executed after the full response is received
+            if (response) {
+                $('#sync-results').append(response);
+            }
+        }).fail(function(xhr, status, error) {
+            var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
+            $('#sync-results').append('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
         });
     });     
 });

@@ -395,6 +395,18 @@ class ACLXeroHelper {
         } else {
             wp_send_json_success( array( 'status' => 'Idle' ) );
         }
+    } 
+    
+    /**
+     * Sends a message to the client for immediate display.
+     *
+     * @param string $message The message to send.
+     */
+    public static function send_message($message) {
+        // Send the message to the client
+        echo $message;
+        if (ob_get_level() > 0) ob_flush(); // Flush the output buffer if it's active
+        flush(); // Send output to browser
     }    
 
 }
