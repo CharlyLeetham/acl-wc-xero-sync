@@ -377,11 +377,8 @@ class ACLXeroHelper {
         
         // Set headers for streaming
         header('Content-Type: text/html; charset=utf-8');
-        header('X-Accel-Buffering: no');
         header('Cache-Control: no-cache');
-        header('Connection: keep-alive');
 
-        ignore_user_abort(true);
         try {
             ACLSyncService::sync_products($dry_run);
         } catch (\Exception $e) {

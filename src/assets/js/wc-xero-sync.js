@@ -239,32 +239,17 @@ jQuery(document).ready(function($) {
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
-        xhr.onprogress = function () {
+        xhr.onprogress = function() {
             if (xhr.responseText) {
-                var newContent = xhr.responseText.slice(xhr._lastResponseLength);
-                xhr._lastResponseLength = xhr.responseText.length;
-                
-                try {
-                    // Try to parse as JSON
-                    var data = JSON.parse(newContent);
-                    if (data.message) {
-                        $('#sync-results').append(data.message);
-                        if (data.finished) {
-                            console.log("Sync process finished.");
-                            pollForStatus(); // If needed
-                        }
-                    }
-                } catch (e) {
-                    // If JSON parsing fails, assume it's HTML
-                    $('#sync-results').append(newContent);
-                }
+                $('#sync-results').append(xhr.responseText);
+                xhr.responseText = ''; // Clear the response to avoid duplicates
             }
         };
     
         xhr.onload = function() {
             if (xhr.status === 200) {
                 console.log("Sync process completed.");
-                // If there's any final content, append it here
+                // If you need to do something after sync completes
             } else {
                 console.error('Error in sync process:', xhr.statusText);
             }
@@ -275,6 +260,5 @@ jQuery(document).ready(function($) {
         };
     
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
-        xhr._lastResponseLength = 0;
     });    
 });
