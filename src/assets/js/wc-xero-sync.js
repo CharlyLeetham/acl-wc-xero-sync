@@ -228,52 +228,164 @@ jQuery(document).ready(function($) {
             }
         });
     }
-    
-    // New code for sync functionality with loading indicator
-    $('#start-sync').on('click', function(e) {
-        e.preventDefault();
-        var dryRun = $('#dry-run').is(':checked');
-        var $syncResults = $('#sync-results');
-        var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
-    
-        // Clear previous sync results, keep CSV updates
-        $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
-    
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                $('#sync-indicator').remove();
-                // Append sync messages
-                $syncResults.append(xhr.responseText);
-    
-                // Update CSV display
+
+    // Add this new function to rebind events to dynamically added elements
+    function bindEventHandlers() {
+        // Display button - using event delegation
+        $(document).off('click', '.acl-display-file').on('click', '.acl-display-file', function(e) {
+            e.preventDefault();
+            var filename = $(this).data('file');
+            ACLWcXeroSync.displayLog(filename);
+        });
+
+        // Download button - using event delegation
+        $(document).off('click', '.acl-download-file').on('click', '.acl-download-file', function(e) {
+            e.preventDefault();
+            var filename = $(this).data('file');
+            ACLWcXeroSync.downloadFile(filename);
+        });
+
+        // Delete button - using event delegation
+        $(document).off('click', '.acl-delete-file').on('click', '.acl-delete-file', function(e) {
+            e.preventDefault();
+            var filename = $(this).data('file');
+            if (confirm('Are you sure you want to delete ' + filename + '?')) {
                 $.ajax({
                     url: aclWcXeroSyncAjax.ajax_url,
                     type: 'POST',
                     data: {
-                        action: 'acl_update_csv_display',
-                        _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                        action: 'acl_delete_csv',
+                        file: filename,
+                        _ajax_nonce: aclWcXeroSyncAjax.nonce_delete_csv
                     },
-                    success: function(csvResponse) {
-                        if (csvResponse.success) {
-                            $csvUpdates.html(csvResponse.data.html);
-                            if (csvResponse.data.defaultLog) {
-                                ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
-                            }
+                    success: function(response) {
+                        if (response.success) {
+                            alert('File deleted successfully!');
+                            $(e.target).closest('li').remove();
+                            // Update the CSV list after deletion
+                            $.ajax({
+                                url: aclWcXeroSyncAjax.ajax_url,
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_update_csv_display',
+                                    _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                                },
+                                success: function(csvResponse) {
+                                    if (csvResponse.success) {
+                                        $('#csv-file-container').html(csvResponse.data.html);
+                                        // Rebind events after updating the list
+                                        bindEventHandlers();
+                                    }
+                                }
+                            });
                         } else {
-                            $csvUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list: ' + csvResponse.data + '</p></div>');
+                            alert('Error: ' + response.data);
                         }
                     },
-                    error: function() {
-                        $csvUpdates.html('<div class="notice notice-error"><p>Error updating CSV list.</p></div>');
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
                     }
                 });
             }
-        };
+        });
+
+        // Multiple file deletion - using event delegation
+        $(document).off('click', '#delete-selected').on('click', '#delete-selected', function(e) {
+            e.preventDefault();
+            var selectedFiles = $('input[name="delete_files[]"]:checked').map(function() {
+                return $(this).val();
+            }).get();
+            
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file to delete.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete these ' + selectedFiles.length + ' files?')) {
+                $.ajax({
+                    url: aclWcXeroSyncAjax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'acl_delete_csv_multiple',
+                        files: selectedFiles,
+                        _ajax_nonce: aclWcXeroSyncAjax.nonce_delete_csv_multiple
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Selected files deleted successfully!');
+                            // Remove all checked items
+                            $('input[name="delete_files[]"]:checked').closest('li').remove();
+                            // Update the CSV list after deletion
+                            $.ajax({
+                                url: aclWcXeroSyncAjax.ajax_url,
+                                type: 'POST',
+                                data: {
+                                    action: 'acl_update_csv_display',
+                                    _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                                },
+                                success: function(csvResponse) {
+                                    if (csvResponse.success) {
+                                        $('#csv-file-container').html(csvResponse.data.html);
+                                        // Rebind events after updating the list
+                                        bindEventHandlers();
+                                    }
+                                }
+                            });
+                        } else {
+                            alert('Error: ' + response.data);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            }
+        });
+
+        // Select All checkbox functionality - using event delegation
+        $(document).off('click', '#select-all').on('click', '#select-all', function() {
+            $('input[name="delete_files[]"]').prop('checked', this.checked);
+        });
+
+        // If all checkboxes are checked or unchecked, check or uncheck the "Select All" checkbox - using event delegation
+        $(document).off('change', 'input[name="delete_files[]"]').on('change', 'input[name="delete_files[]"]', function() {
+            if ($('input[name="delete_files[]"]').length === $('input[name="delete_files[]"]:checked').length) {
+                $('#select-all').prop('checked', true);
+            } else {
+                $('#select-all').prop('checked', false);
+            }
+        });
+    }
+
+    // Bind initial event handlers
+    bindEventHandlers();    
     
-        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+    // Your sync functionality - where you call bindEventHandlers after updating CSV list
+    $('#start-sync').on('click', function(e) {
+        // ... existing sync code ...
+        // After updating CSV list:
+        $.ajax({
+            url: aclWcXeroSyncAjax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'acl_update_csv_display',
+                _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+            },
+            success: function(csvResponse) {
+                if (csvResponse.success) {
+                    $csvUpdates.html(csvResponse.data.html);
+                    if (csvResponse.data.defaultLog) {
+                        ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
+                    }
+                    // Rebind events after updating the list
+                    bindEventHandlers();
+                } else {
+                    // Handle error
+                }
+            },
+            error: function() {
+                // Handle error
+            }
+        });
     });
 });
