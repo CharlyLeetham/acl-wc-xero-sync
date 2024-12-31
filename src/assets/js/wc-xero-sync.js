@@ -229,24 +229,28 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // New code for sync functionality
+    // New code for sync functionality with loading indicator
     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         var $syncResults = $('#sync-results');
-        $syncResults.html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
         
+        // Clear previous results and show loading indicator
+        $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
+
         var xhr = new XMLHttpRequest();
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
+
         xhr.onreadystatechange = function() {
             if (xhr.readyState > 2 && xhr.responseText) {
+                // Remove the loading indicator before appending new content
+                $('#sync-indicator').remove();
                 $syncResults.append(xhr.responseText);
                 xhr.responseText = ''; // Clear for next chunk
             }
         };
-    
+
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
-    });  
+    });
 });
