@@ -44,30 +44,42 @@ class ACLSyncService {
             // Step 3: Process Each Product
             $itemsToUpdate = array();
             $count = 0;
-            foreach ( $products as $product ) {
-                if ( empty( $product['sku'] ) ) {
-                    ACLXeroLogger::log_message( "Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync' );
+
+            set_transient('xero_sync_status', array('progress' => 0, 'total' => count($products)), 60 * 5); // 5 minutes expiration
+
+            foreach ($products as $index => $product) {
+                // Log progress
+                $status = get_transient('xero_sync_status');
+                $status['progress'] = $index + 1; // Update progress
+                set_transient('xero_sync_status', $status, 60 * 5);
+    
+                if (empty($product['sku'])) {
+                    ACLXeroLogger::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
                     echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
                     continue;
                 }
-
+    
                 $sku = $product['sku'];
                 try {
-                    $itemDetails = self::process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run );
-                    if ( !empty( $itemDetails ) ) {
+                    $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run);
+                    if (!empty($itemDetails)) {
                         $itemsToUpdate[] = $itemDetails;
                     }
                     $count++;
-                } catch ( \Exception $e ) {
-                    ACLXeroLogger::log_message( "Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync' );
+                } catch (\Exception $e) {
+                    ACLXeroLogger::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
                     echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
                 }
             }
-
+            
             // Perform batch update
             if ( !$dry_run && !empty( $itemsToUpdate ) ) {
                 self::batch_update_xero_items( $itemsToUpdate );
-            }
+            }            
+
+            // Clear status after process completes
+            delete_transient('xero_sync_status');
+    
 
             // Echo the number of successfully synced products
             echo "<div class='notice notice-success'><p>{$count} Products Processed</p></div>";        

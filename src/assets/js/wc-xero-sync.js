@@ -206,6 +206,29 @@ jQuery(document).ready(function($) {
        ACLWcXeroSync.displayLog(defaultLog);
     }
 
+    function pollForStatus() {
+        $.ajax({
+            url: aclWcXeroSyncAjax.ajax_url,
+            type: 'POST',
+            data: {
+                'action': 'acl_xero_sync_status_ajax',
+                '_ajax_nonce': aclWcXeroSyncAjax.nonce_xero_sync_status_ajax // Ensure this nonce is localized
+            },
+            success: function(response) {
+                if (response.success) {
+                    var status = response.data;
+                    $('#sync-results').append(`<p>Progress: ${status.progress}/${status.total}</p>`);
+                    if (status.progress < status.total) {
+                        setTimeout(pollForStatus, 1000); // Poll every second
+                    }
+                }
+            },
+            error: function() {
+                console.error('Failed to get sync status');
+            }
+        });
+    }
+    
      // New code for sync functionality
      $('#start-sync').on('click', function(e) {
         e.preventDefault();
@@ -243,6 +266,8 @@ jQuery(document).ready(function($) {
                         } else {
                             $('#csv-file-updates').html('<div class="notice notice-error"><p>Failed to update CSV list.</p></div>');
                         }
+                        // Start polling for status
+                        pollForStatus();                        
                     },
                     error: function(xhr, status, error) {
                         var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;

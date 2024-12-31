@@ -385,4 +385,17 @@ class ACLXeroHelper {
         wp_die(); // This is required to end the AJAX call properly
     }
 
+    public static function handle_sync_status() {
+        check_ajax_referer('xero_sync_status_ajax', '_ajax_nonce');
+        
+        // Store process status in a transient or similar temporary storage
+        $status = get_transient( 'xero_sync_status' );
+        
+        if ($status) {
+            wp_send_json_success( $status );
+        } else {
+            wp_send_json_success( array( 'status' => 'Idle' ) );
+        }
+    }    
+
 }
