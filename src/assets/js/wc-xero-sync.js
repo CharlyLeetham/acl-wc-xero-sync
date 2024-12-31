@@ -237,20 +237,21 @@ jQuery(document).ready(function($) {
         
         // Clear previous results and show loading indicator
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
-
+    
         var xhr = new XMLHttpRequest();
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
+    
         xhr.onreadystatechange = function() {
-            if (xhr.readyState > 2 && xhr.responseText) {
-                // Remove the loading indicator before appending new content
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Remove the loading indicator
                 $('#sync-indicator').remove();
-                $syncResults.append(xhr.responseText);
-                xhr.responseText = ''; // Clear for next chunk
+                
+                // Ensure message is appended only once by using html() instead of append()
+                $syncResults.html(xhr.responseText);
             }
         };
-
+    
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
 });
