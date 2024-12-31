@@ -229,25 +229,55 @@ jQuery(document).ready(function($) {
         });
     }
     
-    // New code for sync functionality with loading indicator
     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         var $syncResults = $('#sync-results');
+        var $csvFileUpdates = $('#csv-file-updates');
         
-        // Clear previous results and show loading indicator
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
+        $csvFileUpdates.html(''); // Clear any previous CSV update messages
 
         var xhr = new XMLHttpRequest();
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onreadystatechange = function() {
-            if (xhr.readyState > 2 && xhr.responseText) {
-                // Remove the loading indicator before appending new content
-                $('#sync-indicator').remove();
-                $syncResults.append(xhr.responseText);
-                xhr.responseText = ''; // Clear for next chunk
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.finished) {
+                        $syncResults.append(response.message);
+                        // Here we update the CSV file display after sync completion
+                        $.ajax({
+                            url: aclWcXeroSyncAjax.ajax_url,
+                            type: 'POST',
+                            data: {
+                                action: 'acl_update_csv_display',
+                                _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    $csvFileUpdates.html(response.data.html);
+                                    // Display the latest CSV file if it exists
+                                    if (response.data.defaultLog) {
+                                        ACLWcXeroSync.displayLog(response.data.defaultLog);
+                                    }
+                                } else {
+                                    $csvFileUpdates.html('<div class="notice notice-error"><p>Could not update CSV list: ' + response.data + '</p></div>');
+                                }
+                            },
+                            error: function() {
+                                $csvFileUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list.</p></div>');
+                            }
+                        });
+                    } else {
+                        $syncResults.append(response.message);
+                    }
+                } catch (e) {
+                    // If JSON parsing fails, it might be plain HTML
+                    $syncResults.append(xhr.responseText);
+                }
             }
         };
 
