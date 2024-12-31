@@ -112,14 +112,14 @@ class ACLSyncService {
 
                 // Compare prices
                 if ( (float)$xeroPrice !== (float)$wcPrice ) {
-                    $salesDetails = $item->getSalesDetails();
+                    $salesDetails = $item->getSalesDetails;
                     ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
                     return [
                         'Code' => $sku,
                         'SalesDetails' => [
                             'UnitPrice' => (float)$wcPrice,
-                            'AccountCode' => $salesDetails->getAccountCode(),
-                            'TaxType' => $salesDetails->getTaxType()
+                            'AccountCode' => $salesDetails->AccountCode,
+                            'TaxType' => $salesDetails->TaxType
                         ]
                     ];
                 } else {
