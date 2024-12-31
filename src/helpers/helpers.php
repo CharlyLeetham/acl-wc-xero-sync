@@ -370,17 +370,29 @@ class ACLXeroHelper {
             wp_die('You do not have sufficient permissions to access this page.');
         }
 
-        $dry_run = isset( $_POST['dry_run'] ) && $_POST['dry_run'] === '1';
-    
-        ob_start(); // Start output buffering
-        ACLSyncService::sync_products( $dry_run );
-        $output = ob_get_clean(); // Capture the output
-        
-        if (!empty( $output )) {
-            echo $output; // Echo the captured output
-        } else {
-            echo "<div class='notice notice-info'><p>No output from sync process.</p>";
+        // Disable output buffering
+        if (ob_get_level() > 0) {
+            ob_end_clean();
         }
+        
+        // Set headers for streaming
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Accel-Buffering: no');
+        header('Cache-Control: no-cache');
+        header('Connection: keep-alive');
+
+        ignore_user_abort(true);
+        try {
+            ACLSyncService::sync_products($dry_run);
+        } catch (\Exception $e) {
+            echo json_encode(['message' => "<div class='notice notice-error'><p>Error in Sync Process: " . htmlspecialchars($e->getMessage()) . "</p></div>", 'finished' => true]);
+            flush();
+        }    
+ 
+        
+        // Final echo if needed
+        echo json_encode(['message' => "<div class='notice notice-success'><p>Sync Process Completed</p></div>", 'finished' => true]);
+        flush();
         wp_die(); // This is required to end the AJAX call properly
     }
 
@@ -402,7 +414,7 @@ class ACLXeroHelper {
      *
      * @param string $message The message to send.
      */
-    public static function send_message($message) {
+    public static function send_message( $message ) {
         // Send the message to the client
         echo $message;
         if (ob_get_level() > 0) ob_flush(); // Flush the output buffer if it's active

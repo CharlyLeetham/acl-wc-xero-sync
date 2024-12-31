@@ -229,48 +229,52 @@ jQuery(document).ready(function($) {
         });
     }
     
-     // New code for sync functionality
-     $('#start-sync').on('click', function(e) {
+    // New code for sync functionality
+    $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         $('#sync-results').html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
         
-        var xhr = $.ajax({
-            url: aclWcXeroSyncAjax.ajax_url,
-            type: 'POST',
-            data: {
-                'action': 'acl_xero_sync_products_ajax',
-                'sync_xero_products': '1',
-                'dry_run': dryRun ? '1' : '0',
-                '_ajax_nonce': aclWcXeroSyncAjax.nonce_xero_sync_products_ajax
-            },
-            xhrFields: {
-                onprogress: function(e) {
-                    var response = e.currentTarget.response;
-                    if (response) {
-                        try {
-                            var data = JSON.parse(response);
-                            if (data.message) {
-                                $('#sync-results').append(data.message);
-                            }
-                            if (data.finished) {
-                                console.log("Sync process finished.");
-                                pollForStatus(); // If you need to do something after sync completes
-                            }
-                        } catch (err) {
-                            console.error('Failed to parse JSON response:', err);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+        xhr.onprogress = function () {
+            if (xhr.responseText) {
+                var newContent = xhr.responseText.slice(xhr._lastResponseLength);
+                xhr._lastResponseLength = xhr.responseText.length;
+                
+                try {
+                    // Try to parse as JSON
+                    var data = JSON.parse(newContent);
+                    if (data.message) {
+                        $('#sync-results').append(data.message);
+                        if (data.finished) {
+                            console.log("Sync process finished.");
+                            pollForStatus(); // If needed
                         }
                     }
+                } catch (e) {
+                    // If JSON parsing fails, assume it's HTML
+                    $('#sync-results').append(newContent);
                 }
             }
-        }).done(function(response) {
-            // This will be executed after the full response is received
-            if (response) {
-                $('#sync-results').append(response);
+        };
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                console.log("Sync process completed.");
+                // If there's any final content, append it here
+            } else {
+                console.error('Error in sync process:', xhr.statusText);
             }
-        }).fail(function(xhr, status, error) {
-            var errorMessage = xhr.status + ' ' + xhr.statusText + ': ' + error;
-            $('#sync-results').append('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
-        });
-    });     
+        };
+    
+        xhr.onerror = function() {
+            console.error("Network error during sync process.");
+        };
+    
+        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+        xhr._lastResponseLength = 0;
+    });    
 });

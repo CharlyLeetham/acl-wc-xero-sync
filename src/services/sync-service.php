@@ -14,31 +14,31 @@ class ACLSyncService {
      */
     public static function sync_products( $dry_run = false ) {
         try {
-            ob_start();
             // Step 1: Fetch WooCommerce Products
             $products = ACLWCService::get_products();
             if ( empty( $products ) ) {
                 ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
+                flush();
                 return;
             }
 
-            $messages = [];
-            $messages[] = "<div class='notice notice-info'><p>Syncing " . count($products) . " products...</p></div>";
-    
-            //echo "<div class='notice notice-info'><p>Syncing " . count( $products ) . " products...</p></div>";
+            echo "<div class='notice notice-info'><p>Syncing " . count( $products ) . " products...</p></div>";
+            flush();
             ACLXeroLogger::log_message( count( $products ) . ' products fetched from WooCommerce.', 'product_sync' );
 
             // Step 2: Initialize Xero Client
             $xero = ACLXeroHelper::initialize_xero_client();
             if ( is_wp_error( $xero ) ) {
-                $messages[] = "div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
+                echo "div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
+                flush();
                 wp_die(); // Stop further execution
             }  
             
             if ( !empty( $xero ) ) {
                 echo "<div class='notice notice-info'><p>Xero client initialized successfully with Tenant ID: " . get_option( 'xero_tenant_id' ) . "</p></div>"; // Echo the captured output
                 echo "<div class='notice notice-info'><p>Now syncing products</p></div>"; // Echo the captured output
+                flush();
             } 
 
             // Setup the CSV files
@@ -59,8 +59,8 @@ class ACLSyncService {
     
                 if (empty($product['sku'])) {
                     ACLXeroLogger::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
-                    $messages[] = "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
-                    ACLXeroHelper::send_message( json_encode(['message' => end($messages)]) );
+                    echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+                    flush();
                     continue;
                 }
     
@@ -71,6 +71,7 @@ class ACLSyncService {
                         if ($dry_run) {
                             ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to " . $itemDetails['SalesDetails']['UnitPrice'], 'product_sync');
                             echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> WooCommerce Price: " . $itemDetails['SalesDetails']['UnitPrice'] . " Xero: " . $itemDetails['SalesDetails']['UnitPrice'] . ".</p></div>";
+                            flush();
                         } else {
                             $itemsToUpdate[] = $itemDetails;
                         }
@@ -79,6 +80,7 @@ class ACLSyncService {
                 } catch (\Exception $e) {
                     ACLXeroLogger::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
                     echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
+                    flush();
                 }
             }
             
@@ -92,12 +94,13 @@ class ACLSyncService {
     
 
             // Echo the number of successfully synced products
-            $messages[] = "<div class='notice notice-success'><p>{$count} Products Processed</p></div>";
-            ACLXeroHelper::send_message( json_encode( ['message' => end($messages), 'finished' => true] ) );        
+            echo "<div class='notice notice-success'><p>{$count} Products Processed</p></div>";
+            flush();
 
         } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( 'Fatal error in sync process: ' . $e->getMessage(), 'product_sync' );
-            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>";            
+            echo "<div class='notice notice-error'><p>Fatal error: {$e->getMessage()}</p></div>"; 
+            flush();           
         }
     }      
 
