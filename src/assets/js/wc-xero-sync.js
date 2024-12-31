@@ -233,32 +233,20 @@ jQuery(document).ready(function($) {
     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
-        $('#sync-results').html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
+        var $syncResults = $('#sync-results');
+        $syncResults.html('<div class="notice notice-info"><p>' + (dryRun ? 'Starting Dry Run Sync process' : 'Starting the Sync process') + '</p></div>');
         
         var xhr = new XMLHttpRequest();
         xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
-        xhr.onprogress = function() {
-            if (xhr.responseText) {
-                $('#sync-results').append(xhr.responseText);
-                xhr.responseText = ''; // Clear the response to avoid duplicates
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState > 2 && xhr.responseText) {
+                $syncResults.append(xhr.responseText);
+                xhr.responseText = ''; // Clear for next chunk
             }
-        };
-    
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                console.log("Sync process completed.");
-                // If you need to do something after sync completes
-            } else {
-                console.error('Error in sync process:', xhr.statusText);
-            }
-        };
-    
-        xhr.onerror = function() {
-            console.error("Network error during sync process.");
         };
     
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
-    });    
+    });  
 });
