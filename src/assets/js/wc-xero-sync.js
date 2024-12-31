@@ -244,38 +244,33 @@ jQuery(document).ready(function($) {
 
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response.finished) {
-                        $syncResults.append(response.message);
-                        // Here we update the CSV file display after sync completion
-                        $.ajax({
-                            url: aclWcXeroSyncAjax.ajax_url,
-                            type: 'POST',
-                            data: {
-                                action: 'acl_update_csv_display',
-                                _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
-                            },
-                            success: function(response) {
-                                if (response.success) {
-                                    $csvFileUpdates.html(response.data.html);
-                                    // Display the latest CSV file if it exists
-                                    if (response.data.defaultLog) {
-                                        ACLWcXeroSync.displayLog(response.data.defaultLog);
-                                    }
-                                } else {
-                                    $csvFileUpdates.html('<div class="notice notice-error"><p>Could not update CSV list: ' + response.data + '</p></div>');
+                if (xhr.responseText.includes('Products Processed')) {
+                    $syncResults.append(xhr.responseText);
+                    
+                    // Trigger CSV update after sync completion
+                    $.ajax({
+                        url: aclWcXeroSyncAjax.ajax_url,
+                        type: 'POST',
+                        data: {
+                            action: 'acl_update_csv_display',
+                            _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
+                        },
+                        success: function(csvResponse) {
+                            if (csvResponse.success) {
+                                $csvFileUpdates.html(csvResponse.data.html);
+                                // Display the latest CSV file if it exists
+                                if (csvResponse.data.defaultLog) {
+                                    ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
                                 }
-                            },
-                            error: function() {
-                                $csvFileUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list.</p></div>');
+                            } else {
+                                $csvFileUpdates.html('<div class="notice notice-error"><p>Could not update CSV list: ' + csvResponse.data + '</p></div>');
                             }
-                        });
-                    } else {
-                        $syncResults.append(response.message);
-                    }
-                } catch (e) {
-                    // If JSON parsing fails, it might be plain HTML
+                        },
+                        error: function(xhr, status, error) {
+                            $csvFileUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list. Status: ' + status + ', Error: ' + error + '</p></div>');
+                        }
+                    });
+                } else {
                     $syncResults.append(xhr.responseText);
                 }
             }
@@ -283,4 +278,5 @@ jQuery(document).ready(function($) {
 
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
+
 });
