@@ -23,7 +23,7 @@ class ACLSyncService {
             // Count total products to sync for status updates
             $total_products = wp_count_posts('product')->publish;
 
-            if ( empty( $products ) ) {
+            if ( empty( $total_products ) ) {
                 ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
                 flush();
