@@ -102,7 +102,7 @@ class ACLSyncService {
 
                 
                 // Assuming 'UnitPrice' is the field for sale price in Xero
-                $xeroPrice = $item->getSalesDetails->UnitPrice;
+                $xeroPrice = $item->SalesDetails->UnitPrice;
                 echo '<pre>';
                 echo var_dump($xeroPrice);
                 echo '</pre>';
