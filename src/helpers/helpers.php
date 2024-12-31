@@ -382,13 +382,13 @@ class ACLXeroHelper {
         try {
             ACLSyncService::sync_products($dry_run);
         } catch (\Exception $e) {
-            echo json_encode(['message' => "<div class='notice notice-error'><p>Error in Sync Process: " . htmlspecialchars($e->getMessage()) . "</p></div>", 'finished' => true]);
+            echo "<div class='notice notice-error'><p>Error in Sync Process: " . htmlspecialchars($e->getMessage()) . "</p></div>";
             flush();
         }    
  
         
         // Final echo if needed
-        echo json_encode(['message' => "<div class='notice notice-success'><p>Sync Process Completed</p></div>", 'finished' => true]);
+        echo "<div class='notice notice-success'><p>Sync Process Completed</p></div>";
         flush();
         wp_die(); // This is required to end the AJAX call properly
     }
