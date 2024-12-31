@@ -121,7 +121,7 @@ class ACLSyncService {
                 ACLXeroLogger::log_message("Processing for SKU {$sku} WooCommerce Price {$wcPrice}. Xero Price {$xeroPrice}.", 'product_sync'); 
 
                 // Compare prices
-                if ( (float)$xeroPrice !== (float)$wcPrice ) {
+                if ( ( (float)$xeroPrice !== (float)$wcPrice ) || !$xeroPrice )  {
                     $salesDetails = $item->getSalesDetails;
                     ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
