@@ -7,12 +7,13 @@ class ACLWCService {
      *
      * @return array List of WooCommerce products.
      */
-    public static function get_products() {
+    public static function get_products( $offset = 0, $batch_size = 50 ) {
         // Query WooCommerce products directly using WP_Query
         $query = new \WP_Query([
             'post_type'   => 'product',
             'post_status' => 'publish',
-            'posts_per_page' => -1, // Fetch all products
+            'posts_per_page' => $batch_size,
+            'offset'         => $offset
         ]);
 
         $products = [];

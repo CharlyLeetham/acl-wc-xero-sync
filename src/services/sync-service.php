@@ -13,9 +13,16 @@ class ACLSyncService {
      * Syncs WooCommerce products with Xero by checking their existence.
      */
     public static function sync_products( $dry_run = false ) {
+        $batch_size = 50;
+        $offset = 0;
+        $processed_count = 0;
+
         try {
             // Step 1: Fetch WooCommerce Products
-            $products = ACLWCService::get_products();
+
+            // Count total products to sync for status updates
+            $total_products = wp_count_posts('product')->publish;
+
             if ( empty( $products ) ) {
                 ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
                 echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
@@ -23,9 +30,9 @@ class ACLSyncService {
                 return;
             }
 
-            echo "<div class='notice notice-info'><p>Syncing " . count( $products ) . " products...</p></div>";
+            echo "<div class='notice notice-info'><p>Syncing " . $total_products . " products in batches of {$batch_size}...</p></div>";
             flush();
-            ACLXeroLogger::log_message( count( $products ) . ' products fetched from WooCommerce.', 'product_sync' );
+            ACLXeroLogger::log_message( $total_products . ' products to sync from WooCommerce.', 'product_sync' );
 
             // Step 2: Initialize Xero Client
             $xero = ACLXeroHelper::initialize_xero_client();
@@ -53,50 +60,60 @@ class ACLSyncService {
 
             set_transient('xero_sync_status', array('progress' => 0, 'total' => count($products)), 60 * 5); // 5 minutes expiration
 
-            foreach ($products as $index => $product) {
-                // Log progress
-                $status = get_transient('xero_sync_status');
-                $status['progress'] = $index + 1; // Update progress
-                set_transient('xero_sync_status', $status, 60 * 5);
-    
-                if (empty($product['sku'])) {
-                    ACLXeroLogger::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
-                    echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
-                    flush();
-                    continue;
-                }
-    
-                $sku = $product['sku'];
-                try {
-                    $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run);
-                    if (!empty($itemDetails)) {
-                        if ($dry_run) {
-                            ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to " . $itemDetails['SalesDetails']['UnitPrice'], 'product_sync');
-                            echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> WooCommerce Price: " . $itemDetails['SalesDetails']['UnitPrice'] . " Xero: " . $itemDetails['SalesDetails']['UnitPrice'] . ".</p></div>";
-                            flush();
-                        } else {
-                            $itemsToUpdate[] = $itemDetails;
-                        }
+
+            do {
+                $products = ACWCService::get_products($offset, $batch_size); // Fetch in batches
+                $itemsToUpdate = [];
+                $batch_count = 0;
+
+                set_transient('xero_sync_status', array('progress' => $processed_count, 'total' => $total_products), 60 * 5); // 5 minutes expiration
+
+                foreach ($products as $product) {
+                    if (empty($product['sku'])) {
+                        ACLXeroLogger::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
+                        echo "<div class='notice notice-error'><p>Product [ID: {$product['id']}] skipped: Missing SKU.</p></div>";
+                        flush();
+                        continue;
                     }
-                    $count++;
-                } catch (\Exception $e) {
-                    ACLXeroLogger::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
-                    echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
-                    flush();
+        
+                    $sku = $product['sku'];
+                    try {
+                        $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run);
+                        if (!empty($itemDetails)) {
+                            if ($dry_run) {
+                                ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to " . $itemDetails['SalesDetails']['UnitPrice'], 'product_sync');
+                                echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> WooCommerce Price: " . $itemDetails['SalesDetails']['UnitPrice'] . " Xero: " . $itemDetails['SalesDetails']['UnitPrice'] . ".</p></div>";
+                                flush();
+                            } else {
+                                $itemsToUpdate[] = $itemDetails;
+                            }
+                        }
+                        $batch_count++;
+                        $processed_count++;
+                    } catch (\Exception $e) {
+                        ACLXeroLogger::log_message("Error processing product [SKU: {$sku}]: {$e->getMessage()}", 'product_sync');
+                        echo "<div class='notice notice-error'><p>Error processing product SKU: <strong>{$sku}</strong> - {$e->getMessage()}</p></div>";
+                        flush();
+                    }
                 }
-            }
-            
-            // Perform batch update
-            if ( !$dry_run && !empty( $itemsToUpdate ) ) {
-                self::batch_update_xero_items( $itemsToUpdate );
-            }            
+                
+                // Perform batch update
+                if ( !$dry_run && !empty( $itemsToUpdate ) ) {
+                    self::batch_update_xero_items( $itemsToUpdate );
+                }            
+
+                echo "<div class='notice notice-info'><p>Batch processed: {$batch_count} products.</p></div>";
+                flush();
+
+                // Move to the next batch
+                $offset += $batch_size;
+            } while (!empty($products));
 
             // Clear status after process completes
             delete_transient('xero_sync_status');
-    
-
+        
             // Echo the number of successfully synced products
-            echo "<div class='notice notice-success'><p>{$count} Products Processed</p></div>";
+            echo "<div class='notice notice-success'><p>{$processed_count} Products Processed</p></div>";
             flush();
 
         } catch ( \Exception $e ) {
