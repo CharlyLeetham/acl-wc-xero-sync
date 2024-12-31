@@ -234,7 +234,7 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
         var $syncResults = $('#sync-results');
-        var $csvUpdates = $('#csv-file-updates'); // Assuming you have this div for CSV updates
+        var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
     
         // Clear previous sync results, keep CSV updates
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
