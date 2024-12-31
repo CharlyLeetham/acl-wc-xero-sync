@@ -56,7 +56,7 @@ class ACLSyncService {
 
             // Step 3: Process Each Product
             do {
-                $products = ACWCService::get_products($offset, $batch_size); // Fetch in batches
+                $products = ACLWCService::get_products($offset, $batch_size); // Fetch in batches
                 $itemsToUpdate = [];
                 $batch_count = 0;
 
