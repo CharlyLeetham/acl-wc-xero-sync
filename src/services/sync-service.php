@@ -103,7 +103,6 @@ class ACLSyncService {
 
         try {
          
-            ACLXeroLogger::log_message("Dry Run: {$dry_run}", 'product_sync');
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
@@ -131,12 +130,13 @@ class ACLSyncService {
                             'TaxType' => $salesDetails->TaxType
                         ]
                     ];
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                     ACLXeroHelper::csv_file( $nopricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
                 }
 
-                if ($dry_run) {
+                if ( $dry_run ) {
                     ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to {$wcPrice}.", 'product_sync');
                     echo "<div class='notice notice-info'><p>Dry Run: Would have updated price for SKU <strong>{$sku}</strong> to {$wcPrice}.</p></div>";
                     return null; // No actual update, so return null
