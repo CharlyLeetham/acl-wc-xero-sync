@@ -138,9 +138,10 @@ class ACLSyncService {
 
                 if ( $dry_run ) {
                     ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to {$wcPrice}.", 'product_sync');
-                    echo "<div class='notice notice-info'><p>Dry Run: Would have updated price for SKU <strong>{$sku}</strong> to {$wcPrice}.</p></div>";
+                    echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> WooCommerce Price: {$wcPrice} Xero: {$xeroPrice}.</p></div>";
                     return null; // No actual update, so return null
-                }                
+                }
+
                 ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, WooCommerce Price: {$wcPrice}", 'product_sync' );
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
