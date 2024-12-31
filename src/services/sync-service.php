@@ -100,6 +100,7 @@ class ACLSyncService {
      */
     private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run ) {
         $sku = $product['sku'];
+        ACLXeroLogger::log_message("Processing for SKU {$sku} WooCommerce Price {$wcPrice}.", 'product_sync');
 
         try {
          
@@ -116,12 +117,14 @@ class ACLSyncService {
                 $xeroPrice = $item->SalesDetails->UnitPrice;
 
                 // Get WooCommerce price
-                $wcPrice = get_post_meta( $product['id'], '_price', true );  
+                $wcPrice = get_post_meta( $product['id'], '_price', true ); 
+                ACLXeroLogger::log_message("Processing for SKU {$sku} WooCommerce Price {$wcPrice}. Xero Price {$xeroPrice}.", 'product_sync'); 
 
                 // Compare prices
                 if ( (float)$xeroPrice !== (float)$wcPrice ) {
                     $salesDetails = $item->getSalesDetails;
                     ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
                     return [
                         'Code' => $sku,
                         'SalesDetails' => [
@@ -130,7 +133,6 @@ class ACLSyncService {
                             'TaxType' => $salesDetails->TaxType
                         ]
                     ];
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";
                 } else {
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
                     ACLXeroHelper::csv_file( $nopricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
