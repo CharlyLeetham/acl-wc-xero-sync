@@ -106,7 +106,7 @@ class ACLSyncService {
         }
 
         // Update CSV display
-        do_action('wp_ajax_acl_update_csv_display'); // This should trigger the AJAX action to update the CSV display
+        //do_action('wp_ajax_acl_update_csv_display'); // This should trigger the AJAX action to update the CSV display
 
         // Log completion
         ACLXeroLogger::log_message('Sync process completed.', 'product_sync');        
