@@ -99,14 +99,14 @@ class ACLSyncService {
 
                 // Fetch item details from Xero
                 $item = self::get_xero_item( $xero, $sku );
-                echo '<pre>';
-                echo var_dump($item);
-                echo '</pre>';
-                return;
+
                 
                 // Assuming 'UnitPrice' is the field for sale price in Xero
-                //$xeroPrice = $item->getSalesDetails()->getUnitPrice();
-                $xeroPrice = 15.00;
+                $xeroPrice = $item->getSalesDetails();
+                echo '<pre>';
+                echo var_dump($xeroPrice);
+                echo '</pre>';
+                return;
                 // Get WooCommerce price
                 $wcPrice = get_post_meta( $product['id'], '_price', true );  
 
