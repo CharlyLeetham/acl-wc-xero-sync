@@ -142,7 +142,7 @@ class ACLSyncService {
             $exists = self::check_if_sku_exists( $xero, $sku );
 
             if ( $exists ) {
-                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, WooCommerce Price: {$wcPrice}", 'product_sync' );
+
                 // Fetch item details from Xero
                 $item = self::get_xero_item( $xero, $sku );
 
@@ -154,6 +154,8 @@ class ACLSyncService {
                 // Get WooCommerce price
                 $wcPrice = get_post_meta( $product['id'], '_price', true ); 
                 $wcPurchasePrice = get_post_meta( $product['id'], 'acl_wc_cost_price', true );
+
+                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, Xero Purchase Price: {$xeroPurchasePrice}, WooCommerce Price: {$wcPrice}, WooCommerce Purchase Price: {$wcPurchasePrice}", 'product_sync' );                
 
                 $priceChange = false;
                 $priceDetails = [];                
