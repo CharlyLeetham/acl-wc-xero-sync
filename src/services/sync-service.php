@@ -155,7 +155,7 @@ class ACLSyncService {
                 $wcPrice = get_post_meta( $product['id'], '_price', true ); 
                 $wcPurchasePrice = get_post_meta( $product['id'], 'acl_wc_cost_price', true );
 
-                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> exists in Xero. Xero Price: {$xeroPrice}, Xero Purchase Price: {$xeroPurchasePrice}, WooCommerce Price: {$wcPrice}, WooCommerce Purchase Price: {$wcPurchasePrice}", 'product_sync' );                
+                ACLXeroLogger::log_message( "Product SKU {$sku} exists in Xero. Xero Price: {$xeroPrice}, Xero Purchase Price: {$xeroPurchasePrice}, WooCommerce Price: {$wcPrice}, WooCommerce Purchase Price: {$wcPurchasePrice}", 'product_sync' );                
 
                 $priceChange = false;
                 $priceDetails = [];                
@@ -191,7 +191,13 @@ class ACLSyncService {
                 // Write to CSV only after both checks are done
                 if ($priceChange) {
                     ACLXeroHelper::csv_file($pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
-                    ACLXeroHelper::csv_file($pricechange_csv, "1priceDetails['SalesDetails'], {$priceDetails['PurchaseDetails']}");
+                    ob_start();
+                        var_dump($priceDetails['SalesDetails']);
+                        $salesDetailsOutput = ob_get_clean();
+                        ob_start();
+                        var_dump($priceDetails['PurchaseDetails']);
+                    $purchaseDetailsOutput = ob_get_clean();
+                    ACLXeroLogger::log_message("{$salesDetailsOutput}, {$purchaseDetailsOutput}", 'product_sync');
                     return [
                         'Code' => $sku,
                         'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
