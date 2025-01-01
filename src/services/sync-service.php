@@ -75,8 +75,13 @@ class ACLSyncService {
                         $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run);
                         if (!empty($itemDetails)) {
                             if ($dry_run) {
-                                ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku} to " . $itemDetails['SalesDetails']['UnitPrice'], 'product_sync');
-                                echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> WooCommerce Price: " . $itemDetails['SalesDetails']['UnitPrice'] . " Xero: " . $itemDetails['SalesDetails']['UnitPrice'] . ".</p></div>";
+                                $xeroPurchasePrice = $itemDetails['PurchaseDetails']['UnitPrice'] ?? '';
+                                $wcPurchasePrice = get_post_meta($product['id'], 'acl_wc_cost_price', true) ?? '';
+                                $xeroSellPrice = $itemDetails['SalesDetails']['UnitPrice'] ?? '';
+                                $wcSellPrice = get_post_meta($product['id'], '_price', true) ?? '';
+
+                                ACLXeroLogger::log_message("Dry Run: Would have updated price for SKU {$sku}. Xero Purchase Price: {$xeroPurchasePrice}, WC Purchase Price: {$wcPurchasePrice}, Xero Sell Price: {$xeroSellPrice}, WC Sell Price: {$wcSellPrice}", 'product_sync');
+                                echo "<div class='notice notice-info'><p>Dry Run: Would have run for SKU <strong>{$sku}</strong> Xero Purchase Price: {$xeroPurchasePrice}, WC Purchase Price: {$wcPurchasePrice}, Xero Sell Price: {$xeroSellPrice}, WC Sell Price: {$wcSellPrice}.</p></div>";
                                 flush();
                             } else {
                                 $itemsToUpdate[] = $itemDetails;
@@ -144,27 +149,59 @@ class ACLSyncService {
                 
                 // Assuming 'UnitPrice' is the field for sale price in Xero
                 $xeroPrice = $item->SalesDetails->UnitPrice;
+                $xeroPurchasePrice = $item->PurchaseDetails->UnitPrice;
 
                 // Get WooCommerce price
                 $wcPrice = get_post_meta( $product['id'], '_price', true ); 
+                $wcPurchasePrice = get_post_meta( $product['id'], 'acl_wc_cost_price', true );
+
+                $priceChange = false;
+                $priceDetails = [];                
 
                 // Compare prices
                 if ( ( (float)$xeroPrice !== (float)$wcPrice ) || !$xeroPrice )  {
+                    $pricechange = true;
                     $salesDetails = $item->getSalesDetails;
-                    ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
-                    return [
-                        'Code' => $sku,
-                        'SalesDetails' => [
+                    $priceDetails['SalesDetails'] = [
                             'UnitPrice' => (float)$wcPrice,
                             'AccountCode' => $salesDetails->AccountCode,
                             'TaxType' => $salesDetails->TaxType
-                        ]
+                    ];
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dryrun is {$dry_run}</p></div>";                    
+                } else {
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same. Dry is {$dry_run}</p></div>";
+                }
+
+                // Compare Purchase prices
+                if ( ( (float)$xeroPurchasePrice !== (float)$wcPurchasePrice ) || !$xeroPurchasePrice )  {
+                    $pricechange = true;
+                    $purchaseDetails = $item->getPurchaseDetails;
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
+                    $priceDetails['PurchaseDetails']  = [
+                            'UnitPrice' => (float)$wcPurchasePrice,
+                            'AccountCode' => $purchaseDetails->AccountCode,
+                            'TaxType' => $purchaseDetails->TaxType
+                    ];
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Purchase price differs. wc: {$wcPurchasePrice} Xero: {$xeroPurchasePrice}. Dryrun is {$dry_run}</p></div>";                    
+                } else {
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same. Dryrun is {$dry_run}</p></p></div>";
+                }
+
+                // Write to CSV only after both checks are done
+                if ($priceChange) {
+                    ACLXeroHelper::csv_file($pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
+                    return [
+                        'Code' => $sku,
+                        'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
+                        'PurchaseDetails' => $priceDetails['PurchaseDetails'] ?? null
                     ];
                 } else {
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same.</p></div>";
-                    ACLXeroHelper::csv_file( $nopricechange_csv, "{$sku},{$xeroPrice},{$wcPrice}" );
-                }
+                    ACLXeroHelper::csv_file($nopricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
+                }                
+                
+
+
             } else {
                 echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
                 ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync' );
@@ -175,8 +212,6 @@ class ACLSyncService {
             throw $e; // Re-throw so it's caught in sync_products
         }
     }
-
-    // ... [Other methods remain unchanged]
 
     /**
      * Performs a batch update of items in Xero.
