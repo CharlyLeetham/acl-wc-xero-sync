@@ -162,7 +162,7 @@ class ACLSyncService {
 
                 // Compare prices
                 if ( ( (float)$xeroPrice !== (float)$wcPrice ) || !$xeroPrice )  {
-                    $pricechange = true;
+                    $priceChange = true;
                     $salesDetails = $item->getSalesDetails;
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
                     $priceDetails['SalesDetails'] = [
@@ -177,7 +177,7 @@ class ACLSyncService {
 
                 // Compare Purchase prices
                 if ( ( (float)$xeroPurchasePrice !== (float)$wcPurchasePrice ) || !$xeroPurchasePrice )  {
-                    $pricechange = true;
+                    $priceChange = true;
                     $purchaseDetails = $item->getPurchaseDetails;
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
                     $priceDetails['PurchaseDetails']  = [
