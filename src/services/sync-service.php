@@ -191,13 +191,6 @@ class ACLSyncService {
                 // Write to CSV only after both checks are done
                 if ($priceChange) {
                     ACLXeroHelper::csv_file($pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
-                    ob_start();
-                        var_dump($priceDetails['SalesDetails']);
-                        $salesDetailsOutput = ob_get_clean();
-                        ob_start();
-                        var_dump($priceDetails['PurchaseDetails']);
-                    $purchaseDetailsOutput = ob_get_clean();
-                    ACLXeroLogger::log_message("{$salesDetailsOutput}, {$purchaseDetailsOutput}", 'product_sync');
                     return [
                         'Code' => $sku,
                         'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
