@@ -163,23 +163,21 @@ class ACLSyncService {
                 // Compare prices
                 if ( ( (float)$xeroPrice !== (float)$wcPrice ) || !$xeroPrice )  {
                     $priceChange = true;
-                    $salesDetails = $item->getSalesDetails;
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
+                    $salesDetails = $item->getSalesDetails;                 
                     $priceDetails['SalesDetails'] = [
                             'UnitPrice' => (float)$wcPrice,
                             'AccountCode' => $salesDetails->AccountCode,
                             'TaxType' => $salesDetails->TaxType
                     ];
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dryrun is {$dry_run}</p></div>";                    
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Sell Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dryrun is {$dry_run}</p></div>";                    
                 } else {
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same. Dry is {$dry_run}</p></div>";
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Sell Price is the same. Dry is {$dry_run}</p></div>";
                 }
 
                 // Compare Purchase prices
                 if ( ( (float)$xeroPurchasePrice !== (float)$wcPurchasePrice ) || !$xeroPurchasePrice )  {
                     $priceChange = true;
-                    $purchaseDetails = $item->getPurchaseDetails;
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price differs. wc: {$wcPrice} Xero: {$xeroPrice}. Dry is {$dry_run}</p></div>";                    
+                    $purchaseDetails = $item->getPurchaseDetails; 
                     $priceDetails['PurchaseDetails']  = [
                             'UnitPrice' => (float)$wcPurchasePrice,
                             'AccountCode' => $purchaseDetails->AccountCode,
@@ -187,12 +185,13 @@ class ACLSyncService {
                     ];
                     echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Purchase price differs. wc: {$wcPurchasePrice} Xero: {$xeroPurchasePrice}. Dryrun is {$dry_run}</p></div>";                    
                 } else {
-                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Price is the same. Dryrun is {$dry_run}</p></p></div>";
+                    echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] - {$sku} already in Xero. Purchase Price is the same. Dryrun is {$dry_run}</p></p></div>";
                 }
 
                 // Write to CSV only after both checks are done
                 if ($priceChange) {
                     ACLXeroHelper::csv_file($pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
+                    ACLXeroHelper::csv_file($pricechange_csv, "1priceDetails['SalesDetails'], {$priceDetails['PurchaseDetails']}");
                     return [
                         'Code' => $sku,
                         'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
