@@ -387,7 +387,16 @@ class ACLProductSyncPage {
             <form method="post" id="sync-products-form">
                 <input type="hidden" name="sync_xero_products" value="1">
                 <input type="checkbox" id="dry-run" name="dry_run">
-                <label for="dry-run">Dry Run</label>                
+                <label for="dry-run">Dry Run</label>
+                <select name="category_id" id="category-select">
+                    <option value="">Select Category</option>
+                    <?php
+                    $categories = get_terms('product_cat', array('hide_empty' => false));
+                    foreach ($categories as $category) {
+                        echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
+                    }
+                    ?>
+                </select>                                
                 <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
             </form>
             <div id="sync-results"></div>

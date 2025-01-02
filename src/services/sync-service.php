@@ -12,27 +12,43 @@ class ACLSyncService {
     /**
      * Syncs WooCommerce products with Xero by checking their existence.
      */
-    public static function sync_products( $dry_run = false ) {
+    public static function sync_products( $dry_run = false, $category_id = null ) {
         $batch_size = 50;
         $offset = 0;
         $processed_count = 0;
 
         try {
             // Step 1: Fetch WooCommerce Products
+            $total_products = 0; // Initialize variable            
 
-            // Count total products to sync for status updates
-            $total_products = wp_count_posts('product')->publish;
+        do {
+            $products = ACLWCService::get_products($offset, $batch_size, $category_id);
+            $batch_count = count($products);
+            $total_products += $batch_count;
 
-            if ( empty( $total_products ) ) {
-                ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
-                echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
+            if ($offset === 0 && $total_products === 0) {
+                ACLXeroLogger::log_message('No products found in the selected category in WooCommerce.', 'product_sync');
+                echo "<div class='notice notice-warning'><p>No products found in the selected category in WooCommerce.</p></div>";
                 flush();
                 return;
             }
 
-            echo "<div class='notice notice-info'><p>Syncing " . $total_products . " products in batches of {$batch_size}...</p></div>";
-            flush();
-            ACLXeroLogger::log_message( $total_products . ' products to sync from WooCommerce.', 'product_sync' );
+            if ($offset === 0) {
+                echo "<div class='notice notice-info'><p>Syncing " . $total_products . " products in batches of {$batch_size}...</p></div>";
+                flush();
+                ACLXeroLogger::log_message($total_products . ' products to sync from WooCommerce.', 'product_sync');
+            }
+
+            #if ( empty( $total_products ) ) {
+            #    ACLXeroLogger::log_message( 'No products found in WooCommerce.', 'product_sync' );
+            #    echo "<div class='notice notice-warning'><p>No products found in WooCommerce.</p></div>";                
+            #    flush();
+            #    return;
+            #}
+
+            #echo "<div class='notice notice-info'><p>Syncing " . $total_products . " products in batches of {$batch_size}...</p></div>";
+            #flush();
+            #ACLXeroLogger::log_message( $total_products . ' products to sync from WooCommerce.', 'product_sync' );
 
             // Step 2: Initialize Xero Client
             $xero = ACLXeroHelper::initialize_xero_client();
@@ -56,7 +72,7 @@ class ACLSyncService {
 
             // Step 3: Process Each Product
             do {
-                $products = ACLWCService::get_products($offset, $batch_size); // Fetch in batches
+                $products = ACLWCService::get_products($offset, $batch_size, $category_id); // Fetch in batches with category filter
                 $itemsToUpdate = [];
                 $batch_count = 0;
 
