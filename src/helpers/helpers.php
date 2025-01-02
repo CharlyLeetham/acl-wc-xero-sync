@@ -441,7 +441,9 @@ class ACLXeroHelper {
     
         try {
             $taxRates = $xero->load('Accounting\\TaxRate')->execute();
+            echo '<pre>';
             var_dump($taxRates);
+            echo '</pre>';
             wp_die();
             $result = [];
             foreach ($taxRates as $taxRate) {
