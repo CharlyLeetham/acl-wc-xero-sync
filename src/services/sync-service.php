@@ -155,6 +155,9 @@ class ACLSyncService {
             // Check if SKU exists in Xero
             $exists = self::check_if_sku_exists( $xero, $sku );
 
+            var_dump($exists);
+            wp_die();
+
             if ( $exists ) {
 
                 // Fetch item details from Xero
@@ -349,7 +352,8 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
-            return !empty($existing_items);
+            return !empty( $existing_items );
+
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);
             if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
