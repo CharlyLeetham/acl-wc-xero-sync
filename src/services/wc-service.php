@@ -28,7 +28,6 @@ class ACLWCService {
         } 
         
         $product_ids = get_posts( $query );
-        return $product_ids;
         $products = [];
             
         foreach ($product_ids as $product_id) {

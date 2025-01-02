@@ -76,9 +76,6 @@ class ACLSyncService {
                 $itemsToUpdate = [];
                 $batch_count = 0;
 
-                var_dump($products);
-                wp_die();
-
                 foreach ($products as $product) {
                     if (empty($product['sku'])) {
                         ACLXeroLogger::log_message("Product [ID: {$product['id']}] skipped: Missing SKU.", 'product_sync');
