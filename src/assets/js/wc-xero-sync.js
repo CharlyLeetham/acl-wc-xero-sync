@@ -368,7 +368,7 @@ jQuery(document).ready(function($) {
         var cogs = $('#cogs').val();
         var salesacct = $('#salesacct').val();
         var cogstaxtype = $('#cogs-tax-type').val();
-        var salestaxacct = $('#sales-tax-type').val();       
+        var salestaxtype = $('#sales-tax-type').val();       
         var $syncResults = $('#sync-results');
         var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
         console.log (category_id);

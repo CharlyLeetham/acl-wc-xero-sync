@@ -363,7 +363,13 @@ class ACLXeroHelper {
     public static function handle_sync_ajax() {
         ACLXeroLogger::log_message( "Entering sync ajax", 'product_sync' );
         check_ajax_referer('xero_sync_products_ajax', 'nonce');
-        $dry_run = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
+        
+        $dry_run = isset($_POST['dry_run']) ? ($_POST['dry_run'] == '1') : false;
+        $category_id = isset($_POST['category_id']) ? $_POST['category_id'] : null;
+        $cogs = isset($_POST['cogs']) ? $_POST['cogs'] : null;
+        $salesacct = isset($_POST['salesacct']) ? $_POST['salesacct'] : null;
+        $cogstaxtype = isset($_POST['cogstaxtype']) ? $_POST['cogstaxtype'] : null;
+        $salestaxtype = isset($_POST['salestaxtype']) ? $_POST['salestaxtype'] : null;        
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
