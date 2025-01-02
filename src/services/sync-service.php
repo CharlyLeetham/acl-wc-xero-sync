@@ -17,10 +17,6 @@ class ACLSyncService {
         $offset = 0;
         $processed_count = 0;
 
-        var_dump($dry_run);
-        var_dump($category_id);
-        wp_die();
-
         try {
             // Step 1: Fetch the total number of WooCommerce Products to process
 
