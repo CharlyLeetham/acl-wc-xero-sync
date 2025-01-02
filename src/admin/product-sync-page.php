@@ -428,7 +428,7 @@ class ACLProductSyncPage {
                         } else {
                             foreach ( $accounts as $account ) {
                                 if ( $account['Type'] == 'EXPENSE' ) { // Filter for expense accounts which would generally include COGS
-                                    echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                                    echo '<option value="' . $account['Code'] . '">(' . $account['Code']. ') '.$account['Name'] . '</option>';
                                 }
                             }
                         }
