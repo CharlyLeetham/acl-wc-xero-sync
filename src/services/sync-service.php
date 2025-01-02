@@ -76,7 +76,8 @@ class ACLSyncService {
                 $itemsToUpdate = [];
                 $batch_count = 0;
 
-                set_transient('xero_sync_status', array('progress' => $processed_count, 'total' => $total_products), 60 * 5); // 5 minutes expiration
+                var_dump($products);
+                wp_die();
 
                 foreach ($products as $product) {
                     if (empty($product['sku'])) {
