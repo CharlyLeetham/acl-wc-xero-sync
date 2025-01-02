@@ -355,7 +355,7 @@ class ACLSyncService {
             $query = $xero->load('Accounting\\Item')
                           ->where('Code', $sku);
     
-            ACLXeroLogger::log_message(" SKU: " . $sku, 'product_sync');
+            ACLXeroLogger::log_message(" SKU: |" . $sku ."|", 'product_sync');
             
             $existing_items = $query->execute();
             
