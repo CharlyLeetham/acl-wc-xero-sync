@@ -126,7 +126,7 @@ class ACLXeroHelper {
         if (flock($fp, LOCK_EX)) { // Attempt to acquire an exclusive lock
             if (!$file_exists) {
                 // Write the header
-                fwrite($fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price"."\n");
+                fwrite($fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price,COGS Acct, Sales Acct, COGS Tax, Sales Tax"."\n");
                 ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
             }
             // Write the message

@@ -68,6 +68,7 @@ class ACLSyncService {
             $dryRunSuffix = $dry_run ? '_dryrun' : '';
             $nopricechange_csv = "nopricechange{$dryRunSuffix}_" . $timestamp . ".csv"; // Captures sync'd products that have no changes
             $pricechange_csv = "pricechange{$dryRunSuffix}_" . $timestamp . ".csv"; // Captures sync'd products that have changes.
+            $newproducts_csv = "newproducts($dryRunSuffix}_" . $timestamp. "csv"; //Captures the new sync'd products.
 
             // Step 3: Process Each Product
             do {
@@ -220,6 +221,7 @@ class ACLSyncService {
             } else {
                 echo "<div class='notice notice-info'><p>Product [SKU: {$product['sku']}] does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}</p></div>";                
                 ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}", 'product_sync' );
+                ACLXeroHelper::csv_file($newproducts_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice},{$cogs},{$salesacct},{$cogstaxtype},{$salestaxtype}");
 
                 // Get WooCommerce price
                 $wcPrice = get_post_meta( $product['id'], '_price', true ); 
