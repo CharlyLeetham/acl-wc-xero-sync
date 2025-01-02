@@ -416,7 +416,7 @@ jQuery(document).ready(function($) {
          '&cogs=' + cogs + 
          '&salesacct=' + salesacct + 
          '&cogstaxtype=' + cogstaxtype + 
-         '&salestaxacct=' + salestaxacct + 
+         '&salestaxtype=' + salestaxtype + 
          '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
 });
