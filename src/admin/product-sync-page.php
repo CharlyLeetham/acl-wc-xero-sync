@@ -387,11 +387,14 @@ class ACLProductSyncPage {
         if ( is_wp_error( $xero ) ) {
             echo "<div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
             flush();
-            wp_die(); // Stop further execution
-        }  
-        
-        $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
-        $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
+            // Set to empty arrays so that the form can still be rendered
+            $accounts = [];
+            $taxTypes = [];
+
+        }  else {
+            $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
+            $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
+        }
 
         ?>
         <div class="wrap">
@@ -421,9 +424,13 @@ class ACLProductSyncPage {
                     <select name="cogs" id="cogs">
                         <option value="">Select COGS Account</option>
                         <?php
-                        foreach ($accounts as $account) {
-                            if ($account['Type'] == 'EXPENSE') { // Filter for expense accounts which would generally include COGS
-                                echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                        if ( empty( $accounts ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';    
+                        } else {
+                            foreach ($accounts as $account) {
+                                if ($account['Type'] == 'EXPENSE') { // Filter for expense accounts which would generally include COGS
+                                    echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                                }
                             }
                         }
                         ?>
@@ -434,9 +441,13 @@ class ACLProductSyncPage {
                     <select name="salesacct" id="salesacct">
                         <option value="">Select Sales Account</option>
                         <?php
-                        foreach ($accounts as $account) {
-                            if ($account['Type'] == 'REVENUE') { // Filter for revenue accounts
-                                echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                        if ( empty( $accounts) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
+                            foreach ($accounts as $account) {
+                                if ($account['Type'] == 'REVENUE') { // Filter for revenue accounts
+                                    echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                                }
                             }
                         }
                         ?>
@@ -447,8 +458,12 @@ class ACLProductSyncPage {
                     <select name="cogs_tax_type" id="cogs-tax-type">
                         <option value="">Select COGS Tax Type</option>
                         <?php
-                        foreach ($taxTypes as $taxType) {
-                            echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                        if ( empty( $taxTypes ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
+                            foreach ($taxTypes as $taxType) {
+                                echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                            }
                         }
                         ?>
                     </select>
@@ -458,8 +473,12 @@ class ACLProductSyncPage {
                     <select name="sales_tax_type" id="sales-tax-type">
                         <option value="">Select Sales Tax Type</option>
                         <?php
-                        foreach ($taxTypes as $taxType) {
-                            echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                        if ( empty( $taxTypes ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
+                            foreach ($taxTypes as $taxType) {
+                                echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                            }
                         }
                         ?>
                     </select>
