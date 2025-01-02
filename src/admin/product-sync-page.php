@@ -384,8 +384,12 @@ class ACLProductSyncPage {
 
         $xero = ACLXeroHelper::initialize_xero_client();
 
-        var_dump ($xero);
-        return;
+        if ( is_wp_error( $xero ) ) {
+            echo "<div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
+            flush();
+            wp_die(); // Stop further execution
+        }  
+        
         $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
         $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
 
