@@ -359,9 +359,14 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
-            var_dump($existing_items);
-            wp_die();
-            return !empty($existing_items);
+            if ( $sku == 'M52 G New Cylinder') {
+                echo '<pre>';
+                var_dump( $existing_items );
+                echo '</pre>';
+                wp_die();
+            } else {
+                return !empty($existing_items);
+            }
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);
             if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
