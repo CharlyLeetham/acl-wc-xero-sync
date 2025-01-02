@@ -14,11 +14,11 @@ class ACLWCService {
             'post_status' => 'publish',
             'posts_per_page' => $batch_size,
             'offset'         => $offset,
-            'fields'         => 'id',
+            'fields'         => 'ids',
         ]);
 
         if ($category_id) {
-            $args['tax_query'] = array(
+            $query['tax_query'] = array(
                 array(
                     'taxonomy' => 'product_cat',
                     'field'    => 'term_id',
@@ -27,7 +27,7 @@ class ACLWCService {
             );
         } 
         
-        $product_ids = get_posts($args);
+        $product_ids = get_posts($query);
         $products = [];
             
         foreach ($product_ids as $product_id) {
