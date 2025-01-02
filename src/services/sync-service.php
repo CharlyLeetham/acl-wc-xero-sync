@@ -352,7 +352,7 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
-            var_dump($exsiting_items);
+            var_dump($existing_items);
             wp_die();
             return !empty( $existing_items );
 
