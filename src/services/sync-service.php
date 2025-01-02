@@ -149,7 +149,7 @@ class ACLSyncService {
      * @return array|null Returns item details if an update is needed, null otherwise
      */
     private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run, $cogs = NULL, $salesacct = NULL, $cogstaxtype = NULL, $salestaxtype = NULL ) {
-        $sku = $product['sku'];
+        $sku = trim ( $product['sku'] );
         try {
          
             // Check if SKU exists in Xero
