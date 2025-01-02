@@ -405,6 +405,6 @@ jQuery(document).ready(function($) {
             }
         };
     
-        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&category_id=' + $('#category-select').val() + '&cogs='  + $('#cogs') + '&salesacct=' + $('#salesacct') + '&cogstaxtype=' + $('#cogs-tax-type') + '&salestaxacct=' +$('#sale-tax-type'] + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&category_id=' + $('#category-select').val() + '&cogs='  + $('#cogs') + '&salesacct=' + $('#salesacct') + '&cogstaxtype=' + $('#cogs-tax-type') + '&salestaxacct=' +$('#sales-tax-type') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
 });
