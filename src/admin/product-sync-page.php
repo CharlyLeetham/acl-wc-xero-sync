@@ -427,8 +427,8 @@ class ACLProductSyncPage {
                         if ( empty( $accounts ) ) {
                             echo '<option value="">Authenticate with Xero</option>';    
                         } else {
-                            foreach ($accounts as $account) {
-                                if ($account['Type'] == 'EXPENSE') { // Filter for expense accounts which would generally include COGS
+                            foreach ( $accounts as $account ) {
+                                if ( $account['Type'] == 'EXPENSE' ) { // Filter for expense accounts which would generally include COGS
                                     echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
                                 }
                             }
@@ -444,8 +444,8 @@ class ACLProductSyncPage {
                         if ( empty( $accounts) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
-                            foreach ($accounts as $account) {
-                                if ($account['Type'] == 'REVENUE') { // Filter for revenue accounts
+                            foreach ( $accounts as $account ) {
+                                if ( $account['Type'] == 'REVENUE' ) { // Filter for revenue accounts
                                     echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
                                 }
                             }
@@ -462,7 +462,9 @@ class ACLProductSyncPage {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
                             foreach ($taxTypes as $taxType) {
-                                echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                                if ( $taxType['CanApplyToExpenses'] ) {
+                                    echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                                } 
                             }
                         }
                         ?>
@@ -476,8 +478,10 @@ class ACLProductSyncPage {
                         if ( empty( $taxTypes ) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
-                            foreach ($taxTypes as $taxType) {
-                                echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                            foreach ( $taxTypes as $taxType ) {
+                                if ( $taxType['CanApplyToRevenue'] ) {
+                                    echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                                }
                             }
                         }
                         ?>
