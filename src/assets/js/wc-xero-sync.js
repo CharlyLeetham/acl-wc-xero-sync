@@ -402,7 +402,15 @@ jQuery(document).ready(function($) {
                 });
             }
         };
-    
+
+        console.log('Sending data:', 'action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + 
+             '&category_id=' + category_id + 
+             '&cogs=' + cogs + 
+             '&salesacct=' + salesacct + 
+             '&cogstaxtype=' + cogstaxtype + 
+             '&salestaxtype=' + salestaxtype + 
+             '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+
         xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + 
          '&category_id=' + category_id + 
          '&cogs=' + cogs + 

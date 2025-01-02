@@ -369,7 +369,12 @@ class ACLXeroHelper {
         $cogs = isset($_POST['cogs']) ? $_POST['cogs'] : null;
         $salesacct = isset($_POST['salesacct']) ? $_POST['salesacct'] : null;
         $cogstaxtype = isset($_POST['cogstaxtype']) ? $_POST['cogstaxtype'] : null;
-        $salestaxtype = isset($_POST['salestaxtype']) ? $_POST['salestaxtype'] : null;        
+        $salestaxtype = isset($_POST['salestaxtype']) ? $_POST['salestaxtype'] : null;  
+        error_log("category_id: " . ($category_id ?? 'null'));
+        error_log("cogs: " . ($cogs ?? 'null'));
+        error_log("salesacct: " . ($salesacct ?? 'null'));
+        error_log("cogstaxtype: " . ($cogstaxtype ?? 'null'));
+        error_log("salestaxtype: " . ($salestaxtype ?? 'null'));              
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
