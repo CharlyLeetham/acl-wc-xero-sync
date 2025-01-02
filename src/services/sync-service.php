@@ -17,6 +17,9 @@ class ACLSyncService {
         $offset = 0;
         $processed_count = 0;
 
+        var_dump ($category_id);
+        wp_die();
+
         try {
             // Step 1: Fetch the total number of WooCommerce Products to process
 
@@ -202,15 +205,15 @@ class ACLSyncService {
                 }
 
                 // Write to CSV only after both checks are done
-                if ($priceChange) {
-                    ACLXeroHelper::csv_file($pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
+                if ( $priceChange ) {
+                    ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}" );
                     return [
                         'Code' => $sku,
                         'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
                         'PurchaseDetails' => $priceDetails['PurchaseDetails'] ?? null
                     ];
                 } else {
-                    ACLXeroHelper::csv_file($nopricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}");
+                    ACLXeroHelper::csv_file( $nopricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}" );
                 }                
                 
 
@@ -218,7 +221,7 @@ class ACLSyncService {
             } else {
                 echo "<div class='notice notice-info'><p>Product [SKU: {$product['sku']}] does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}</p></div>";                
                 ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}", 'product_sync' );
-                ACLXeroHelper::csv_file($newproducts_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice},{$cogs},{$salesacct},{$cogstaxtype},{$salestaxtype}");
+                ACLXeroHelper::csv_file( $newproducts_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice},{$cogs},{$salesacct},{$cogstaxtype},{$salestaxtype}" );
 
                 // Get WooCommerce price
                 $wcPrice = get_post_meta( $product['id'], '_price', true ); 
