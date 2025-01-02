@@ -450,7 +450,7 @@ class ACLXeroHelper {
             $result = [];
             foreach ($taxRates as $taxRate) {
                 $result[] = [
-                    'TaxType' => $taxRate->getName(), // Assuming getName returns the tax type name
+                    'TaxType' => $taxRate->getTaxType(), // Assuming getName returns the tax type name
                     'Name' => $taxRate->getName(), // Display name for dropdown
                     'Revenue' => $taxRate->getCanApplyToRevenue(), // Revenue Taxes
                     'Expenses' => $taxRate->getCanApplyToExpenses(), // Expenses Taxes
