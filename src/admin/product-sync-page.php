@@ -396,6 +396,10 @@ class ACLProductSyncPage {
             $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
         }
 
+        echo '<pre>';
+        var_dump($taxTypes);
+        echo '</pre>';
+
         ?>
         <div class="wrap">
             <h1>Sync Products to Xero</h1>
@@ -478,6 +482,7 @@ class ACLProductSyncPage {
                         if ( empty( $taxTypes ) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
+
                             foreach ( $taxTypes as $taxType ) {
                                 if ( $taxType['CanApplyToRevenue'] ) {
                                     echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
