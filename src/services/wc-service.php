@@ -14,7 +14,7 @@ class ACLWCService {
             'post_status' => 'publish',
             'posts_per_page' => $batch_size,
             'offset'         => $offset,
-            'fields'         => 'ids',
+            'fields'         => 'id',
         ]);
 
         if ($category_id) {
