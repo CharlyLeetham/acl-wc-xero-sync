@@ -369,12 +369,7 @@ class ACLXeroHelper {
         $cogs = isset($_POST['cogs']) ? $_POST['cogs'] : null;
         $salesacct = isset($_POST['salesacct']) ? $_POST['salesacct'] : null;
         $cogstaxtype = isset($_POST['cogstaxtype']) ? $_POST['cogstaxtype'] : null;
-        $salestaxtype = isset($_POST['salestaxtype']) ? $_POST['salestaxtype'] : null;  
-        error_log("category_id: " . ($category_id ?? 'null'));
-        error_log("cogs: " . ($cogs ?? 'null'));
-        error_log("salesacct: " . ($salesacct ?? 'null'));
-        error_log("cogstaxtype: " . ($cogstaxtype ?? 'null'));
-        error_log("salestaxtype: " . ($salestaxtype ?? 'null'));              
+        $salestaxtype = isset($_POST['salestaxtype']) ? $_POST['salestaxtype'] : null;                
        
         // Check if the user has permission to perform this action
         if (!current_user_can('manage_woocommerce')) {
@@ -391,7 +386,7 @@ class ACLXeroHelper {
         header('Cache-Control: no-cache');
 
         try {
-            ACLSyncService::sync_products($dry_run);
+            ACLSyncService::sync_products($dry_run, $category_id, $cogs, $salesacct, $cogstaxtype, $salestaxtype );
         } catch (\Exception $e) {
             echo "<div class='notice notice-error'><p>Error in Sync Process: " . htmlspecialchars($e->getMessage()) . "</p></div>";
             flush();
