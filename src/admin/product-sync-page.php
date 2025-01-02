@@ -466,7 +466,7 @@ class ACLProductSyncPage {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
                             foreach ($taxTypes as $taxType) {
-                                if ( $taxType['CanApplyToExpenses'] ) {
+                                if ( $taxType['Expenses'] ) {
                                     echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
                                 } 
                             }
@@ -484,7 +484,7 @@ class ACLProductSyncPage {
                         } else {
 
                             foreach ( $taxTypes as $taxType ) {
-                                if ( $taxType['CanApplyToRevenue'] ) {
+                                if ( $taxType['Revenue'] ) {
                                     echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
                                 }
                             }
