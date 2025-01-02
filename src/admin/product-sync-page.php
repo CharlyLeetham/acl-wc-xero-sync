@@ -395,11 +395,6 @@ class ACLProductSyncPage {
             $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
             $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
         }
-
-        echo '<pre>';
-        var_dump($taxTypes);
-        echo '</pre>';
-
         ?>
         <div class="wrap">
             <h1>Sync Products to Xero</h1>
