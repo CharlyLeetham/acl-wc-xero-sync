@@ -17,7 +17,8 @@ class ACLSyncService {
         $offset = 0;
         $processed_count = 0;
 
-        var_dump ($category_id);
+        var_dump($dry_run);
+        var_dump($category_id);
         wp_die();
 
         try {
