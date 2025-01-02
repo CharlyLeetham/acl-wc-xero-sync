@@ -360,63 +360,32 @@ jQuery(document).ready(function($) {
         var cogs = $('#cogs').val();
         var salesacct = $('#salesacct').val();
         var cogstaxtype = $('#cogs-tax-type').val();
-        var salestaxtype = $('#sales-tax-type').val();       
+        var salestaxtype = $('#sales-tax-type').val();
         var $syncResults = $('#sync-results');
-        var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
-        console.log (category_id);
+        var $csvUpdates = $('#csv-file-container');
     
-        // Clear previous sync results, keep CSV updates
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
     
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', aclWcXeroSyncAjax.ajax_url, true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
+        $.ajax({
+            url: aclWcXeroSyncAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'acl_xero_sync_products_ajax',
+                sync_xero_products: '1',
+                dry_run: dryRun ? '1' : '0',
+                category_id: category_id,
+                cogs: cogs,
+                salesacct: salesacct,
+                cogstaxtype: cogstaxtype,
+                salestaxtype: salestaxtype,
+                _ajax_nonce: aclWcXeroSyncAjax.nonce_xero_sync_products_ajax
+            },
+            success: function(data) {
                 $('#sync-indicator').remove();
-                // Append sync messages
-                $syncResults.append(xhr.responseText);
+                $syncResults.append(data);
     
-                // Update CSV display
-                $.ajax({
-                    url: aclWcXeroSyncAjax.ajax_url,
-                    type: 'POST',
-                    data: {
-                        action: 'acl_update_csv_display',
-                        _ajax_nonce: aclWcXeroSyncAjax.nonce_update_csv_display
-                    },
-                    success: function(csvResponse) {
-                        if (csvResponse.success) {
-                            $csvUpdates.html(csvResponse.data.html);
-                            if (csvResponse.data.defaultLog) {
-                                ACLWcXeroSync.displayLog(csvResponse.data.defaultLog);
-                            }
-                        } else {
-                            $csvUpdates.html('<div class="notice notice-error"><p>Failed to update CSV list: ' + csvResponse.data + '</p></div>');
-                        }
-                    },
-                    error: function() {
-                        $csvUpdates.html('<div class="notice notice-error"><p>Error updating CSV list.</p></div>');
-                    }
-                });
+                // Rest of your success callback would go here
             }
-        };
-
-        console.log('Sending data:', 'action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + 
-             '&category_id=' + category_id + 
-             '&cogs=' + cogs + 
-             '&salesacct=' + salesacct + 
-             '&cogstaxtype=' + cogstaxtype + 
-             '&salestaxtype=' + salestaxtype + 
-             '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
-
-        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + 
-         '&category_id=' + category_id + 
-         '&cogs=' + cogs + 
-         '&salesacct=' + salesacct + 
-         '&cogstaxtype=' + cogstaxtype + 
-         '&salestaxtype=' + salestaxtype + 
-         '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+        });
     });
 });
