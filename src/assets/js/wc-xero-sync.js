@@ -371,6 +371,7 @@ jQuery(document).ready(function($) {
         var salestaxacct = $('#sales-tax-type').val();       
         var $syncResults = $('#sync-results');
         var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
+        console.log (category_id);
     
         // Clear previous sync results, keep CSV updates
         $syncResults.html('<div class="notice notice-info"><p>Sync process is starting...</p><div id="sync-indicator" class="loader"></div></div>');
