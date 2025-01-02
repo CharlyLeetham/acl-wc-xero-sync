@@ -352,6 +352,8 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
+            var_dump($exsiting_items);
+            wp_die();
             return !empty( $existing_items );
 
         } catch (\Exception $e) {
