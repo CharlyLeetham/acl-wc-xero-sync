@@ -84,7 +84,7 @@ class ACLSyncService {
                         continue;
                     }
         
-                    $sku = $product['sku'];
+                    $sku = trim( $product['sku'] );
                     try {
                         $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run, $cogs, $salesacct, $cogstaxtype, $salestaxtype);
                         if (!empty($itemDetails)) {
@@ -160,7 +160,7 @@ class ACLSyncService {
                 // Fetch item details from Xero
                 $item = self::get_xero_item( $xero, $sku );
 
-                if ( $item['code'] == 'M52 G New Cylinder') {
+                if ( trim ( $item['code'] ) == 'M52 G New Cylinder') {
                     echo '<pre>';
                     var_dump( $item );
                     echo '</pre>';
@@ -359,14 +359,7 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
-            if ( trim( $sku ) == 'M52 G New Cylinder') {
-                echo '<pre>';
-                var_dump( $existing_items );
-                echo '</pre>';
-                wp_die();
-            } else {
-                return !empty($existing_items);
-            }
+            return !empty($existing_items);
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);
             if ($errorDetails && isset($errorDetails['Detail']) && strpos($errorDetails['Detail'], 'TokenExpired') !== false) {
