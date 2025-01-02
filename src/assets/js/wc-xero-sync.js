@@ -14,7 +14,6 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     if (response.success) {
-                        console.log("Updating #log-content with:", response.data);
                         $('#log-content').text(response.data);
                         // Update the filename display
                         $('#current-filename').text(filename);                        
@@ -41,8 +40,7 @@ jQuery(document).ready(function($) {
                 xhrFields: {
                     responseType: 'text'
                 },
-                success: function(response, status, xhr) {   
-                    console.log("Download Response:", response);                          
+                success: function(response, status, xhr) {                         
                     try {
                         if (response.success === false || response.success === undefined) {
                             console.log("Response part deux: " + (response.data.message || response.message));
@@ -53,8 +51,6 @@ jQuery(document).ready(function($) {
                         }
                     } catch (e) {
                         // If JSON parsing fails, we assume it's a file download
-                        console.log("File download initiated");
-
                         // Here, you would implement the actual download logic:
                         var blob = new Blob([response], {type: xhr.getResponseHeader('Content-Type') || 'application/octet-stream'});
                         var link = document.createElement('a');
@@ -141,7 +137,6 @@ jQuery(document).ready(function($) {
 
     // New code for testing connection with Xero
     $('#test-xero-connection').on('click', function () {
-        console.log ('HERE');
         $('#xero-test-connection-result').html('<p>Testing Connection...</p>');
         $.ajax({
             url: aclWcXeroSyncAjax.ajax_url, // This won't work in JS, see below for correction
@@ -159,7 +154,6 @@ jQuery(document).ready(function($) {
 
     // Functionality to toggle between password and text type using an eye icon
     $('.password-toggle-icon').on('click', function () {
-        console.log ('here');
         var target = $(this).data('target');
         var input = $('#' + target);
         var currentType = input.attr('type');
@@ -188,14 +182,12 @@ jQuery(document).ready(function($) {
     });
 
     $('.acl-display-file').on('click', function(e) {
-        console.log ('display file' );
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.displayLog(filename);
     });
 
     $('.acl-download-file').on('click', function(e) {
-        console.log('Download button pressed');
         e.preventDefault();
         var filename = $(this).data('file');
         ACLWcXeroSync.downloadFile(filename);
