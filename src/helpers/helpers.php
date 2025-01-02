@@ -419,8 +419,8 @@ class ACLXeroHelper {
     }    
 
     public static function GetXeroAccounts( $xero ) {
-    
         try {
+
             $accounts = $xero->load('Accounting\\Account')->execute();
             $result = [];
             foreach ($accounts as $account) {
