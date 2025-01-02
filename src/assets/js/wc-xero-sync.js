@@ -364,6 +364,11 @@ jQuery(document).ready(function($) {
     $('#start-sync').on('click', function(e) {
         e.preventDefault();
         var dryRun = $('#dry-run').is(':checked');
+        var category_id = $('#category-select').val();
+        var cogs = $('#cogs').val();
+        var salesacct = $('#salesacct').val();
+        var cogstaxtype = $('#cogs-tax-type').val();
+        var salestaxacct = $('#sales-tax-type').val();       
         var $syncResults = $('#sync-results');
         var $csvUpdates = $('#csv-file-container'); // Assuming you have this div for CSV updates
     
@@ -405,6 +410,6 @@ jQuery(document).ready(function($) {
             }
         };
     
-        //xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&category_id=' + $('#category-select').val() + '&cogs='  + $('#cogs') + '&salesacct=' + $('#salesacct') + '&cogstaxtype=' + $('#cogs-tax-type') + '&salestaxacct=' +$('#sales-tax-type') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
+        xhr.send('action=acl_xero_sync_products_ajax&sync_xero_products=1&dry_run=' + (dryRun ? '1' : '0') + '&category_id=' + $('#category-select').val() + '&cogs='  + $('#cogs') + '&salesacct=' + $('#salesacct') + '&cogstaxtype=' + $('#cogs-tax-type') + '&salestaxacct=' +$('#sales-tax-type') + '&_ajax_nonce=' + aclWcXeroSyncAjax.nonce_xero_sync_products_ajax);
     });
 });
