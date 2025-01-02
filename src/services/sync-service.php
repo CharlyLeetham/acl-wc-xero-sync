@@ -351,10 +351,8 @@ class ACLSyncService {
             ACLXeroLogger::log_message(" SKU: |" . $sku ."|", 'product_sync');
             
             $existing_items = $query->execute();
-            
-            var_dump($existing_items);
-            wp_die();
-            return !empty( $existing_items );
+
+            return $existing_items->count() > 0;
 
         } catch (\Exception $e) {
             $errorDetails = json_decode($e->getMessage(), true);
