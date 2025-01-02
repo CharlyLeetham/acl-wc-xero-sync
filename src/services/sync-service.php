@@ -159,16 +159,6 @@ class ACLSyncService {
 
                 // Fetch item details from Xero
                 $item = self::get_xero_item( $xero, $sku );
-
-                if ( trim ( $item['code'] ) == 'M52 G New Cylinder') {
-                    echo '<pre>';
-                    var_dump( $item );
-                    echo '</pre>';
-                    wp_die();
-                } else {
-                    return;
-                }
-
                 
                 // Assuming 'UnitPrice' is the field for sale price in Xero
                 $xeroPrice = $item->SalesDetails->UnitPrice;
