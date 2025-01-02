@@ -12,7 +12,7 @@ class ACLSyncService {
     /**
      * Syncs WooCommerce products with Xero by checking their existence.
      */
-    public static function sync_products( $dry_run = false, $category_id = null ) {
+    public static function sync_products( $dry_run = false, $category_id = null, $cogs = NULL, $salesacct = NULL, $cogstaxtype = NULL, $salestaxtype = NULL ) {
         $batch_size = 50;
         $offset = 0;
         $processed_count = 0;
@@ -87,7 +87,7 @@ class ACLSyncService {
         
                     $sku = $product['sku'];
                     try {
-                        $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run);
+                        $itemDetails = self::process_product($xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run, $cogs, $salesacct, $cogstaxtype, $salestaxtype);
                         if (!empty($itemDetails)) {
                             if ($dry_run) {
                                 $xeroPurchasePrice = $itemDetails['PurchaseDetails']['UnitPrice'] ?? '';
@@ -149,7 +149,7 @@ class ACLSyncService {
      * @param string $nopricechange_csv
      * @return array|null Returns item details if an update is needed, null otherwise
      */
-    private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run ) {
+    private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run, $cogs = NULL, $salesacct = NULL, $cogstaxtype = NULL, $salestaxtype = NULL ) {
         $sku = $product['sku'];
         try {
          
@@ -218,8 +218,33 @@ class ACLSyncService {
 
 
             } else {
-                echo "<div class='notice notice-info'><p>Product [ID: {$product['id']}] does not exist in Xero.</p></div>";                
-                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero.", 'product_sync' );
+                echo "<div class='notice notice-info'><p>Product [SKU: {$product['sku']}] does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}</p></div>";                
+                ACLXeroLogger::log_message( "Product SKU <strong>{$sku}</strong> does not exist in Xero. Creating now. WCPurchasePrice: {$wcPurchasePrice}, WCSellPrice: {$wcPrice}, COGS acct: {$cogs}, COGS Tax Type: {$cogstaxtype}, Sales acct: {$salesacct}, Sales Tax Type: {$salestaxtype}", 'product_sync' );
+
+                // Get WooCommerce price
+                $wcPrice = get_post_meta( $product['id'], '_price', true ); 
+                $wcPurchasePrice = get_post_meta( $product['id'], 'acl_wc_cost_price', true );
+                $cogsaccount =                 
+    
+                // Create a new item for batch update
+                $newItem = [
+                    'Code' => $sku,
+                    'Name' => $product['name'],
+                    'Description' => $product['description'],
+                    'SalesDetails' => [
+                        'UnitPrice' => (float)$wcPurchasePrice,
+                        'AccountCode' => $cogs, 
+                        'TaxType' => $cogstaxtype, 
+                    ],
+                    'PurchaseDetails' => [
+                        'UnitPrice' => (float)$product['price'], // Assuming the purchase price is the same as sales price for simplicity
+                        'AccountCode' => $salesacct, // Replace with your actual purchase account code
+                        'TaxType' => $salestaxtype, // Replace with your actual tax type code
+                    ]
+                ];
+    
+                // Return the new item for batch update
+                return $newItem;                
             }
             return null;
         } catch ( \Exception $e ) {
@@ -307,24 +332,7 @@ class ACLSyncService {
         }
     }
 
-    /**
-     * Fetches products from WooCommerce using a direct database query.
-     *
-     * @return array List of WooCommerce products.
-     */
-    private static function get_wc_products() {
-        global $wpdb;
-
-        $query = "
-            SELECT p.ID as id, pm.meta_value as sku
-            FROM {$wpdb->prefix}posts p
-            JOIN {$wpdb->prefix}postmeta pm ON p.ID = pm.post_id
-            WHERE p.post_type = 'product' AND p.post_status = 'publish' AND pm.meta_key = '_sku'
-        ";
-
-        return $wpdb->get_results( $query, ARRAY_A ) ?: [];
-    } 
-    
+  
     /**
      * Checks if a product SKU exists in Xero.
      *

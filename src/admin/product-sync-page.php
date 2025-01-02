@@ -381,23 +381,85 @@ class ACLProductSyncPage {
      * Renders the Product Sync Page.
      */
     public static function render_sync_page() {
+
+        $accounts = ACLXeroHelper::getXeroAccounts(); 
+        $taxTypes = ACLXeroHelper::getXeroTaxTypes(); 
+
         ?>
         <div class="wrap">
             <h1>Sync Products to Xero</h1>
             <form method="post" id="sync-products-form">
-                <input type="hidden" name="sync_xero_products" value="1">
-                <input type="checkbox" id="dry-run" name="dry_run">
-                <label for="dry-run">Dry Run</label>
-                <select name="category_id" id="category-select">
-                    <option value="">Select Category</option>
-                    <?php
-                    $categories = get_terms('product_cat', array('hide_empty' => false));
-                    foreach ($categories as $category) {
-                        echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
-                    }
-                    ?>
-                </select>                                
-                <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+                <div class="syncrow">
+                    <input type="hidden" name="sync_xero_products" value="1">
+                    <input type="checkbox" id="dry-run" name="dry_run">
+                    <label for="dry-run">Dry Run</label>
+                </div>
+                <div class="syncrow">                
+                    <select name="category_id" id="category-select">
+                        <option value="">Select Category</option>
+                        <?php
+                        $categories = get_terms('product_cat', array('hide_empty' => false));
+                        foreach ($categories as $category) {
+                            echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
+                        }
+                        ?>
+                    </select> 
+                </div>
+                <div class="syncrow">
+                    <h3>For New Products provide:</h3>
+                </div>
+
+                <div class="syncrow">
+                    <select name="cogs" id="cogs">
+                        <option value="">Select COGS Account</option>
+                        <?php
+                        foreach ($accounts as $account) {
+                            if ($account['Type'] == 'EXPENSE') { // Filter for expense accounts which would generally include COGS
+                                echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="cogs">Cost of Goods Sold Account</label>
+                </div>                
+                <div class="syncrow">
+                    <select name="salesacct" id="salesacct">
+                        <option value="">Select Sales Account</option>
+                        <?php
+                        foreach ($accounts as $account) {
+                            if ($account['Type'] == 'REVENUE') { // Filter for revenue accounts
+                                echo '<option value="' . $account['Code'] . '">' . $account['Name'] . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="salesacct">Sales Account</label>
+                </div>
+                <div class="syncrow">
+                    <select name="cogs_tax_type" id="cogs-tax-type">
+                        <option value="">Select COGS Tax Type</option>
+                        <?php
+                        foreach ($taxTypes as $taxType) {
+                            echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                        }
+                        ?>
+                    </select>
+                    <label for="cogs-tax-type">COGS Tax Type</label>
+                </div>
+                <div class="syncrow">
+                    <select name="sales_tax_type" id="sales-tax-type">
+                        <option value="">Select Sales Tax Type</option>
+                        <?php
+                        foreach ($taxTypes as $taxType) {
+                            echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                        }
+                        ?>
+                    </select>
+                    <label for="sales-tax-type">Sales Tax Type</label>
+                </div>                
+                <div class="syncrow">                                                   
+                    <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+                </div>        
             </form>
             <div id="sync-results"></div>
             <div id="csv-file-updates"></div> <!-- Placeholder for updates -->                      

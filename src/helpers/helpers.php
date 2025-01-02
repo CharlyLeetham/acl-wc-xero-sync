@@ -418,4 +418,41 @@ class ACLXeroHelper {
         flush(); // Send output to browser
     }    
 
+    public static function GetAccounts() {
+        $xero = new \XeroPHP\Application\PrivateApplication($config); // Assuming you're using XeroPHP library
+    
+        try {
+            $accounts = $xero->load('Accounting\\Account')->execute();
+            $result = [];
+            foreach ($accounts as $account) {
+                // Assuming you want to filter by type, you can do this here or return all and filter later
+                $result[] = [
+                    'Code' => $account->getCode(),
+                    'Name' => $account->getName(),
+                    'Type' => $account->getType()
+                ];
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    public static function GetTaxTypes() {
+        $xero = new \XeroPHP\Application\PrivateApplication($config); // Again, assuming XeroPHP
+    
+        try {
+            $taxRates = $xero->load('Accounting\\TaxRate')->execute();
+            $result = [];
+            foreach ($taxRates as $taxRate) {
+                $result[] = [
+                    'TaxType' => $taxRate->getName(), // Assuming getName returns the tax type name
+                    'Name' => $taxRate->getDisplayName() // Display name for dropdown
+                ];
+            }
+            return $result;
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
 }
