@@ -359,7 +359,7 @@ class ACLSyncService {
             
             $existing_items = $query->execute();
             
-            if ( $sku == 'M52 G New Cylinder') {
+            if ( trim( $sku ) == 'M52 G New Cylinder') {
                 echo '<pre>';
                 var_dump( $existing_items );
                 echo '</pre>';
