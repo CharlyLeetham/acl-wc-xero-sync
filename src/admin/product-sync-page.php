@@ -382,8 +382,9 @@ class ACLProductSyncPage {
      */
     public static function render_sync_page() {
 
-        $accounts = ACLXeroHelper::getXeroAccounts(); 
-        $taxTypes = ACLXeroHelper::getXeroTaxTypes(); 
+        $xero = ACLXeroHelper::initialize_xero_client();
+        $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
+        $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
 
         ?>
         <div class="wrap">
