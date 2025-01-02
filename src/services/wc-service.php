@@ -9,13 +9,13 @@ class ACLWCService {
      */
     public static function get_products( $offset = 0, $batch_size = 50, $category_id = null ) {
         // Query WooCommerce products directly using WP_Query
-        $query = new \WP_Query([
+        $query = [
             'post_type'   => 'product',
             'post_status' => 'publish',
             'posts_per_page' => $batch_size,
             'offset'         => $offset,
             'fields'         => 'ids',
-        ]);
+        ];
 
         if ($category_id) {
             $query['tax_query'] = array(
@@ -27,7 +27,7 @@ class ACLWCService {
             );
         } 
         
-        $product_ids = get_posts($query);
+        $product_ids = get_posts( $query );
         return $product_ids;
         $products = [];
             
