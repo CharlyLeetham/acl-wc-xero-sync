@@ -418,7 +418,7 @@ class ACLXeroHelper {
         flush(); // Send output to browser
     }    
 
-    public static function GetAccounts() {
+    public static function GetXeroAccounts() {
         $xero = new \XeroPHP\Application\PrivateApplication($config); // Assuming you're using XeroPHP library
     
         try {
@@ -438,7 +438,7 @@ class ACLXeroHelper {
         }
     }
 
-    public static function GetTaxTypes() {
+    public static function GetXeroTaxTypes() {
         $xero = new \XeroPHP\Application\PrivateApplication($config); // Again, assuming XeroPHP
     
         try {
