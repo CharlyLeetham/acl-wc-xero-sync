@@ -507,15 +507,11 @@ class ACLSyncService {
             $email = $order->get_billing_email();
            
             // Try to find existing contact by email
-            $contacts = $xero->load('Accounting\\Contacts')
-                ->where('EmailAddress', $email);
+            $contacts = $xero->load('Accounting\\Contact')->execute();
 
 
-            ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );
-        
-            $existing_contacts = $contacts->execute();  
-            
-            ACLXeroLogger::log_message("Existing contacts: |" . print_r( $existing_contacts, true ) . "|", 'invoice_sync');
+            ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );        
+            ACLXeroLogger::log_message("Existing contacts: |" . print_r( $contacts, true ) . "|", 'invoice_sync');
 
             if ($contacts->count() > 0) {
                 return $contacts->first();
