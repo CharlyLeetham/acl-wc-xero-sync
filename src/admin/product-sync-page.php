@@ -43,8 +43,6 @@ class ACLProductSyncPage {
         $sp = ACL_XERO_PLUGIN_PATH . 'src/assets/js/wc-xero-sync.js';
         $version = filemtime($sp);
         wp_enqueue_script('acl-wc-xero-sync', ACL_XERO_PLUGIN_URL . 'src/assets/js/wc-xero-sync.js', array('jquery'), $version , true);    
-        // Get the default log file based on file type
-        //$defaultLog = ACLXeroHelper::display_files($file_type);
     
         // Localize the script with all necessary data
         wp_localize_script('acl-wc-xero-sync', 'aclWcXeroSyncAjax', array(
@@ -257,7 +255,7 @@ class ACLProductSyncPage {
                 'invoice_sync' => 'Invoice Sync'
             ];
             foreach ($logging_levels as $key => $label) {
-                update_option('acl_xero_log_' . $key, isset($_POST['acl_xero_log_' . $key]) ? '1' : '0');
+                update_option( 'acl_xero_log_' . $key, isset( $_POST['acl_xero_log_' . $key] ) ? '1' : '0' );
             }            
             echo '<div class="updated"><p>Settings updated successfully!</p></div>';
         }
@@ -354,7 +352,7 @@ class ACLProductSyncPage {
                             <td colspan="2">
                                 <?php 
                                 $filetype = 'log';
-                                $defaultLog = ACLXeroHelper::display_files($filetype);                               
+                                $defaultLog = ACLXeroHelper::display_files( $filetype );                               
                                 ?>
                                     <script>
                                         var defaultLog = "<?php echo esc_js($defaultLog); ?>";
@@ -518,7 +516,7 @@ class ACLProductSyncPage {
                         <td colspan="2">
                             <?php 
                             $filetype = 'csv';
-                            $defaultLog = ACLXeroHelper::display_files($filetype);                               
+                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'pricechange|newproducts' );                               
                             ?>
                                 <script>
                                     var defaultLog = "<?php echo esc_js($defaultLog); ?>";
@@ -632,7 +630,7 @@ class ACLProductSyncPage {
                             <td colspan="2">
                                 <?php 
                                 $filetype = 'csv';
-                                $defaultLog = ACLXeroHelper::display_files( $filetype );                               
+                                $defaultLog = ACLXeroHelper::display_files( $filetype, 'invoice_sync' );                               
                                 ?>
                                 <script>
                                     var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";

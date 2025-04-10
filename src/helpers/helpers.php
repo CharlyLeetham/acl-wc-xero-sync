@@ -256,15 +256,28 @@ class ACLXeroHelper {
     
     // Display the log files
 
-    public static function display_files( $filetype ) {  
+    public static function display_files( $filetype, $filter_string = '' ) {  
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         ACLXeroLogger::log_message( "filepath:".$folder_path, 'xero_logging' );
         ACLXeroLogger::log_message( "filetype:".$filetype, 'xero_logging' );
         if (is_dir($folder_path)) {
-            $files = glob($folder_path . '/*.'.$filetype);
 
+            $all_files = glob( $folder_path . '/*.' . $filetype );
+            $files = [];
+    
+            if ( $filter_string ) {
+                foreach ( $all_files as $file ) {
+                    $filename = basename( $file );
+                    if ( strpos( $filename, $filter_string ) !== false ) {
+                        $files[] = $file;
+                    }
+                }
+            } else {
+                $files = $all_files;
+            }           
+        
             ob_start();
-            print_r($files);
+            print_r( $files );
             $files_string = ob_get_clean();            
             
             ACLXeroLogger::log_message( "files:".$files_string, 'xero_logging' );
