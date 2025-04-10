@@ -548,7 +548,7 @@ class ACLXeroHelper {
     /**
      * Check if an invoice already exists in Xero for this order
      */
-    private static function check_existing_xero_invoice( $xero, $order_id ) {
+    public static function check_existing_xero_invoice( $xero, $order_id ) {
         try {
             $invoices = $xero->load('Accounting\\Invoice')
                 ->where( 'Reference', "WC Order #{$order_id}" )
