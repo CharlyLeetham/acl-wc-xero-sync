@@ -544,4 +544,20 @@ class ACLXeroHelper {
             ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync_test' );
         }
     }
+
+    /**
+     * Check if an invoice already exists in Xero for this order
+     */
+    private static function check_existing_xero_invoice( $xero, $order_id ) {
+        try {
+            $invoices = $xero->load('Accounting\\Invoice')
+                ->where( 'Reference', "WC Order #{$order_id}" )
+                ->execute();
+            
+            return $invoices->count() > 0 ? $invoices->first() : null;
+        } catch ( \Exception $e ) {
+            ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
+            return null;
+        }
+    }    
 }
