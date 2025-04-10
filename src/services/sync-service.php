@@ -386,7 +386,7 @@ class ACLSyncService {
 
     /**
      * Syncs WooCommerce order as an invoice to Xero
-    */
+     */
     public static function sync_order_to_xero_invoice( $order_id ) {
         try {
             // Get the WooCommerce order
@@ -398,7 +398,7 @@ class ACLSyncService {
 
             // Initialize Xero client
             $xero = ACLXeroHelper::initialize_xero_client();
-            if (is_wp_error($xero)) {
+            if ( is_wp_error( $xero ) ) {
                 ACLXeroLogger::log_message( "Xero client initialization failed for order {$order_id}: " . $xero->get_error_message(), 'invoice_sync' );
                 return false;
             }
@@ -423,7 +423,7 @@ class ACLSyncService {
             $invoice->setInvoiceNumber( "WC-{$order_id}" );
             
             // Set dates
-            $invoice->setDate( new \DateTime( $order->get_date_created() )  );
+            $invoice->setDate( new \DateTime( $order->get_date_created() ) );
             $invoice->setDueDate( new \DateTime( $order->get_date_created() ) ); // Adjust due date as needed
             
             // Determine invoice status based on payment status
@@ -452,7 +452,7 @@ class ACLSyncService {
                 
                 // Add tax (you might need to adjust this based on your tax setup)
                 $tax_amount = $item->get_subtotal_tax();
-                if ($tax_amount > 0) {
+                if ( $tax_amount > 0 ) {
                     $line_item->setTaxType( 'OUTPUT' ); // Adjust tax type as needed
                 }
                 
@@ -463,7 +463,7 @@ class ACLSyncService {
             if ( $order->get_shipping_total() > 0 ) {
                 $shipping_item = new \XeroPHP\Models\Accounting\LineItem( $xero );
                 $shipping_item->setDescription( 'Shipping' );
-                $shipping_item->setQuantity(1);
+                $shipping_item->setQuantity( 1 );
                 $shipping_item->setUnitAmount( $order->get_shipping_total() );
                 $shipping_item->setLineAmount( $order->get_shipping_total() );
                 $invoice->addLineItem( $shipping_item );
@@ -472,20 +472,24 @@ class ACLSyncService {
             // Save the invoice to Xero
             $invoice->save();
 
+            // Store the Xero Invoice ID in WooCommerce metadata
+            $invoice_id = $invoice->getInvoiceID();
+            update_post_meta( $order_id, '_xero_invoice_id', $invoice_id );
+
             // If paid, add payment
             if ( $order->is_paid() ) {
                 $payment = new \XeroPHP\Models\Accounting\Payment( $xero );
                 $payment->setInvoice( $invoice );
                 $payment->setAccount( $xero->load('Accounting\\Account')->where('Code', '200')->first() ); // Adjust account code as needed
-                $payment->setDate (new \DateTime( $order->get_date_paid() ) );
+                $payment->setDate( new \DateTime( $order->get_date_paid() ) );
                 $payment->setAmount( $order->get_total() );
                 $payment->save();
             }
 
-            ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice to Xero. Status: {$payment_status}", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice {$invoice_id} to Xero. Status: {$payment_status}", 'invoice_sync' );
             return true;
 
-        } catch (\Exception $e) {
+        } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( "Error syncing order {$order_id} to Xero: {$e->getMessage()}", 'invoice_sync' );
             return false;
         }

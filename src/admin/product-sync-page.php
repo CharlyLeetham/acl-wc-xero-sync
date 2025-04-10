@@ -529,56 +529,85 @@ class ACLProductSyncPage {
         <?php
     }
     
-    // Render the Invoice Sync Test Page
-    public static function render_test_invoice_sync() {
+    public static function render_xero_invoice_sync() {
+        // Save option if submitted
+        if ( isset( $_POST['xero_sync_options_nonce'] ) && wp_verify_nonce( $_POST['xero_sync_options_nonce'], 'xero_sync_options_action' ) ) {
+            $unpaid_status = isset( $_POST['unpaid_invoice_status'] ) && in_array( $_POST['unpaid_invoice_status'], 
+                [ \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED ] ) 
+                ? $_POST['unpaid_invoice_status'] 
+                : \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED;
+            update_option( 'acl_xero_unpaid_invoice_status', $unpaid_status );
+            echo "<div class='notice notice-success'><p>Settings saved.</p></div>";
+        }
+    
+        $xero = ACLXeroHelper::initialize_xero_client();
+        if ( is_wp_error( $xero ) ) {
+            echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
+            flush();
+        }
+    
+        $args = array(
+            'status' => array( 'completed', 'processing', 'pending' ),
+            'limit' => -1,
+            'return' => 'ids',
+        );
+        $order_ids = wc_get_orders( $args );
+    
+        if ( empty( $order_ids ) ) {
+            echo "<div class='notice notice-warning'><p>No orders found in the system.</p></div>";
+        }
+    
+        if ( isset( $_POST['xero_test_sync_nonce'] ) && wp_verify_nonce( $_POST['xero_test_sync_nonce'], 'xero_test_sync_action' ) ) {
+            $dry_run = isset( $_POST['dry_run'] ) && $_POST['dry_run'] === '1';
+            if ( isset( $_POST['sync_all'] ) ) {
+                self::test_invoice_sync( $dry_run ); // Reuse existing logic for now
+            } elseif ( isset( $_POST['sync_order'] ) && ! empty( $_POST['order_id'] ) ) {
+                $order_id = intval( $_POST['order_id'] );
+                self::test_invoice_sync( $dry_run, array( $order_id ) );
+            }
+        }
+    
+        $current_status = get_option( 'acl_xero_unpaid_invoice_status', \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED );
         ?>
-            <div class="wrap">
-                <h1>Xero Invoice Sync Test</h1>
-                
-                <?php
-                // Initialize Xero client
-                $xero = ACLXeroHelper::initialize_xero_client();
-                if (is_wp_error($xero)) {
-                    echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
-                    return;
-                }
-
-                // Get all orders (completed and processing)
-                $args = array(
-                    'status' => array( 'completed', 'processing', 'pending' ),
-                    'limit' => -1,
-                    'return' => 'ids',
-                );
-                $order_ids = wc_get_orders( $args );
-
-                if (empty($order_ids)) {
-                    echo "<div class='notice notice-warning'><p>No orders found in the system.</p></div>";
-                    return;
-                }
-
-                // Handle form submissions
-                if (isset($_POST['xero_test_sync_nonce']) && wp_verify_nonce($_POST['xero_test_sync_nonce'], 'xero_test_sync_action')) {
-                    $dry_run = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
-                    
-                    if (isset($_POST['sync_all'])) {
-                        ACLXeroHelper::test_invoice_sync( $dry_run );
-                    } elseif  (isset( $_POST['sync_order']) && !empty($_POST['order_id'] ) ) {
-                        $order_id = intval( $_POST['order_id'] );
-                        ACLXeroHelper::test_invoice_sync( $dry_run, [$order_id] );
-                    }
-                }
-                ?>
-
-                <form method="post" action="">
-                    <?php wp_nonce_field( 'xero_test_sync_action', 'xero_test_sync_nonce' ); ?>
-                    <p>
-                        <input type="submit" name="sync_all" class="button button-primary" value="Sync All Orders (Live)">
-                        <input type="submit" name="sync_all" class="button" value="Sync All Orders (Dry Run)" onclick="document.getElementById('dry_run_input').value='1';">
-                        <input type="hidden" name="dry_run" id="dry_run_input" value="0">
-                    </p>
-                </form>
-
-                <h2>Orders List (<?php echo count($order_ids); ?> found)</h2>
+        <div class="wrap">
+            <h1>Xero Invoice Sync</h1>
+    
+            <!-- Options Panel -->
+            <h2>Sync Settings</h2>
+            <form method="post" action="">
+                <?php wp_nonce_field( 'xero_sync_options_action', 'xero_sync_options_nonce' ); ?>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row"><label for="unpaid_invoice_status">Unpaid Invoice Status</label></th>
+                        <td>
+                            <select name="unpaid_invoice_status" id="unpaid_invoice_status">
+                                <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED; ?>" 
+                                    <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED ); ?>>Authorised</option>
+                                <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT; ?>" 
+                                    <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT ); ?>>Draft</option>
+                            </select>
+                            <p class="description">Choose how unpaid orders are posted to Xero. 'Authorised' posts to accounts immediately; 'Draft' requires manual approval.</p>
+                        </td>
+                    </tr>
+                </table>
+                <p class="submit">
+                    <input type="submit" name="submit" class="button button-primary" value="Save Settings">
+                </p>
+            </form>
+    
+            <!-- Existing Sync UI -->
+            <h2>Manual Sync</h2>
+            <form method="post" action="">
+                <?php wp_nonce_field( 'xero_test_sync_action', 'xero_test_sync_nonce' ); ?>
+                <p>
+                    <input type="submit" name="sync_all" class="button button-primary" value="Sync All Orders (Live)">
+                    <input type="submit" name="sync_all" class="button" value="Sync All Orders (Dry Run)" onclick="document.getElementById('dry_run_input').value='1';">
+                    <input type="hidden" name="dry_run" id="dry_run_input" value="0">
+                </p>
+            </form>
+    
+            <?php if ( ! empty( $order_ids ) ) : ?>
+                <h2>Orders List (<?php echo count( $order_ids ); ?> found)</h2>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -595,21 +624,21 @@ class ACLProductSyncPage {
                         <?php
                         foreach ( $order_ids as $order_id ) {
                             $order = wc_get_order( $order_id );
-                            $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
+                            $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
                             $sync_status = $existing_invoice ? 
                                 "Synced (Invoice ID: " . $existing_invoice->getInvoiceID() . ")" : 
                                 "Not Synced";
                             ?>
                             <tr>
                                 <td><?php echo $order_id; ?></td>
-                                <td><?php echo $order->get_date_created()->format('Y-m-d H:i:s'); ?></td>
+                                <td><?php echo $order->get_date_created()->format( 'Y-m-d H:i:s' ); ?></td>
                                 <td><?php echo $order->get_status(); ?></td>
-                                <td><?php echo wc_price($order->get_total()); ?></td>
+                                <td><?php echo wc_price( $order->get_total() ); ?></td>
                                 <td><?php echo $order->is_paid() ? 'Paid' : 'Unpaid'; ?></td>
                                 <td><?php echo $sync_status; ?></td>
                                 <td>
                                     <form method="post" action="" style="display:inline;">
-                                        <?php wp_nonce_field('xero_test_sync_action', 'xero_test_sync_nonce'); ?>
+                                        <?php wp_nonce_field( 'xero_test_sync_action', 'xero_test_sync_nonce' ); ?>
                                         <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
                                         <input type="submit" name="sync_order" class="button button-small" value="Sync Live">
                                         <input type="submit" name="sync_order" class="button button-small" value="Dry Run" onclick="this.form.dry_run.value='1';">
@@ -622,24 +651,25 @@ class ACLProductSyncPage {
                         ?>
                     </tbody>
                 </table>
-
-                <h2>CSV Log Files</h2>
-                <div id="csv-file-container">
-                    <table class="form-table">
-                        <tr>
-                            <td colspan="2">
-                                <?php 
-                                $filetype = 'csv';
-                                $defaultLog = ACLXeroHelper::display_files( $filetype, 'invoice_sync' );                               
-                                ?>
-                                <script>
-                                    var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
-                                </script>
-                            </td>                        
-                        </tr>
-                    </table>
-                </div>                
+            <?php endif; ?>
+    
+            <h2>Invoice Sync CSV Log Files</h2>
+            <div id="csv-file-container">
+                <table class="form-table">
+                    <tr>
+                        <td colspan="2">
+                            <?php 
+                            $filetype = 'csv';
+                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'invoice_sync' );                               
+                            ?>
+                            <script>
+                                var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
+                            </script>
+                        </td>                        
+                    </tr>
+                </table>
             </div>
-            <?php
-    }    
+        </div>
+        <?php
+    }  
 }

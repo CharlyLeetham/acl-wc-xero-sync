@@ -283,7 +283,7 @@ class ACLXeroHelper {
             } else {
                 $files = $all_files;
             }
-            
+
             ob_start();
             print_r( $files );
             $files_string = ob_get_clean();            
@@ -575,14 +575,33 @@ class ACLXeroHelper {
      */
     public static function check_existing_xero_invoice( $xero, $order_id ) {
         try {
+            // Step 1: Check WooCommerce metadata first
+            $invoice_id = get_post_meta( $order_id, '_xero_invoice_id', true );
+            if ( $invoice_id ) {
+                // Verify it still exists in Xero
+                $invoices = $xero->load('Accounting\\Invoice')
+                    ->where( 'InvoiceID', $invoice_id )
+                    ->execute();
+                
+                if ( $invoices->count() > 0 ) {
+                    return $invoices->first(); // Invoice exists, return it
+                } else {
+                    // Invoice ID in metadata but not in Xero (deleted?)
+                    ACLXeroLogger::log_message( "Order #{$order_id} has _xero_invoice_id '{$invoice_id}' but no matching invoice in Xero.", 'invoice_sync' );
+                    return null; // Treat as not synced, or handle differently if needed
+                }
+            }
+
+            // Step 2: Fallback to Reference check if no metadata
             $invoices = $xero->load('Accounting\\Invoice')
                 ->where( 'Reference', "WC Order #{$order_id}" )
                 ->execute();
             
             return $invoices->count() > 0 ? $invoices->first() : null;
+            
         } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
             return null;
         }
-    }    
+    }  
 }
