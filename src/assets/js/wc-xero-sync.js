@@ -44,7 +44,7 @@ jQuery(document).ready(function($) {
                     try {
                         if (response.success === false || response.success === undefined) {
                             console.log("Response part deux: " + (response.data.message || response.message));
-                            $('#error-container').html('<div class="notice notice-error"><p> g' + (response.data.message || response.message) + '</p></div>').show();
+                            $('#error-container').html('<div class="notice notice-error"><p>' + (response.data.message || response.message) + '</p></div>').show();
                             setTimeout(function() {
                                 $('#error-container').hide();
                             }, 5000);

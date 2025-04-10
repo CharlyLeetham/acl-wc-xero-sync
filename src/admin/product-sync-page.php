@@ -539,13 +539,7 @@ class ACLProductSyncPage {
             update_option( 'acl_xero_unpaid_invoice_status', $unpaid_status );
             echo "<div class='notice notice-success'><p>Settings saved.</p></div>";
         }
-    
-        $xero = ACLXeroHelper::initialize_xero_client();
-        if ( is_wp_error( $xero ) ) {
-            echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
-            flush();
-        }
-    
+       
         $args = array(
             'status' => array( 'completed', 'processing', 'pending' ),
             'limit' => -1,
@@ -568,6 +562,12 @@ class ACLProductSyncPage {
         }
     
         $current_status = get_option( 'acl_xero_unpaid_invoice_status', \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED );
+
+        $xero = ACLXeroHelper::initialize_xero_client();
+        if ( is_wp_error( $xero ) ) {
+            echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
+            flush();
+        }
         ?>
         <div class="wrap">
             <h1>Xero Invoice Sync</h1>
