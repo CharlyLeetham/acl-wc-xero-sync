@@ -473,7 +473,7 @@ class ACLXeroHelper {
     
             // Get orders to process
             $args = array(
-                'status' => array( 'completed', 'processing' ),
+                'status' => array( 'completed', 'processing', 'pending' ),
                 'limit' => -1,
                 'return' => 'ids',
             );
