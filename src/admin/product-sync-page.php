@@ -547,11 +547,11 @@ class ACLProductSyncPage {
 
                 // Get all orders (completed and processing)
                 $args = array(
-                    'status' => array('completed', 'processing'),
+                    'status' => array( 'completed', 'processing', 'pending' ),
                     'limit' => -1,
                     'return' => 'ids',
                 );
-                $order_ids = wc_get_orders($args);
+                $order_ids = wc_get_orders( $args );
 
                 if (empty($order_ids)) {
                     echo "<div class='notice notice-warning'><p>No orders found in the system.</p></div>";
