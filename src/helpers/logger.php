@@ -22,14 +22,13 @@ class ACLXeroLogger {
         
         // Log attempt to create directory
         if (!is_dir($folder_path)) {
-            error_log("Attempting to create log directory at $folder_path");
             if (mkdir($folder_path, 0755, true)) {
-                error_log("Successfully created log directory at $folder_path");
+                //error_log("Successfully created log directory at $folder_path");
             } else {
-                error_log("Failed to create log directory at $folder_path");
+                //error_log("Failed to create log directory at $folder_path");
             }
         } else {
-            error_log("Log directory already exists at $folder_path");
+            //error_log("Log directory already exists at $folder_path");
         }         
     
         $log_file = $folder_path . '/acl-xero-sync.log';

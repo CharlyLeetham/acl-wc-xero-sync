@@ -16,13 +16,9 @@ class ACLBootstrap {
             return;
         }
 
-        /*spl_autoload_register(function ($class) {
-            error_log("Attempting to autoload: $class");
-        });
-        */
         // Check if the ACLProductSyncPage class exists
         if ( ! class_exists( 'ACLWcXeroSync\Admin\ACLProductSyncPage' ) ) {
-            error_log( 'Class ACLProductSyncPage not found' );
+            //error_log( 'Class ACLProductSyncPage not found' );
             return; // Exit initialization to avoid further errors
         }
         

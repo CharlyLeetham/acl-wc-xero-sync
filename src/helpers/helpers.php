@@ -488,7 +488,7 @@ class ACLXeroHelper {
         }
     }
 
-    public static function test_invoice_sync( $dry_run = false, $specific_order_ids = null ) {
+    public static function xero_invoice_sync( $dry_run = false, $specific_order_ids = null ) {
         try {
             $xero = ACLXeroHelper::initialize_xero_client( );
             if ( is_wp_error( $xero ) ) {
@@ -598,7 +598,7 @@ class ACLXeroHelper {
                 ->execute();
             
             return $invoices->count() > 0 ? $invoices->first() : null;
-            
+
         } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
             return null;
