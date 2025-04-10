@@ -90,6 +90,17 @@ class ACLProductSyncPage {
             'acl-xero-sync-settings',
             [ __CLASS__, 'render_settings_page' ]
         );
+
+        add_submenu_page(
+            'woocommerce', // Parent slug (under WooCommerce)
+            'Xero Invoice Sync Test', // Page title
+            'Xero Sync Test', // Menu title
+            'manage_options', // Capability
+            'xero-invoice-sync-test', // Menu slug
+            function() {
+                \ACLWcXeroSync\Services\ACLSyncService::add_test_sync_button();
+            }
+        );
     }
 
     /**
@@ -242,6 +253,7 @@ class ACLProductSyncPage {
                 'xero_connection' => 'Xero Connection for Sync',
                 'product_sync' => 'Product Sync',
                 'xero_logging' => 'Xero Logging',
+                ''
             ];
             foreach ($logging_levels as $key => $label) {
                 update_option('acl_xero_log_' . $key, isset($_POST['acl_xero_log_' . $key]) ? '1' : '0');
@@ -313,7 +325,9 @@ class ACLProductSyncPage {
                             'xero_auth' => 'Xero Authorisation',
                             'xero_connection' => 'Xero Connection for Sync',
                             'product_sync' => 'Product Sync',
-                            'xero_logging' => 'Xero Logging',                            
+                            'xero_logging' => 'Xero Logging',
+                            'invoice_sync_test' => 'Invoice Sync Test',
+                            'invoice_sync' => 'Invoice Sync'                            
                         ];
                         foreach ($logging_levels as $key => $label):
                             $checked = get_option('acl_xero_log_' . $key) ? 'checked' : '';
@@ -514,5 +528,35 @@ class ACLProductSyncPage {
             </div>             
         </div>
         <?php
-    } 
+    }
+    
+    // Render the Invoice Sync Test Page
+    public static function render_test_invoice_sync() {
+        if (!current_user_can( 'manage_options' )) {
+            return;
+        }
+    
+        ?>
+        <div class="wrap">
+            <h1>Xero Invoice Sync Test</h1>
+            <form method="post" action="">
+                <?php wp_nonce_field('xero_test_sync_action', 'xero_test_sync_nonce'); ?>
+                <p>
+                    <input type="submit" name="xero_test_sync_live" class="button button-primary" value="Run Live Sync Test">
+                    <input type="submit" name="xero_test_sync_dry" class="button" value="Run Dry Sync Test">
+                </p>
+            </form>
+        </div>
+        <?php
+    
+        // Handle form submissions
+        if ( isset( $_POST['xero_test_sync_live'] ) || isset( $_POST['xero_test_sync_dry'] ) ) {
+            if (!isset( $_POST['xero_test_sync_nonce'] ) || !wp_verify_nonce( $_POST['xero_test_sync_nonce'], 'xero_test_sync_action' ) ) {
+                wp_die( 'Security check failed' );
+            }
+    
+            $dry_run = isset( $_POST['xero_test_sync_dry'] );
+            ACLXeroHelper::test_invoice_sync( $dry_run );
+        }
+    }    
 }

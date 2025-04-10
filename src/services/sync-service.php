@@ -381,5 +381,173 @@ class ACLSyncService {
                 throw $e; // Re-throw to let the calling function know there was an error
             }
         }
-    }    
+    } 
+
+
+    /**
+     * Syncs WooCommerce order as an invoice to Xero
+    */
+    public static function sync_order_to_xero_invoice( $order_id ) {
+        try {
+            // Get the WooCommerce order
+            $order = wc_get_order( $order_id );
+            if ( !$order ) {
+                ACLXeroLogger::log_message( "Order ID {$order_id} not found.", 'invoice_sync' );
+                return false;
+            }
+
+            // Initialize Xero client
+            $xero = ACLXeroHelper::initialize_xero_client();
+            if (is_wp_error($xero)) {
+                ACLXeroLogger::log_message( "Xero client initialization failed for order {$order_id}: " . $xero->get_error_message(), 'invoice_sync' );
+                return false;
+            }
+
+            // Check if invoice already exists in Xero (using order ID as reference)
+            $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+            if ( $existing_invoice ) {
+                ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero.", 'invoice_sync' );
+                return true;
+            }
+
+            // Prepare invoice data
+            $invoice = new \XeroPHP\Models\Accounting\Invoice( $xero );
+            
+            // Set invoice type (ACCREC for sales invoice)
+            $invoice->setType( \XeroPHP\Models\Accounting\Invoice::INVOICE_TYPE_ACCREC );
+            
+            // Set reference to WooCommerce order ID
+            $invoice->setReference( "WC Order #{$order_id}" );
+            
+            // Set invoice number (optional - Xero can auto-generate if not set)
+            $invoice->setInvoiceNumber( "WC-{$order_id}" );
+            
+            // Set dates
+            $invoice->setDate( new \DateTime( $order->get_date_created() )  );
+            $invoice->setDueDate( new \DateTime( $order->get_date_created() ) ); // Adjust due date as needed
+            
+            // Determine invoice status based on payment status
+            $payment_status = $order->is_paid() ? 
+                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED : 
+                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT;
+            $invoice->setStatus( $payment_status );
+
+            // Get or create contact in Xero
+            $contact = self::get_or_create_xero_contact( $xero, $order );
+            $invoice->setContact( $contact );
+
+            // Add line items
+            foreach ( $order->get_items() as $item ) {
+                $product = $item->get_product();
+                $line_item = new \XeroPHP\Models\Accounting\LineItem( $xero );
+                
+                $line_item->setDescription( $item->get_name() );
+                $line_item->setQuantity( $item->get_quantity() );
+                $line_item->setUnitAmount( $item->get_subtotal() / $item->get_quantity() );
+                $line_item->setLineAmount( $item->get_subtotal() );
+                
+                if ( $product && $product->get_sku() ) {
+                    $line_item->setItemCode( $product->get_sku() );
+                }
+                
+                // Add tax (you might need to adjust this based on your tax setup)
+                $tax_amount = $item->get_subtotal_tax();
+                if ($tax_amount > 0) {
+                    $line_item->setTaxType( 'OUTPUT' ); // Adjust tax type as needed
+                }
+                
+                $invoice->addLineItem( $line_item );
+            }
+
+            // Add shipping as a line item if applicable
+            if ( $order->get_shipping_total() > 0 ) {
+                $shipping_item = new \XeroPHP\Models\Accounting\LineItem( $xero );
+                $shipping_item->setDescription( 'Shipping' );
+                $shipping_item->setQuantity(1);
+                $shipping_item->setUnitAmount( $order->get_shipping_total() );
+                $shipping_item->setLineAmount( $order->get_shipping_total() );
+                $invoice->addLineItem( $shipping_item );
+            }
+
+            // Save the invoice to Xero
+            $invoice->save();
+
+            // If paid, add payment
+            if ( $order->is_paid() ) {
+                $payment = new \XeroPHP\Models\Accounting\Payment( $xero );
+                $payment->setInvoice( $invoice );
+                $payment->setAccount( $xero->load('Accounting\\Account')->where('Code', '200')->first() ); // Adjust account code as needed
+                $payment->setDate (new \DateTime( $order->get_date_paid() ) );
+                $payment->setAmount( $order->get_total() );
+                $payment->save();
+            }
+
+            ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice to Xero. Status: {$payment_status}", 'invoice_sync' );
+            return true;
+
+        } catch (\Exception $e) {
+            ACLXeroLogger::log_message( "Error syncing order {$order_id} to Xero: {$e->getMessage()}", 'invoice_sync' );
+            return false;
+        }
+    }
+
+    /**
+     * Check if an invoice already exists in Xero for this order
+     */
+    private static function check_existing_xero_invoice( $xero, $order_id ) {
+        try {
+            $invoices = $xero->load('Accounting\\Invoice')
+                ->where( 'Reference', "WC Order #{$order_id}" )
+                ->execute();
+            
+            return $invoices->count() > 0 ? $invoices->first() : null;
+        } catch ( \Exception $e ) {
+            ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
+            return null;
+        }
+    }
+
+    /**
+     * Get or create a Xero contact based on order data
+     */
+    private static function get_or_create_xero_contact( $xero, $order ) {
+        try {
+            $email = $order->get_billing_email();
+            
+            // Try to find existing contact by email
+            $contacts = $xero->load('Accounting\\Contact')
+                ->where('EmailAddress', $email)
+                ->execute();
+
+            if ($contacts->count() > 0) {
+                return $contacts->first();
+            }
+
+            // Create new contact
+            $contact = new \XeroPHP\Models\Accounting\Contact($xero);
+            $contact->setName($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+            $contact->setFirstName($order->get_billing_first_name());
+            $contact->setLastName($order->get_billing_last_name());
+            $contact->setEmailAddress($email);
+            
+            // Add billing address
+            $address = new \XeroPHP\Models\Accounting\Address($xero);
+            $address->setAddressType(\XeroPHP\Models\Accounting\Address::ADDRESS_TYPE_POBOX);
+            $address->setAddressLine1($order->get_billing_address_1());
+            $address->setAddressLine2($order->get_billing_address_2());
+            $address->setCity($order->get_billing_city());
+            $address->setRegion($order->get_billing_state());
+            $address->setPostalCode($order->get_billing_postcode());
+            $address->setCountry($order->get_billing_country());
+            $contact->addAddress($address);
+
+            $contact->save();
+            return $contact;
+
+        } catch (\Exception $e) {
+            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
+            throw $e;
+        }
+    }
+    
 }

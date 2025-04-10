@@ -11,6 +11,8 @@ class ACLXeroLogger {
      *  'xero_connection' => 'Xero Connection for Sync',
      *  'product_sync' => 'Product Sync',
      *  'xero_logging' => 'Xero Logging',
+     *  'invoice_sync_test' => 'Invoice Sync Test',
+     *  'invoice_sync' => 'Invoice Sync'
      * 
      */
     public static function log_message($message, $level = 'none') {
