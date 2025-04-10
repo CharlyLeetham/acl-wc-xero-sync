@@ -554,10 +554,10 @@ class ACLProductSyncPage {
         if ( isset( $_POST['xero_test_sync_nonce'] ) && wp_verify_nonce( $_POST['xero_test_sync_nonce'], 'xero_test_sync_action' ) ) {
             $dry_run = isset( $_POST['dry_run'] ) && $_POST['dry_run'] === '1';
             if ( isset( $_POST['sync_all'] ) ) {
-                self::test_invoice_sync( $dry_run ); // Reuse existing logic for now
+                ACLXeroHelper::test_invoice_sync( $dry_run ); // Reuse existing logic for now
             } elseif ( isset( $_POST['sync_order'] ) && ! empty( $_POST['order_id'] ) ) {
                 $order_id = intval( $_POST['order_id'] );
-                self::test_invoice_sync( $dry_run, array( $order_id ) );
+                ACLXeroHelper::test_invoice_sync( $dry_run, array( $order_id ) );
             }
         }
     
