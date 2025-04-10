@@ -260,9 +260,11 @@ class ACLXeroHelper {
         $folder_path = WP_CONTENT_DIR . '/uploads/acl-wc-xero-sync';
         ACLXeroLogger::log_message( "filepath:".$folder_path, 'xero_logging' );
         ACLXeroLogger::log_message( "filetype:".$filetype, 'xero_logging' );
+
         if (is_dir($folder_path)) {
 
             $all_files = glob( $folder_path . '/*.' . $filetype );
+            
             $files = [];
     
             if ( $filter_string ) {
@@ -282,11 +284,12 @@ class ACLXeroHelper {
             
             ACLXeroLogger::log_message( "files:".$files_string, 'xero_logging' );
 
-            if ($files !== false) {
-                usort($files, function($a, $b) {
-                    return filemtime($b) - filemtime($a);
+            if ( $files !== false && ! empty( $files ) ) {
+                usort( $files, function( $a, $b ) {
+                    return filemtime( $b ) - filemtime( $a );
                 });
             }
+                        
             
             if (empty($files)) {
                 ACLXeroLogger::log_message( "When do we get here?", 'xero_logging' );
