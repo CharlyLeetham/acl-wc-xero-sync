@@ -509,7 +509,6 @@ class ACLSyncService {
             // Try to find existing contact by email
             $contacts = $xero->load('Accounting\\Contact')->execute();
 
-
             ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );        
             ACLXeroLogger::log_message("Existing contacts: |" . print_r( $contacts, true ) . "|", 'invoice_sync');
 
@@ -539,6 +538,7 @@ class ACLSyncService {
             return $contact;
 
         } catch (\Exception $e) {
+            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {print_r($e,true)}", 'invoice_sync' );
             ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
             throw $e;
         }
