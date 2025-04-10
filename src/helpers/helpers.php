@@ -95,7 +95,7 @@ class ACLXeroHelper {
 
     /* CSV files for Product Sync */
     
-    public static function csv_file($filename, $message) {
+    public static function csv_file( $filename, $message, $context = 'product_sync' ) {
 
         /* Check to see if folder for csv's exist. If not create it */
 
@@ -103,40 +103,44 @@ class ACLXeroHelper {
         $folder_name = 'acl-wc-xero-sync';
         $folder_path = $upload_dir . $folder_name;
         
-        if (!is_dir($folder_path)) {
-            if (mkdir($folder_path, 0755, true)) {
-                ACLXeroLogger::log_message("Create directory $folder_path", 'product_sync');
+        if ( !is_dir( $folder_path ) ) {
+            if ( mkdir( $folder_path, 0755, true ) ) {
+                ACLXeroLogger::log_message( "Create directory $folder_path", 'product_sync' );
             } else {
                 // Handle the error, e.g., log it
-                ACLXeroLogger::log_message("Failed to create directory $folder_path", 'product_sync');
+                ACLXeroLogger::log_message( "Failed to create directory $folder_path", 'product_sync' );
             }
         } 
 
         $csv_file = $folder_path .'/'. $filename;
         // Check if the file exists before opening it
-        $file_exists = file_exists($csv_file);
+        $file_exists = file_exists( $csv_file );
 
         // File locking
-        $fp = fopen($csv_file, 'a'); // Open file in append mode
+        $fp = fopen( $csv_file, 'a' ); // Open file in append mode
         if ($fp === false) {
-            ACLXeroLogger::log_message("Failed to open $csv_file for appending", 'product_sync');
+            ACLXeroLogger::log_message( "Failed to open $csv_file for appending", 'product_sync' );
             return;
         }
 
-        if (flock($fp, LOCK_EX)) { // Attempt to acquire an exclusive lock
-            if (!$file_exists) {
+        if ( flock( $fp, LOCK_EX ) ) { // Attempt to acquire an exclusive lock
+            if ( !$file_exists ) {
                 // Write the header
-                fwrite($fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price,COGS Acct, Sales Acct, COGS Tax, Sales Tax"."\n");
-                ACLXeroLogger::log_message("Created $csv_file", 'product_sync');
+                if ( $context === 'product_sync' ) {
+                    fwrite( $fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price,COGS Acct,Sales Acct,COGS Tax,Sales Tax\n" );
+                } elseif ( $context === 'invoice_sync_test' ) {
+                    fwrite( $fp, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action\n" );
+                }
+                ACLXeroLogger::log_message( "Created $csv_file", 'product_sync' );
             }
             // Write the message
-            fwrite($fp, $message . "\n");
-            ACLXeroLogger::log_message("Wrote line.", 'product_sync');            
-            flock($fp, LOCK_UN); // Release the lock
+            fwrite( $fp, $message . "\n" );
+            ACLXeroLogger::log_message( "Wrote line.", 'product_sync' );            
+            flock( $fp, LOCK_UN ); // Release the lock
         } else {
-            ACLXeroLogger::log_message("Failed to acquire lock for $csv_file", 'product_sync');
+            ACLXeroLogger::log_message( "Failed to acquire lock for $csv_file", 'product_sync' );
         }
-        fclose($fp);
+        fclose( $fp );
     }  
 
     public static function update_csv_display() {
@@ -497,7 +501,7 @@ class ACLXeroHelper {
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
             $csv_filename = "invoice_sync_test{$dry_run_suffix}_{$timestamp}.csv";
-            ACLXeroHelper::csv_file( $csv_filename, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action" );
+            ACLXeroHelper::csv_file( $csv_filename, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action", 'invoice_sync_test' );
     
             $synced_count = 0;
             $to_sync_count = 0;
@@ -512,11 +516,11 @@ class ACLXeroHelper {
                 if ( $existing_invoice ) {
                     $synced_count++;
                     $invoice_id = $existing_invoice->getInvoiceID( );
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced" );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
                     $to_sync_count++;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ) );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
                     
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
