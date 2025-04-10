@@ -268,19 +268,22 @@ class ACLXeroHelper {
             ACLXeroLogger::log_message( "all_files: ".$all_files, 'xero_logging' );            
             
             $files = [];
-    
+
             if ( $filter_string ) {
+                $filters = explode( '|', $filter_string );
                 foreach ( $all_files as $file ) {
-                    ACLXeroLogger::log_message( "files: ".$file, 'xero_logging' ); 
                     $filename = basename( $file );
-                    if ( strpos( $filename, $filter_string ) !== false ) {
-                        $files[] = $file;
+                    foreach ( $filters as $filter ) {
+                        if ( strpos( $filename, $filter ) !== false ) {
+                            $files[] = $file;
+                            break;
+                        }
                     }
                 }
             } else {
                 $files = $all_files;
-            }           
-        
+            }
+            
             ob_start();
             print_r( $files );
             $files_string = ob_get_clean();            
