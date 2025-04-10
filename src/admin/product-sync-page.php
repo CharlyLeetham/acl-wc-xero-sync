@@ -534,26 +534,97 @@ class ACLProductSyncPage {
     // Render the Invoice Sync Test Page
     public static function render_test_invoice_sync() {
         ?>
-        <div class="wrap">
-            <h1>Xero Invoice Sync Test</h1>
-            <form method="post" action="">
-                <?php wp_nonce_field('xero_test_sync_action', 'xero_test_sync_nonce'); ?>
-                <p>
-                    <input type="submit" name="xero_test_sync_live" class="button button-primary" value="Run Live Sync Test">
-                    <input type="submit" name="xero_test_sync_dry" class="button" value="Run Dry Sync Test">
-                </p>
-            </form>
-        </div>
-        <?php
-    
-        // Handle form submissions
-        if ( isset( $_POST['xero_test_sync_live'] ) || isset( $_POST['xero_test_sync_dry'] ) ) {
-            if (!isset( $_POST['xero_test_sync_nonce'] ) || !wp_verify_nonce( $_POST['xero_test_sync_nonce'], 'xero_test_sync_action' ) ) {
-                wp_die( 'Security check failed' );
-            }
-    
-            $dry_run = isset( $_POST['xero_test_sync_dry'] );
-            ACLXeroHelper::test_invoice_sync( $dry_run );
-        }
+            <div class="wrap">
+                <h1>Xero Invoice Sync Test</h1>
+                
+                <?php
+                // Initialize Xero client
+                $xero = ACLXeroHelper::initialize_xero_client();
+                if (is_wp_error($xero)) {
+                    echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
+                    return;
+                }
+
+                // Get all orders (completed and processing)
+                $args = array(
+                    'status' => array('completed', 'processing'),
+                    'limit' => -1,
+                    'return' => 'ids',
+                );
+                $order_ids = wc_get_orders($args);
+
+                if (empty($order_ids)) {
+                    echo "<div class='notice notice-warning'><p>No orders found in the system.</p></div>";
+                    return;
+                }
+
+                // Handle form submissions
+                if (isset($_POST['xero_test_sync_nonce']) && wp_verify_nonce($_POST['xero_test_sync_nonce'], 'xero_test_sync_action')) {
+                    $dry_run = isset($_POST['dry_run']) && $_POST['dry_run'] === '1';
+                    
+                    if (isset($_POST['sync_all'])) {
+                        ACLXeroHelper::test_invoice_sync( $dry_run );
+                    } elseif  (isset( $_POST['sync_order']) && !empty($_POST['order_id'] ) ) {
+                        $order_id = intval( $_POST['order_id'] );
+                        ACLXeroHelper::test_invoice_sync( $dry_run, [$order_id] );
+                    }
+                }
+                ?>
+
+                <form method="post" action="">
+                    <?php wp_nonce_field( 'xero_test_sync_action', 'xero_test_sync_nonce' ); ?>
+                    <p>
+                        <input type="submit" name="sync_all" class="button button-primary" value="Sync All Orders (Live)">
+                        <input type="submit" name="sync_all" class="button" value="Sync All Orders (Dry Run)" onclick="document.getElementById('dry_run_input').value='1';">
+                        <input type="hidden" name="dry_run" id="dry_run_input" value="0">
+                    </p>
+                </form>
+
+                <h2>Orders List (<?php echo count($order_ids); ?> found)</h2>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Payment Status</th>
+                            <th>Xero Sync Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach ( $order_ids as $order_id ) {
+                            $order = wc_get_order( $order_id );
+                            $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+                            $sync_status = $existing_invoice ? 
+                                "Synced (Invoice ID: " . $existing_invoice->getInvoiceID() . ")" : 
+                                "Not Synced";
+                            ?>
+                            <tr>
+                                <td><?php echo $order_id; ?></td>
+                                <td><?php echo $order->get_date_created()->format('Y-m-d H:i:s'); ?></td>
+                                <td><?php echo $order->get_status(); ?></td>
+                                <td><?php echo wc_price($order->get_total()); ?></td>
+                                <td><?php echo $order->is_paid() ? 'Paid' : 'Unpaid'; ?></td>
+                                <td><?php echo $sync_status; ?></td>
+                                <td>
+                                    <form method="post" action="" style="display:inline;">
+                                        <?php wp_nonce_field('xero_test_sync_action', 'xero_test_sync_nonce'); ?>
+                                        <input type="hidden" name="order_id" value="<?php echo $order_id; ?>">
+                                        <input type="submit" name="sync_order" class="button button-small" value="Sync Live">
+                                        <input type="submit" name="sync_order" class="button button-small" value="Dry Run" onclick="this.form.dry_run.value='1';">
+                                        <input type="hidden" name="dry_run" value="0">
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
     }    
 }

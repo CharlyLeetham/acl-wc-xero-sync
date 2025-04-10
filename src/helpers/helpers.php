@@ -462,22 +462,25 @@ class ACLXeroHelper {
         }
     }
 
-    public static function test_invoice_sync( $dry_run = false ) {
+    public static function test_invoice_sync( $dry_run = false, $specific_order_ids = null ) {
         try {
-            // Initialize Xero client
-            $xero = ACLXeroHelper::initialize_xero_client();
+            $xero = ACLXeroHelper::initialize_xero_client( );
             if ( is_wp_error( $xero ) ) {
-                echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
-                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message(), 'invoice_sync_test' );
+                echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message( ) . "</p></div>";
+                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message( ), 'invoice_sync_test' );
                 return;
             }
     
-            // Get all completed and processing orders
+            // Get orders to process
             $args = array(
-                'status' => array('completed', 'processing'),
+                'status' => array( 'completed', 'processing' ),
                 'limit' => -1,
                 'return' => 'ids',
             );
+            
+            if ( $specific_order_ids !== null ) {
+                $args['post__in'] = $specific_order_ids;
+            }
             
             $order_ids = wc_get_orders( $args );
             $total_orders = count( $order_ids );
@@ -488,67 +491,57 @@ class ACLXeroHelper {
                 return;
             }
     
-            echo "<div class='notice notice-info'><p>Found {$total_orders} orders to check.</p></div>";
-            ACLXeroLogger::log_message( "Found {$total_orders} orders to check.", 'invoice_sync_test' );
+            echo "<div class='notice notice-info'><p>Processing {$total_orders} orders.</p></div>";
+            ACLXeroLogger::log_message( "Processing {$total_orders} orders.", 'invoice_sync_test' );
     
-            $synced_orders = [];
-            $to_sync_orders = [];
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
             $csv_filename = "invoice_sync_test{$dry_run_suffix}_{$timestamp}.csv";
-    
-            // CSV headers
             ACLXeroHelper::csv_file( $csv_filename, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action" );
     
-            // Check each order
+            $synced_count = 0;
+            $to_sync_count = 0;
+    
             foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
                 
-                $payment_status = $order->is_paid() ? 'Paid' : 'Unpaid';
-                $order_total = $order->get_total();
+                $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
+                $order_total = $order->get_total( );
     
-                if ($existing_invoice) {
-                    $synced_orders[] = $order_id;
-                    $invoice_id = $existing_invoice->getInvoiceID();
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status()},{$payment_status},{$order_total},{$invoice_id},Already Synced" );
-                    
-                    echo "<div class='notice notice-success'><p>Order #{$order_id} - Status: {$order->get_status()} - Already synced to Xero (Invoice ID: {$invoice_id})</p></div>";
+                if ( $existing_invoice ) {
+                    $synced_count++;
+                    $invoice_id = $existing_invoice->getInvoiceID( );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced" );
+                    echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
-                    $to_sync_orders[] = $order_id;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status()},{$payment_status},{$order_total},N/A,To Sync" );
+                    $to_sync_count++;
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ) );
                     
-                    echo "<div class='notice notice-info'><p>Order #{$order_id} - Status: {$order->get_status()} - Will be synced " . ($dry_run ? '(Dry Run)' : '') . "</p></div>";
-    
-                    // Perform sync if not dry run
-                    if (!$dry_run) {
+                    if ( $dry_run ) {
+                        echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
+                    } else {
                         $result = self::sync_order_to_xero_invoice( $order_id );
-                        if ($result) {
-                            echo "<div class='notice notice-success'><p>Order #{$order_id} successfully synced to Xero</p></ youngestdiv>";
-                        } else {
-                            echo "<div class='notice notice-error'><p>Order #{$order_id} failed to sync</p></div>";
-                        }
+                        echo "<div class='notice notice-" . ( $result ? 'success' : 'error' ) . "'><p>Order #{$order_id} - " . ( $result ? 'Successfully synced' : 'Failed to sync' ) . "</p></div>";
                     }
                 }
             }
     
-            // Summary
             $summary = sprintf(
-                "Test Results:\nTotal Orders: %d\nAlready Synced: %d\nTo Sync: %d\nMode: %s",
+                "Test Results:\nTotal Orders: %d\nAlready Synced: %d\nProcessed: %d\nMode: %s",
                 $total_orders,
-                count($synced_orders),
-                count($to_sync_orders),
+                $synced_count,
+                $to_sync_count,
                 $dry_run ? 'Dry Run' : 'Live Sync'
             );
             
             echo "<div class='notice notice-info'><p>{$summary}</p></div>";
-            ACLXeroLogger::log_message( $summary, 'invoice_sync_test' );
-            
             echo "<div class='notice notice-info'><p>Results saved to CSV: {$csv_filename}</p></div>";
+            ACLXeroLogger::log_message( $summary, 'invoice_sync_test' );
     
-        } catch (\Exception $e) {
-            echo "<div class='notice notice-error'><p>Error during test sync: {$e->getMessage()}</p></div>";
-            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage()}", 'invoice_sync_test' );
+        } catch ( \Exception $e ) {
+            echo "<div class='notice notice-error'><p>Error during test sync: {$e->getMessage( )}</p></div>";
+            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync_test' );
         }
     }
 }
