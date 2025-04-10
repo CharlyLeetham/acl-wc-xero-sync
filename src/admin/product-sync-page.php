@@ -82,10 +82,10 @@ class ACLProductSyncPage {
 
         add_submenu_page(
             'acl-xero-sync', // Parent slug (under WooCommerce)
-            'Xero Invoice Sync Test', // Page title
-            'Xero Sync Test', // Menu title
+            'Xero Invoice Sync', // Page title
+            'Xero Invoice Sync', // Menu title
             'manage_woocommerce', // Capability
-            'acl-xero-invoice-sync-test', // Menu slug
+            'acl-xero-invoice-sync', // Menu slug
             [ __CLASS__, 'render_xero_invoice_sync' ]
         );        
 
