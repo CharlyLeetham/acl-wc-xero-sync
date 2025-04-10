@@ -510,12 +510,12 @@ class ACLSyncService {
             $contacts = $xero->load('Accounting\\Contact')
                 ->where('EmailAddress', $email);
 
-            ACLXeroLogger::log_message(" Email: |" . $email . "|", 'invoice_sync' );
-            ACLXeroLogger::log_message(" Contacts: |" . print_r($contacts, true ) ."|", 'invoice_sync');
+            ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );
+            ACLXeroLogger::log_message("Contacts: |" . print_r($contacts, true ) ."|", 'invoice_sync');
         
             $existing_contacts = $contacts->execute();  
             
-            ACLXeroLogger::log_message(" Existing contacts: |" . print_r( $existing_contacts, true ) . "|", 'invoice_sync');
+            ACLXeroLogger::log_message("Existing contacts: |" . print_r( $existing_contacts, true ) . "|", 'invoice_sync');
 
             if ($contacts->count() > 0) {
                 return $contacts->first();
