@@ -408,6 +408,8 @@ class ACLSyncService {
             if ( $existing_invoice ) {
                 ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero.", 'invoice_sync' );
                 return true;
+            } else {
+                ACLXeroLogger::log_message( "Invoice for order {$order_id} does not exist in Xero.", 'invoice_sync' );
             }
 
             // Prepare invoice data
@@ -509,7 +511,7 @@ class ACLSyncService {
                 ->where('EmailAddress', $email);
 
             ACLXeroLogger::log_message(" Email: |" . $email . "|", 'invoice_sync' );
-            ACLXeroLogger::log_message(" Contacts: |" . print_r($contacts, true) ."|", 'invoice_sync');
+            ACLXeroLogger::log_message(" Contacts: |" . print_r($contacts, true ) ."|", 'invoice_sync');
         
             $existing_contacts = $contacts->execute();  
             
