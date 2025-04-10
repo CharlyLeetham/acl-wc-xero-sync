@@ -624,6 +624,23 @@ class ACLProductSyncPage {
                         ?>
                     </tbody>
                 </table>
+
+                <h2>CSV Log Files</h2>
+                <div id="csv-file-container">
+                    <table class="form-table">
+                        <tr>
+                            <td colspan="2">
+                                <?php 
+                                $filetype = 'csv';
+                                $defaultLog = ACLXeroHelper::display_files( $filetype );                               
+                                ?>
+                                <script>
+                                    var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
+                                </script>
+                            </td>                        
+                        </tr>
+                    </table>
+                </div>                
             </div>
             <?php
     }    

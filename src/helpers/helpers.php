@@ -501,8 +501,7 @@ class ACLXeroHelper {
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
             $csv_filename = "invoice_sync_test{$dry_run_suffix}_{$timestamp}.csv";
-            ACLXeroHelper::csv_file( $csv_filename, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action", 'invoice_sync_test' );
-    
+   
             $synced_count = 0;
             $to_sync_count = 0;
     
