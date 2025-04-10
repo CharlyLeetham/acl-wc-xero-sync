@@ -83,6 +83,15 @@ class ACLProductSyncPage {
         );
 
         add_submenu_page(
+            'woocommerce', // Parent slug (under WooCommerce)
+            'Xero Invoice Sync Test', // Page title
+            'Xero Sync Test', // Menu title
+            'manage_options', // Capability
+            'xero-invoice-sync-test', // Menu slug
+            [ __CLASS__, 'render_test_invoice_sync' ]
+        );        
+
+        add_submenu_page(
             'acl-xero-sync',
             'Settings',
             'Settings',
@@ -91,16 +100,7 @@ class ACLProductSyncPage {
             [ __CLASS__, 'render_settings_page' ]
         );
 
-        add_submenu_page(
-            'woocommerce', // Parent slug (under WooCommerce)
-            'Xero Invoice Sync Test', // Page title
-            'Xero Sync Test', // Menu title
-            'manage_options', // Capability
-            'xero-invoice-sync-test', // Menu slug
-            function() {
-                \ACLWcXeroSync\Services\ACLSyncService::add_test_sync_button();
-            }
-        );
+
     }
 
     /**
