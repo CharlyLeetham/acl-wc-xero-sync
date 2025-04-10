@@ -86,7 +86,7 @@ class ACLProductSyncPage {
             'Xero Sync Test', // Menu title
             'manage_woocommerce', // Capability
             'acl-xero-invoice-sync-test', // Menu slug
-            [ __CLASS__, 'render_test_invoice_sync' ]
+            [ __CLASS__, 'render_xero_invoice_sync' ]
         );        
 
         add_submenu_page(
