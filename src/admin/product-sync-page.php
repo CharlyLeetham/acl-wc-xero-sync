@@ -355,7 +355,7 @@ class ACLProductSyncPage {
                                 $defaultLog = ACLXeroHelper::display_files( $filetype );                               
                                 ?>
                                     <script>
-                                        var defaultLog = "<?php echo esc_js($defaultLog); ?>";
+                                        var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
                                     </script>
                             </td>
                         </tr>
@@ -571,7 +571,6 @@ class ACLProductSyncPage {
         ?>
         <div class="wrap">
             <h1>Xero Invoice Sync</h1>
-    
             <!-- Options Panel -->
             <h2>Sync Settings</h2>
             <form method="post" action="">
@@ -624,7 +623,7 @@ class ACLProductSyncPage {
                         <?php
                         foreach ( $order_ids as $order_id ) {
                             $order = wc_get_order( $order_id );
-                            $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+                            $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
                             $sync_status = $existing_invoice ? 
                                 "Synced (Invoice ID: " . $existing_invoice->getInvoiceID() . ")" : 
                                 "Not Synced";
