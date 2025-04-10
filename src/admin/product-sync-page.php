@@ -253,7 +253,8 @@ class ACLProductSyncPage {
                 'xero_connection' => 'Xero Connection for Sync',
                 'product_sync' => 'Product Sync',
                 'xero_logging' => 'Xero Logging',
-                ''
+                'invoice_sync_test' => 'Invoice Sync Test',
+                'invoice_sync' => 'Invoice Sync'
             ];
             foreach ($logging_levels as $key => $label) {
                 update_option('acl_xero_log_' . $key, isset($_POST['acl_xero_log_' . $key]) ? '1' : '0');
