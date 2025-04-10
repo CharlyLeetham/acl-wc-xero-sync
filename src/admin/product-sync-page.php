@@ -86,8 +86,8 @@ class ACLProductSyncPage {
             'woocommerce', // Parent slug (under WooCommerce)
             'Xero Invoice Sync Test', // Page title
             'Xero Sync Test', // Menu title
-            'manage_options', // Capability
-            'xero-invoice-sync-test', // Menu slug
+            'manage_woocommerce', // Capability
+            'acl-xero-invoice-sync-test', // Menu slug
             [ __CLASS__, 'render_test_invoice_sync' ]
         );        
 
@@ -533,10 +533,6 @@ class ACLProductSyncPage {
     
     // Render the Invoice Sync Test Page
     public static function render_test_invoice_sync() {
-        if (!current_user_can( 'manage_options' )) {
-            return;
-        }
-    
         ?>
         <div class="wrap">
             <h1>Xero Invoice Sync Test</h1>
