@@ -503,11 +503,27 @@ class ACLSyncService {
     private static function get_or_create_xero_contact( $xero, $order ) {
         try {
             $email = $order->get_billing_email();
+
+            $query = $xero->load('Accounting\\Item')
+            ->where('Code', $sku);
+
+
+
+            $existing_items = $query->execute();
+
+            return $existing_items->count() > 0;
+
             
             // Try to find existing contact by email
             $contacts = $xero->load('Accounting\\Contact')
                 ->where('EmailAddress', $email)
-                ->execute();
+
+            ACLXeroLogger::log_message(" Email: |" . $email ."|", 'invoice_sync');
+            ACLXeroLogger::log_message(" Contacts: |" . print_r($contacts) ."|", 'invoice_sync');
+        
+            $existing_contacts = $contacts->execute();  
+            
+            ACLXeroLogger::log_message(" Existing contacts: |" . print_r( $existing_contacts ) . "|", 'invoice_sync');
 
             if ($contacts->count() > 0) {
                 return $contacts->first();
