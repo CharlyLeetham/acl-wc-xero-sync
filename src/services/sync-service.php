@@ -510,13 +510,13 @@ class ACLSyncService {
             $contacts = $xero->load('Accounting\\Contact')
                 ->where('EmailAddress', $email);
 
-        // Convert the Collection to an array and map each Contact to its array representation
-        $contacts_array = array_map(function($contact) {
-            return $contact->toStringArray();
-        }, iterator_to_array($contacts));                
+
+            foreach ( $contacts as $c ) {
+                $contact[] = $c->toStringArray();
+            }
 
             ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );
-            ACLXeroLogger::log_message("Contacts: |" . print_r($contacts_array, true ) ."|", 'invoice_sync');
+            ACLXeroLogger::log_message("Contacts: |" . print_r($contact, true ) ."|", 'invoice_sync');
         
             $existing_contacts = $contacts->execute();  
             
