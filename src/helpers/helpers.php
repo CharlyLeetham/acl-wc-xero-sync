@@ -521,7 +521,7 @@ class ACLXeroHelper {
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
                     } else {
-                        $result = self::sync_order_to_xero_invoice( $order_id );
+                        $result = ACLSyncService::sync_order_to_xero_invoice( $order_id );
                         echo "<div class='notice notice-" . ( $result ? 'success' : 'error' ) . "'><p>Order #{$order_id} - " . ( $result ? 'Successfully synced' : 'Failed to sync' ) . "</p></div>";
                     }
                 }

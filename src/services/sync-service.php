@@ -404,7 +404,7 @@ class ACLSyncService {
             }
 
             // Check if invoice already exists in Xero (using order ID as reference)
-            $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+            $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
             if ( $existing_invoice ) {
                 ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero.", 'invoice_sync' );
                 return true;
