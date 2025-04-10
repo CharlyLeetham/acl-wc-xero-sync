@@ -538,8 +538,23 @@ class ACLSyncService {
             return $contact;
 
         } catch (\Exception $e) {
-            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {print_r($e,true)}", 'invoice_sync' );
             ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
+
+            // Log the full response body if available
+            if ($e instanceof \GuzzleHttp\Exception\RequestException && $e->hasResponse()) {
+                $response = $e->getResponse();
+                $body = $response->getBody()->getContents();
+                ACLXeroLogger::log_message("Full Response Body: " . $body, 'invoice_sync');
+            } elseif (method_exists($e, 'getResponse')) {
+                $response = $e->getResponse();
+                if ($response) {
+                    $body = $response->getBody()->getContents();
+                    ACLXeroLogger::log_message("Full Response Body: " . $body, 'invoice_sync');
+                }
+            } else {
+                // Fallback: log the entire exception
+                ACLXeroLogger::log_message("Full Exception Details: " . var_export($e, true), 'invoice_sync');
+            }            
             throw $e;
         }
     }
