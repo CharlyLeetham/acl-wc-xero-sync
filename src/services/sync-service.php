@@ -505,37 +505,48 @@ class ACLSyncService {
      */
     public static function get_or_create_xero_contact( $xero, $order = null ) {
         try {
-            if ($order) {
+            if ( $order ) {
                 $email = $order->get_billing_email();
                 $full_name = trim( $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() );
     
+                // Check for existing contact by email
                 $contacts_by_email = $xero->load( 'Accounting\\Contact' )
                     ->where( 'EmailAddress', $email )
                     ->execute();
-                ACLXeroLogger::log_message( "Email check: |$email|, Found: " . $contacts_by_email->count(), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Email check: |" . $email . "| , Found: " . $contacts_by_email->count() . " ", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Email contacts raw: " . print_r( $contacts_by_email->toStringArray(), true ) . " ", 'invoice_sync' );
     
                 if ( $contacts_by_email->count() > 0 ) {
-                    ACLXeroLogger::log_message( "Returning existing contact by email: " . $contacts_by_email->first()->getContactID(), 'invoice_sync' );
-                    return $contacts_by_email->first();
+                    $contact = $contacts_by_email->first();
+                    ACLXeroLogger::log_message( "Returning existing contact by email: " . $contact->getContactID() . " ", 'invoice_sync' );
+                    return $contact;
                 }
     
+                // Check for existing contact by name
                 $contacts_by_name = $xero->load( 'Accounting\\Contact' )
                     ->where( 'Name', $full_name )
                     ->execute();
-                ACLXeroLogger::log_message ( "Name check: |$full_name|, Found: " . $contacts_by_name->count(), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Name check: |" . $full_name . "| , Found: " . $contacts_by_name->count() . " ", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Name contacts raw: " . print_r( $contacts_by_name->toStringArray(), true ) . " ", 'invoice_sync' );
     
-                if ($contacts_by_name->count() > 0) {
+                if ( $contacts_by_name->count() > 0 ) {
                     $existing_contact = $contacts_by_name->first();
                     $existing_email = $existing_contact->getEmailAddress();
-                    $error_message = "Contact name '$full_name' exists with different email '$existing_email' (Order email: '$email')";
-                    ACLXeroLogger::log_message( "$error_message. Skipping sync for order {$order->get_id()}.", 'invoice_sync' );
-                    
-                    // Set order meta to flag the issue
-                    update_post_meta( $order->get_id(), '_xero_sync_issue', $error_message );
-                    
-                    throw new \Exception( "$error_message. Invoice not synced." );
+                    // Log raw emails for debugging
+                    ACLXeroLogger::log_message( "Comparing emails - Existing: |" . $existing_email . "| vs Order: |" . $email . "| ", 'invoice_sync' );
+                    // Case-insensitive comparison with trimming
+                    if ( trim( strtolower( $existing_email ) ) !== trim( strtolower( $email ) ) ) {
+                        $error_message = "Contact name '" . $full_name . "' exists with different email '" . $existing_email . "' (Order email: '" . $email . "')";
+                        ACLXeroLogger::log_message( $error_message . ". Skipping sync for order " . $order->get_id() . ". ", 'invoice_sync' );
+                        update_post_meta( $order->get_id(), '_xero_sync_issue', $error_message );
+                        throw new \Exception( $error_message . ". Invoice not synced." );
+                    }
+                    // Emails match, use this contact
+                    ACLXeroLogger::log_message( "Name '" . $full_name . "' matches existing contact with same email '" . $existing_email . "'. Using it. ", 'invoice_sync' );
+                    return $existing_contact;
                 }
     
+                // Create new contact
                 $contact = new \XeroPHP\Models\Accounting\Contact( $xero );
                 $contact->setName( $full_name );
                 $contact->setFirstName( $order->get_billing_first_name() );
@@ -553,19 +564,17 @@ class ACLSyncService {
                 $contact->addAddress( $address );
     
                 $contact->save();
-                ACLXeroLogger::log_message( "Created new contact: " . $contact->getContactID(), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Created new contact: " . $contact->getContactID() . " ", 'invoice_sync' );
                 return $contact;
             } else {
                 $contacts = $xero->load( 'Accounting\\Contact' )->execute();
-                ACLXeroLogger::log_message( "No order provided. All contacts: |" . print_r($contacts, true) . "|", 'invoice_sync' );
+                ACLXeroLogger::log_message( "No order provided. All contacts: |" . print_r( $contacts, true ) . "| ", 'invoice_sync' );
                 return $contacts->count() > 0 ? $contacts->first() : null;
             }
-    
-        } catch (\Exception $e) {
+        } catch ( \Exception $e ) {
             $order_id = $order ? $order->get_id() : 'N/A';
-            ACLXeroLogger::log_message( "Error handling contact for order $order_id: {$e->getMessage()}", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Error handling contact for order " . $order_id . ": " . $e->getMessage() . " ", 'invoice_sync' );
             throw $e;
         }
-    }
-    
+    }    
 }
