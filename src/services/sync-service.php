@@ -505,57 +505,18 @@ class ACLSyncService {
     public static function get_or_create_xero_contact( $xero, $order = null ) {
         try {
 
-            if ( $order ) {
+            if ($order) {
                 $email = $order->get_billing_email();
+                $contacts = $xero->load('Accounting\\Contact')
+                    ->where('EmailAddress', $email)
+                    ->execute();
+            } else {
+                $contacts = $xero->load('Accounting\\Contact')->execute(); // Fallback to all contacts if no order
             }
-
-            $contacts = $xero->load('Accounting\\Contact')->execute();
            
-            // Try to find existing contact by email
-           /* $accessToken = get_option( 'xero_access_token' );
-            $tenantId = get_option( 'xero_tenant_id' );
-
-            $headers = array(
-                'Authorization: Bearer ' . $accessToken,
-                'Xero-tenant-id: ' . $tenantId,
-                'Content-Type: application/json'
-            ); 
-
-            $url = "https://api.xero.com/api.xro/2.0/Contacts";
-
-            $ch = curl_init();
-
-            ACLXeroLogger::log_message( 'URL: ' . $url , 'invoice_sync' );
-            ACLXeroLogger::log_message( 'Headers: ' . $headers , 'invoice_sync' );
-
-            curl_setopt( $ch, CURLOPT_URL, $url );
-            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-            curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
-            
-            $response = curl_exec( $ch );
-            $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
-
-            // Log raw response and status
-            ACLXeroLogger::log_message("Raw response: |" . ($response === false ? 'FALSE' : $response) . "|", 'invoice_sync');
-            ACLXeroLogger::log_message("HTTP Code: $httpCode", 'invoice_sync');
-
-
-            if ( curl_errno( $ch ) ) {
-                $errorMessage = 'Curl error: ' . curl_error( $ch );
-                ACLXeroLogger::log_message( $errorMessage, 'invoice_sync' );
-                throw new \Exception( $errorMessage );
-            } 
-
-            if ( $httpCode !== 200 ) {
-                $errorMessage = "Failed to retrieve Contacts. HTTP Status: {$httpCode}. Response: {$response}";
-                ACLXeroLogger::log_message( $errorMessage, 'invoice_sync' );
-                throw new \Exception( $errorMessage );
-            }
-
-            $contacts = json_decode($response, true);
-*/
             ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );        
             ACLXeroLogger::log_message("Existing contacts: |" . print_r( $contacts, true ) . "|", 'invoice_sync');
+
             if ($contacts->count() > 0) {
                 return $contacts->first();
             }
@@ -584,8 +545,7 @@ class ACLSyncService {
             return $contact;
 
         } catch (\Exception $e) {
-            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
-            //ACLXeroLogger::log_message("Full Exception Details: " . var_export($e, true), 'invoice_sync');         
+            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );        
             throw $e;
         }
     }
