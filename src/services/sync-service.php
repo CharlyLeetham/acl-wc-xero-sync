@@ -514,7 +514,15 @@ class ACLSyncService {
                     ->where( 'EmailAddress', $email )
                     ->execute();
                 ACLXeroLogger::log_message( "Email check: |" . $email . "| , Found: " . $contacts_by_email->count() . " ", 'invoice_sync' );
-                ACLXeroLogger::log_message( "Email contacts raw: " . print_r( $contacts_by_email->toStringArray(), true ) . " ", 'invoice_sync' );
+                $email_contacts_array = [];
+                foreach ( $contacts_by_email as $contact ) {
+                    $email_contacts_array[] = [
+                        'ContactID' => $contact->getContactID(),
+                        'Name' => $contact->getName(),
+                        'EmailAddress' => $contact->getEmailAddress()
+                    ];
+                }
+                ACLXeroLogger::log_message( "Email contacts raw: " . print_r( $email_contacts_array, true ) . " ", 'invoice_sync' );
     
                 if ( $contacts_by_email->count() > 0 ) {
                     $contact = $contacts_by_email->first();
@@ -527,7 +535,15 @@ class ACLSyncService {
                     ->where( 'Name', $full_name )
                     ->execute();
                 ACLXeroLogger::log_message( "Name check: |" . $full_name . "| , Found: " . $contacts_by_name->count() . " ", 'invoice_sync' );
-                ACLXeroLogger::log_message( "Name contacts raw: " . print_r( $contacts_by_name->toStringArray(), true ) . " ", 'invoice_sync' );
+                $name_contacts_array = [];
+                foreach ( $contacts_by_name as $contact ) {
+                    $name_contacts_array[] = [
+                        'ContactID' => $contact->getContactID(),
+                        'Name' => $contact->getName(),
+                        'EmailAddress' => $contact->getEmailAddress()
+                    ];
+                }
+                ACLXeroLogger::log_message( "Name contacts raw: " . print_r( $name_contacts_array, true ) . " ", 'invoice_sync' );
     
                 if ( $contacts_by_name->count() > 0 ) {
                     $existing_contact = $contacts_by_name->first();
@@ -576,5 +592,5 @@ class ACLSyncService {
             ACLXeroLogger::log_message( "Error handling contact for order " . $order_id . ": " . $e->getMessage() . " ", 'invoice_sync' );
             throw $e;
         }
-    }    
+    }   
 }
