@@ -6,7 +6,6 @@
 namespace ACLWcXeroSync\Services;
 use ACLWcXeroSync\Helpers\ACLXeroHelper;
 use ACLWcXeroSync\Helpers\ACLXeroLogger;
-use XeroPHP\Models\Accounting\LineItem;
 
 class ACLSyncService {
 
@@ -393,108 +392,147 @@ class ACLSyncService {
             // Get the WooCommerce order
             $order = wc_get_order( $order_id );
             if ( !$order ) {
-                ACLXeroLogger::log_message( "Order ID {$order_id} not found.", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Order ID {$order_id} not found. ", 'invoice_sync' );
                 return false;
             }
-
-            // Initialize Xero client
+    
+            // Initialize Xero client (for contact and check only)
             $xero = ACLXeroHelper::initialize_xero_client();
             if ( is_wp_error( $xero ) ) {
-                ACLXeroLogger::log_message( "Xero client initialization failed for order {$order_id}: " . $xero->get_error_message(), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Xero client initialization failed for order {$order_id}: " . $xero->get_error_message() . " ", 'invoice_sync' );
                 return false;
             }
-
-            // Check if invoice already exists in Xero (using order ID as reference)
+    
+            // Check if invoice already exists in Xero
             $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
             if ( $existing_invoice ) {
-                ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero.", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero. ", 'invoice_sync' );
                 return true;
             } else {
-                ACLXeroLogger::log_message( "Invoice for order {$order_id} does not exist in Xero.", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Invoice for order {$order_id} does not exist in Xero. ", 'invoice_sync' );
             }
-
-            // Prepare invoice data
-            $invoice = new \XeroPHP\Models\Accounting\Invoice( $xero );
-            
-            // Set invoice type (ACCREC for sales invoice)
-            $invoice->setType( \XeroPHP\Models\Accounting\Invoice::INVOICE_TYPE_ACCREC );
-            
-            // Set reference to WooCommerce order ID
-            $invoice->setReference( "WC Order #{$order_id}" );
-            
-            // Set invoice number (optional - Xero can auto-generate if not set)
-            $invoice->setInvoiceNumber( "WC-{$order_id}" );
-            
-            // Set dates
-            $invoice->setDate( new \DateTime( $order->get_date_created() ) );
-            $invoice->setDueDate( new \DateTime( $order->get_date_created() ) ); // Adjust due date as needed
-            
-            // Determine invoice status based on payment status
-            $payment_status = $order->is_paid() ? 
-                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED : 
-                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT;
-            $invoice->setStatus( $payment_status );
-
-            // Get or create contact in Xero
+    
+            // cURL setup
+            $accessToken = get_option( 'xero_access_token' );
+            $tenantId = get_option( 'xero_tenant_id' );
+            $headers = [
+                'Authorization: Bearer ' . $accessToken,
+                'Xero-tenant-id: ' . $tenantId,
+                'Content-Type: application/json',
+                'Accept: application/json'
+            ];
+            $url = "https://api.xero.com/api.xro/2.0/Invoices";
+    
+            // Build invoice payload
             $contact = self::get_or_create_xero_contact( $xero, $order );
-            $invoice->setContact( $contact );
-
-            // Add line items
+            $line_items = [];
             foreach ( $order->get_items() as $item ) {
                 $product = $item->get_product();
-                $line_item = new \XeroPHP\Models\Accounting\LineItem();
-                
-                $line_item->setDescription( $item->get_name() );
-                $line_item->setQuantity( $item->get_quantity() );
-                $line_item->setUnitAmount( $item->get_subtotal() / $item->get_quantity() );
-                $line_item->setLineAmount( $item->get_subtotal() );
-                
-                if ( $product && $product->get_sku() ) {
-                    $line_item->setItemCode( $product->get_sku() );
+                $sku = $product ? $product->get_sku() : null;
+                $line_item = [
+                    'Description' => $item->get_name(),
+                    'Quantity' => $item->get_quantity(),
+                    'UnitAmount' => $item->get_subtotal() / $item->get_quantity(),
+                    'LineAmount' => $item->get_subtotal(),
+                    'AccountCode' => '200'
+                ];
+                if ( $sku ) {
+                    $line_item['ItemCode'] = $sku;
                 }
-                
-                // Add tax (you might need to adjust this based on your tax setup)
                 $tax_amount = $item->get_subtotal_tax();
                 if ( $tax_amount > 0 ) {
-                    $line_item->setTaxType( 'OUTPUT' ); // Adjust tax type as needed
+                    $line_item['TaxType'] = 'OUTPUT';
+                    $line_item['TaxAmount'] = $tax_amount;
                 }
-                
-                $invoice->addLineItem( $line_item );
+                $line_items[] = $line_item;
             }
-
-            // Add shipping as a line item if applicable
+    
+            // Add shipping as a line item
             if ( $order->get_shipping_total() > 0 ) {
-                $shipping_item = new \XeroPHP\Models\Accounting\LineItem();
-                $shipping_item->setDescription( 'Shipping' );
-                $shipping_item->setQuantity( 1 );
-                $shipping_item->setUnitAmount( $order->get_shipping_total() );
-                $shipping_item->setLineAmount( $order->get_shipping_total() );
-                $invoice->addLineItem( $shipping_item );
+                $line_items[] = [
+                    'Description' => 'Shipping',
+                    'Quantity' => 1,
+                    'UnitAmount' => $order->get_shipping_total(),
+                    'LineAmount' => $order->get_shipping_total(),
+                    'AccountCode' => '200'
+                ];
             }
-
-            // Save the invoice to Xero
-            $invoice->save();
-
-            // Store the Xero Invoice ID in WooCommerce metadata
-            $invoice_id = $invoice->getInvoiceID();
+    
+            $payment_status = $order->is_paid() ? 'AUTHORISED' : 'DRAFT';
+            $invoice_data = [
+                'Type' => 'ACCREC',
+                'Contact' => [
+                    'ContactID' => $contact->getContactID()
+                ],
+                'Reference' => "WC Order #{$order_id}",
+                'InvoiceNumber' => "WC-{$order_id}",
+                'Date' => $order->get_date_created()->format( 'Y-m-d' ),
+                'DueDate' => $order->get_date_created()->format( 'Y-m-d' ), // Adjust as needed
+                'Status' => $payment_status,
+                'LineItems' => $line_items
+            ];
+    
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_POST, true );
+            curl_setopt( $ch, CURLOPT_POSTFIELDS, json_encode( $invoice_data ) );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+    
+            $response = curl_exec( $ch );
+            $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+    
+            if ( curl_errno( $ch ) ) {
+                $errorMessage = 'Curl error: ' . curl_error( $ch );
+                ACLXeroLogger::log_message( $errorMessage , 'invoice_sync' );
+                throw new \Exception( $errorMessage );
+            }
+    
+            if ( $httpCode !== 200 ) {
+                $errorMessage = "Failed to sync order {$order_id} to Xero. HTTP Status: {$httpCode}. Response: {$response}";
+                ACLXeroLogger::log_message( $errorMessage , 'invoice_sync' );
+                throw new \Exception( $errorMessage );
+            }
+    
+            $invoice_response = json_decode( $response, true );
+            $invoice_id = $invoice_response['Invoices'][0]['InvoiceID'];
             update_post_meta( $order_id, '_xero_invoice_id', $invoice_id );
-
-            // If paid, add payment
+    
+            // Payment (if paid)
             if ( $order->is_paid() ) {
-                $payment = new \XeroPHP\Models\Accounting\Payment();
-                $payment->setInvoice( $invoice );
-                $bank_account_code = get_option('acl_xero_default_bank_account', '200'); // Fallback to '200' if not set
-                $payment->setAccount($xero->load('Accounting\\Account')->where('Code', $bank_account_code)->first());
-                $payment->setDate( new \DateTime( $order->get_date_paid() ) );
-                $payment->setAmount( $order->get_total() );
-                $payment->save();
+                $payment_url = "https://api.xero.com/api.xro/2.0/Payments";
+                $payment_data = [
+                    'Invoice' => ['InvoiceID' => $invoice_id],
+                    'Account' => ['Code' => get_option( 'acl_xero_default_bank_account', '200' )],
+                    'Date' => $order->get_date_paid() ? $order->get_date_paid()->format( 'Y-m-d' ) : ( new \DateTime() )->format( 'Y-m-d' ),
+                    'Amount' => $order->get_total()
+                ];
+    
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_URL, $payment_url );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt( $ch, CURLOPT_POST, true );
+                curl_setopt( $ch, CURLOPT_POSTFIELDS, json_encode( $payment_data ) );
+                curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+    
+                $payment_response = curl_exec( $ch );
+                $payment_httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+    
+                if ( curl_errno( $ch ) || $payment_httpCode !== 200 ) {
+                    $errorMessage = "Failed to add payment for order {$order_id}. HTTP Status: {$payment_httpCode}. Response: {$payment_response}";
+                    ACLXeroLogger::log_message( $errorMessage , 'invoice_sync' );
+                } else {
+                    ACLXeroLogger::log_message( "Payment added for order {$order_id}. HTTP Status: {$payment_httpCode} ", 'invoice_sync' );
+                }
+                curl_close( $ch );
             }
-
-            ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice {$invoice_id} to Xero. Status: {$payment_status}", 'invoice_sync' );
+    
+            ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice {$invoice_id} to Xero. Status: {$payment_status} ", 'invoice_sync' );
+            curl_close( $ch );
             return true;
-
+    
         } catch ( \Exception $e ) {
-            ACLXeroLogger::log_message( "Error syncing order {$order_id} to Xero: {$e->getMessage()}", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Error syncing order {$order_id} to Xero: " . $e->getMessage() . " ", 'invoice_sync' );
             return false;
         }
     }
