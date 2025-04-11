@@ -448,8 +448,8 @@ class ACLXeroHelper {
         echo $message;
         if (ob_get_level() > 0) ob_flush(); // Flush the output buffer if it's active
         flush(); // Send output to browser
-    }    
-
+    }
+    
     public static function GetXeroAccounts( $xero ) {
         try {
 

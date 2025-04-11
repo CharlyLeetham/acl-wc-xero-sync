@@ -537,6 +537,10 @@ class ACLProductSyncPage {
                 ? $_POST['unpaid_invoice_status'] 
                 : \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED;
             update_option( 'acl_xero_unpaid_invoice_status', $unpaid_status );
+
+            $bank_account = isset($_POST['bankaccount']) ? sanitize_text_field($_POST['bankaccount']) : '';
+            update_option('acl_xero_default_bank_account', $bank_account);
+
             echo "<div class='notice notice-success'><p>Settings saved.</p></div>";
         }
        
@@ -581,9 +585,16 @@ class ACLProductSyncPage {
         $current_status = get_option( 'acl_xero_unpaid_invoice_status', \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED );
 
         $xero = ACLXeroHelper::initialize_xero_client();
+
         if ( is_wp_error( $xero ) ) {
-            echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message() . "</p></div>";
+            echo "<div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
             flush();
+            // Set to empty arrays so that the form can still be rendered
+            $accounts = [];
+            $taxTypes = [];
+
+        }  else {
+            $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
         }
         ?>
         <div class="wrap">
@@ -592,20 +603,38 @@ class ACLProductSyncPage {
             <h2>Sync Settings</h2>
             <form method="post" action="">
                 <?php wp_nonce_field( 'xero_sync_options_action', 'xero_sync_options_nonce' ); ?>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><label for="unpaid_invoice_status">Unpaid Invoice Status</label></th>
-                        <td>
-                            <select name="unpaid_invoice_status" id="unpaid_invoice_status">
-                                <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED; ?>" 
-                                    <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED ); ?>>Authorised</option>
-                                <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT; ?>" 
-                                    <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT ); ?>>Draft</option>
-                            </select>
-                            <p class="description">Choose how unpaid orders are posted to Xero. 'Authorised' posts to accounts immediately; 'Draft' requires manual approval.</p>
-                        </td>
-                    </tr>
-                </table>
+                <div class="syncrow">
+                        <select name="unpaid_invoice_status" id="unpaid_invoice_status">
+                            <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED; ?>" 
+                                <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED ); ?>>Authorised</option>
+                            <option value="<?php echo \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT; ?>" 
+                                <?php selected( $current_status, \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT ); ?>>Draft</option>
+                        </select>    
+                        <label for="unpaid_invoice_status">Unpaid Invoice Status</label>                  
+                        <p class="description">Choose how unpaid orders are posted to Xero. 'Authorised' posts to accounts immediately; 'Draft' requires manual approval.</p>
+                </div>
+
+                <div class="syncrow">
+                    <select name="bankaccount" id="bankaccount">
+                        <option value="">Select Bank Account</option>
+                        <?php
+                         $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
+                        if ( empty( $accounts ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';    
+                        } else {
+                            foreach ( $accounts as $account ) {
+                                if ( $account['Type'] == 'BANK' ) { // Filter for expense accounts which would generally include COGS
+                                    $code = esc_attr($account['Code']);
+                                    $name = esc_html($account['Name']);
+                                    $is_selected = selected($selected_bank_account, $code, false); // Compare saved value with current code
+                                    echo "<option value='$code' $is_selected>($code) $name</option>";
+                                }
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="bankaccount">Default Bank Account For Paid Orders</label>
+                </div>                    
                 <p class="submit">
                     <input type="submit" name="submit" class="button button-primary" value="Save Settings">
                 </p>
