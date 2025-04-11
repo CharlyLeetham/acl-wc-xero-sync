@@ -6,6 +6,7 @@
 namespace ACLWcXeroSync\Services;
 use ACLWcXeroSync\Helpers\ACLXeroHelper;
 use ACLWcXeroSync\Helpers\ACLXeroLogger;
+use XeroPHP\Models\Accounting\LineItem;
 
 class ACLSyncService {
 
