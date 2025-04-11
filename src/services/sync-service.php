@@ -523,7 +523,7 @@ class ACLSyncService {
 
             $ch = curl_init();
 
-            ACLXeroLogger::log_message( 'URL: ' . $url , 'xero_api_error' );
+            ACLXeroLogger::log_message( 'URL: ' . $url , 'invoice_sync' );
 
             curl_setopt( $ch, CURLOPT_URL, $url );
             curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
@@ -534,13 +534,13 @@ class ACLSyncService {
 
             if ( curl_errno( $ch ) ) {
                 $errorMessage = 'Curl error: ' . curl_error( $ch );
-                ACLXeroLogger::log_message( $errorMessage, 'xero_api_error' );
+                ACLXeroLogger::log_message( $errorMessage, 'invoice_sync' );
                 throw new \Exception( $errorMessage );
             } 
 
             if ( $httpCode !== 200 ) {
-                $errorMessage = "Failed to batch update items in Xero. HTTP Status: {$httpCode}. Response: {$response}";
-                ACLXeroLogger::log_message( $errorMessage, 'xero_api_error' );
+                $errorMessage = "Failed to retrieve Contacts. HTTP Status: {$httpCode}. Response: {$response}";
+                ACLXeroLogger::log_message( $errorMessage, 'invoice_sync' );
                 throw new \Exception( $errorMessage );
             }
 
