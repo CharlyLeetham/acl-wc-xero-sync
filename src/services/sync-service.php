@@ -533,6 +533,11 @@ class ACLSyncService {
             $response = curl_exec( $ch );
             $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
 
+            // Log raw response and status
+            ACLXeroLogger::log_message("Raw response: |" . ($response === false ? 'FALSE' : $response) . "|", 'invoice_sync');
+            ACLXeroLogger::log_message("HTTP Code: $httpCode", 'invoice_sync');
+
+
             if ( curl_errno( $ch ) ) {
                 $errorMessage = 'Curl error: ' . curl_error( $ch );
                 ACLXeroLogger::log_message( $errorMessage, 'invoice_sync' );
