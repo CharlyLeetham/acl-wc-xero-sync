@@ -504,6 +504,11 @@ class ACLSyncService {
      */
     public static function get_or_create_xero_contact( $xero, $order = null ) {
         try {
+            $xero = ACLXeroHelper::initialize_xero_client();
+            if ( is_wp_error( $xero ) ) {
+                ACLXeroLogger::log_message( "Xero client initialization failed for sync contacts" . $xero->get_error_message(), 'invoice_sync' );
+                return false;
+            }
 
             if ( $order ) {
                 $email = $order->get_billing_email();
