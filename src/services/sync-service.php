@@ -523,6 +523,8 @@ class ACLSyncService {
 
             $ch = curl_init();
 
+            ACLXeroLogger::log_message( 'URL: ' . $url , 'xero_api_error' );
+
             curl_setopt( $ch, CURLOPT_URL, $url );
             curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
             curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
@@ -575,8 +577,8 @@ class ACLSyncService {
             return $contact;
 
         } catch (\Exception $e) {
-            //ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
-            ACLXeroLogger::log_message("Full Exception Details: " . var_export($e, true), 'invoice_sync');         
+            ACLXeroLogger::log_message( "Error handling contact for order {$order->get_id()}: {$e->getMessage()}", 'invoice_sync' );
+            //ACLXeroLogger::log_message("Full Exception Details: " . var_export($e, true), 'invoice_sync');         
             throw $e;
         }
     }
