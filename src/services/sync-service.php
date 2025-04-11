@@ -413,10 +413,10 @@ class ACLSyncService {
             }
 
             // Prepare invoice data
-            $invoice = new \XeroPHP\Models\Accounting\Invoice( $xero );
+            $invoice = new \\XeroPHP\Models\Accounting\Invoice( $xero );
             
             // Set invoice type (ACCREC for sales invoice)
-            $invoice->setType( \XeroPHP\Models\Accounting\Invoice::INVOICE_TYPE_ACCREC );
+            $invoice->setType( \\XeroPHP\Models\Accounting\Invoice::INVOICE_TYPE_ACCREC );
             
             // Set reference to WooCommerce order ID
             $invoice->setReference( "WC Order #{$order_id}" );
@@ -430,8 +430,8 @@ class ACLSyncService {
             
             // Determine invoice status based on payment status
             $payment_status = $order->is_paid() ? 
-                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED : 
-                \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT;
+                \\XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED : 
+                \\XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_DRAFT;
             $invoice->setStatus( $payment_status );
 
             // Get or create contact in Xero
@@ -441,7 +441,7 @@ class ACLSyncService {
             // Add line items
             foreach ( $order->get_items() as $item ) {
                 $product = $item->get_product();
-                $line_item = new \XeroPHP\Models\Accounting\LineItem( $xero );
+                $line_item = new \\XeroPHP\Models\Accounting\LineItem();
                 
                 $line_item->setDescription( $item->get_name() );
                 $line_item->setQuantity( $item->get_quantity() );
@@ -463,7 +463,7 @@ class ACLSyncService {
 
             // Add shipping as a line item if applicable
             if ( $order->get_shipping_total() > 0 ) {
-                $shipping_item = new \XeroPHP\Models\Accounting\LineItem( $xero );
+                $shipping_item = new \\XeroPHP\Models\Accounting\LineItem();
                 $shipping_item->setDescription( 'Shipping' );
                 $shipping_item->setQuantity( 1 );
                 $shipping_item->setUnitAmount( $order->get_shipping_total() );
@@ -480,7 +480,7 @@ class ACLSyncService {
 
             // If paid, add payment
             if ( $order->is_paid() ) {
-                $payment = new \XeroPHP\Models\Accounting\Payment( $xero );
+                $payment = new \\XeroPHP\Models\Accounting\Payment();
                 $payment->setInvoice( $invoice );
                 $payment->setAccount( $xero->load('Accounting\\Account')->where('Code', '200')->first() ); // Adjust account code as needed
                 $payment->setDate( new \DateTime( $order->get_date_paid() ) );
