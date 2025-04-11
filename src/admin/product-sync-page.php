@@ -568,7 +568,7 @@ class ACLProductSyncPage {
             if (!is_wp_error($xero)) {
                 try {
                     $order = wc_get_order($order_ids[0]); // Use first order
-                    ACLXeroHelper::get_or_create_xero_contact($xero, $order);
+                    ACLSyncService::get_or_create_xero_contact($xero, $order);
                     $test_result = "<div class='notice notice-success'><p>Contact retrieval test succeeded for order {$order_ids[0]}</p></div>";
                 } catch (\Exception $e) {
                     $test_result = "<div class='notice notice-error'><p>Contact retrieval test failed: " . esc_html($e->getMessage()) . ". See logs.</p></div>";
