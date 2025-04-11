@@ -504,18 +504,45 @@ class ACLSyncService {
      */
     public static function get_or_create_xero_contact( $xero, $order = null ) {
         try {
-            $xero = ACLXeroHelper::initialize_xero_client();
-            if ( is_wp_error( $xero ) ) {
-                ACLXeroLogger::log_message( "Xero client initialization failed for sync contacts" . $xero->get_error_message(), 'invoice_sync' );
-                return false;
-            }
 
             if ( $order ) {
                 $email = $order->get_billing_email();
             }
            
             // Try to find existing contact by email
-            $contacts = $xero->load('Accounting\\Contact')->execute();
+            $accessToken = get_option( 'xero_access_token' );
+            $tenantId = get_option( 'xero_tenant_id' );
+
+            $headers = array(
+                'Authorization: Bearer ' . $accessToken,
+                'Xero-tenant-id: ' . $tenantId,
+                'Content-Type: application/json'
+            ); 
+
+            $url = "https://api.xero.com/api.xro/2.0/Contacts";
+
+            $ch = curl_init();
+
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+            
+            $response = curl_exec( $ch );
+            $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+
+            if ( curl_errno( $ch ) ) {
+                $errorMessage = 'Curl error: ' . curl_error( $ch );
+                ACLXeroLogger::log_message( $errorMessage, 'xero_api_error' );
+                throw new \Exception( $errorMessage );
+            } 
+
+            if ( $httpCode !== 200 ) {
+                $errorMessage = "Failed to batch update items in Xero. HTTP Status: {$httpCode}. Response: {$response}";
+                ACLXeroLogger::log_message( $errorMessage, 'xero_api_error' );
+                throw new \Exception( $errorMessage );
+            }
+
+            $contacts = json_decode($response, true);
 
             ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );        
             ACLXeroLogger::log_message("Existing contacts: |" . print_r( $contacts, true ) . "|", 'invoice_sync');
