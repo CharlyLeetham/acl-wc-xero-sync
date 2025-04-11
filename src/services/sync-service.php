@@ -482,7 +482,8 @@ class ACLSyncService {
             if ( $order->is_paid() ) {
                 $payment = new \\XeroPHP\Models\Accounting\Payment();
                 $payment->setInvoice( $invoice );
-                $payment->setAccount( $xero->load('Accounting\\Account')->where('Code', '200')->first() ); // Adjust account code as needed
+                $bank_account_code = get_option('acl_xero_default_bank_account', '200'); // Fallback to '200' if not set
+                $payment->setAccount($xero->load('Accounting\\Account')->where('Code', $bank_account_code)->first());
                 $payment->setDate( new \DateTime( $order->get_date_paid() ) );
                 $payment->setAmount( $order->get_total() );
                 $payment->save();
