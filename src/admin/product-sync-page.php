@@ -394,6 +394,20 @@ class ACLProductSyncPage {
      * Renders the Product Sync Page.
      */
     public static function render_sync_page() {
+        // Handle form submission
+        if ( isset( $_POST['sync_xero_products'] ) && isset( $_POST['sync_products_nonce'] ) && wp_verify_nonce( $_POST['sync_products_nonce'], 'sync_products_action' ) ) {
+            $cogs = isset( $_POST['cogs'] ) ? sanitize_text_field( $_POST['cogs'] ) : '';
+            $salesacct = isset( $_POST['salesacct'] ) ? sanitize_text_field( $_POST['salesacct'] ) : '200';
+            $cogs_tax_type = isset( $_POST['cogs_tax_type'] ) ? sanitize_text_field( $_POST['cogs_tax_type'] ) : '';
+            $sales_tax_type = isset( $_POST['sales_tax_type'] ) ? sanitize_text_field( $_POST['sales_tax_type'] ) : '';
+    
+            update_option( 'acl_xero_cogs_account', $cogs );
+            update_option( 'acl_xero_sales_account', $salesacct ); // Reused from invoice sync
+            update_option( 'acl_xero_cogs_tax_type', $cogs_tax_type );
+            update_option( 'acl_xero_sales_tax_type', $sales_tax_type );
+    
+            echo "<div class='notice notice-success'><p>Sync settings saved.</p></div>";
+        }        
 
         $xero = ACLXeroHelper::initialize_xero_client();
 
@@ -405,6 +419,11 @@ class ACLProductSyncPage {
             $taxTypes = [];
 
         }  else {
+            // Get saved options
+            $saved_cogs = get_option( 'acl_xero_cogs_account', '' );
+            $saved_salesacct = get_option( 'acl_xero_sales_account', '200' );
+            $saved_cogs_tax_type = get_option( 'acl_xero_cogs_tax_type', '' );
+            $saved_sales_tax_type = get_option( 'acl_xero_sales_tax_type', '' );
             $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
             $taxTypes = ACLXeroHelper::getXeroTaxTypes( $xero ); 
         }
@@ -437,28 +456,28 @@ class ACLProductSyncPage {
                         <option value="">Select COGS Account</option>
                         <?php
                         if ( empty( $accounts ) ) {
-                            echo '<option value="">Authenticate with Xero</option>';    
+                            echo '<option value="">Authenticate with Xero</option>';
                         } else {
                             foreach ( $accounts as $account ) {
-                                if ( $account['Type'] == 'EXPENSE' ) { // Filter for expense accounts which would generally include COGS
-                                    echo '<option value="' . $account['Code'] . '">(' . $account['Code']. ') ' . $account['Name'] . '</option>';
+                                if ( $account['Type'] == 'EXPENSE' ) {
+                                    echo '<option value="' . $account['Code'] . '" ' . selected( $saved_cogs, $account['Code'], false ) . '>(' . $account['Code'] . ') ' . $account['Name'] . '</option>';
                                 }
                             }
                         }
                         ?>
                     </select>
                     <label for="cogs">Cost of Goods Sold Account</label>
-                </div>                
+                </div>
                 <div class="syncrow">
                     <select name="salesacct" id="salesacct">
                         <option value="">Select Sales Account</option>
                         <?php
-                        if ( empty( $accounts) ) {
+                        if ( empty( $accounts ) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
                             foreach ( $accounts as $account ) {
-                                if ( $account['Type'] == 'REVENUE' ) { // Filter for revenue accounts
-                                    echo '<option value="' . $account['Code'] . '">(' . $account['Code']. ') ' . $account['Name'] . '</option>';
+                                if ( $account['Type'] == 'REVENUE' ) {
+                                    echo '<option value="' . $account['Code'] . '" ' . selected( $saved_salesacct, $account['Code'], false ) . '>(' . $account['Code'] . ') ' . $account['Name'] . '</option>';
                                 }
                             }
                         }
@@ -473,10 +492,10 @@ class ACLProductSyncPage {
                         if ( empty( $taxTypes ) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
-                            foreach ($taxTypes as $taxType) {
+                            foreach ( $taxTypes as $taxType ) {
                                 if ( $taxType['Expenses'] ) {
-                                    echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
-                                } 
+                                    echo '<option value="' . $taxType['TaxType'] . '" ' . selected( $saved_cogs_tax_type, $taxType['TaxType'], false ) . '>' . $taxType['Name'] . '</option>';
+                                }
                             }
                         }
                         ?>
@@ -490,10 +509,9 @@ class ACLProductSyncPage {
                         if ( empty( $taxTypes ) ) {
                             echo '<option value="">Authenticate with Xero</option>';
                         } else {
-
                             foreach ( $taxTypes as $taxType ) {
                                 if ( $taxType['Revenue'] ) {
-                                    echo '<option value="' . $taxType['TaxType'] . '">' . $taxType['Name'] . '</option>';
+                                    echo '<option value="' . $taxType['TaxType'] . '" ' . selected( $saved_sales_tax_type, $taxType['TaxType'], false ) . '>' . $taxType['Name'] . '</option>';
                                 }
                             }
                         }
@@ -501,7 +519,8 @@ class ACLProductSyncPage {
                     </select>
                     <label for="sales-tax-type">Sales Tax Type</label>
                 </div>                
-                <div class="syncrow">                                                   
+                <div class="syncrow">
+                    <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
                     <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
                 </div>        
             </form>
