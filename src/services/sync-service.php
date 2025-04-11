@@ -524,6 +524,7 @@ class ACLSyncService {
             $ch = curl_init();
 
             ACLXeroLogger::log_message( 'URL: ' . $url , 'invoice_sync' );
+            ACLXeroLogger::log_message( 'Headers: ' . $headers , 'invoice_sync' );
 
             curl_setopt( $ch, CURLOPT_URL, $url );
             curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
