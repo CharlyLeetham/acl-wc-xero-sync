@@ -508,9 +508,11 @@ class ACLSyncService {
             if ( $order ) {
                 $email = $order->get_billing_email();
             }
+
+            $contacts = $xero->load('Accounting\\Contacts')->execute();
            
             // Try to find existing contact by email
-            $accessToken = get_option( 'xero_access_token' );
+           /* $accessToken = get_option( 'xero_access_token' );
             $tenantId = get_option( 'xero_tenant_id' );
 
             $headers = array(
@@ -551,10 +553,9 @@ class ACLSyncService {
             }
 
             $contacts = json_decode($response, true);
-
+*/
             ACLXeroLogger::log_message("Email: |" . $email . "|", 'invoice_sync' );        
             ACLXeroLogger::log_message("Existing contacts: |" . print_r( $contacts, true ) . "|", 'invoice_sync');
-
             if ($contacts->count() > 0) {
                 return $contacts->first();
             }
