@@ -509,7 +509,7 @@ class ACLSyncService {
                 $email = $order->get_billing_email();
             }
 
-            $contacts = $xero->load('Accounting\\Contacts')->execute();
+            $contacts = $xero->load('Accounting\\Contact')->execute();
            
             // Try to find existing contact by email
            /* $accessToken = get_option( 'xero_access_token' );
