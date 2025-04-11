@@ -560,6 +560,23 @@ class ACLProductSyncPage {
                 ACLXeroHelper::xero_invoice_sync( $dry_run, array( $order_id ) );
             }
         }
+
+        // Add test for get_or_create_xero_contact
+        $test_result = '';
+        if (isset($_POST['test_contact_nonce']) && wp_verify_nonce($_POST['test_contact_nonce'], 'test_contact_action') && !empty($order_ids)) {
+            $xero = ACLXeroHelper::initialize_xero_client();
+            if (!is_wp_error($xero)) {
+                try {
+                    $order = wc_get_order($order_ids[0]); // Use first order
+                    self::get_or_create_xero_contact($xero, $order);
+                    $test_result = "<div class='notice notice-success'><p>Contact retrieval test succeeded for order {$order_ids[0]}</p></div>";
+                } catch (\Exception $e) {
+                    $test_result = "<div class='notice notice-error'><p>Contact retrieval test failed: " . esc_html($e->getMessage()) . ". See logs.</p></div>";
+                }
+            } else {
+                $test_result = "<div class='notice notice-error'><p>Xero client init failed: " . $xero->get_error_message() . "</p></div>";
+            }
+        }        
     
         $current_status = get_option( 'acl_xero_unpaid_invoice_status', \XeroPHP\Models\Accounting\Invoice::INVOICE_STATUS_AUTHORISED );
 
@@ -651,6 +668,15 @@ class ACLProductSyncPage {
                     </tbody>
                 </table>
             <?php endif; ?>
+
+            <h2>Test Contact Retrieval</h2>
+            <form method="post" action="">
+                <?php wp_nonce_field('test_contact_action', 'test_contact_nonce'); ?>
+                <p>
+                    <input type="submit" name="test_contact" class="button button-primary" value="Test Contact Retrieval">
+                </p>
+            </form>
+            <?php echo $test_result; ?>            
     
             <h2>Invoice Sync CSV Log Files</h2>
             <div id="csv-file-container">

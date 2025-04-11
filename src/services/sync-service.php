@@ -502,9 +502,12 @@ class ACLSyncService {
     /**
      * Get or create a Xero contact based on order data
      */
-    private static function get_or_create_xero_contact( $xero, $order ) {
+    private static function get_or_create_xero_contact( $xero, $order = null ) {
         try {
-            $email = $order->get_billing_email();
+
+            if ( $order ) {
+                $email = $order->get_billing_email();
+            }
            
             // Try to find existing contact by email
             $contacts = $xero->load('Accounting\\Contact')->execute();
@@ -516,6 +519,8 @@ class ACLSyncService {
                 return $contacts->first();
             }
 
+            if ( !$order ) { return; }
+            
             // Create new contact
             $contact = new \XeroPHP\Models\Accounting\Contact($xero);
             $contact->setName($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
