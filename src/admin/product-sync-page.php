@@ -224,7 +224,7 @@ class ACLProductSyncPage {
             'response_type' => 'code',
             'client_id'     => $client_id,
             'redirect_uri'  => $redirect_uri,
-            'scope'         => 'accounting.transactions accounting.settings offline_access',
+            'scope'         => 'accounting.transactions accounting.settings accounting.contacts offline_access',
         ] );
     }    
 
