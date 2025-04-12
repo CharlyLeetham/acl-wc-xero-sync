@@ -228,7 +228,7 @@ class ACLSyncService {
                 // Create a new item for batch update
                 $newItem = [
                     'Code' => $sku,
-                    'Name' => $product['name'],
+                    'Name' => substr($product['name'], 0, 50),
                     'Description' => $product['description'],
                     'SalesDetails' => [
                         'UnitPrice' => (float)$wcPurchasePrice,
