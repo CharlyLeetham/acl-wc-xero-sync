@@ -575,33 +575,63 @@ class ACLXeroHelper {
      */
     public static function check_existing_xero_invoice( $xero, $order_id ) {
         try {
+
             // Step 1: Check WooCommerce metadata first
             $invoice_id = get_post_meta( $order_id, '_xero_invoice_id', true );
+            $accessToken = get_option( 'xero_access_token' );
+            $tenantId = get_option( 'xero_tenant_id' );
+            $headers = [
+                'Authorization: Bearer ' . $accessToken,
+                'Xero-tenant-id: ' . $tenantId,
+                'Accept: application/json'
+            ];  
+            
             if ( $invoice_id ) {
                 // Verify it still exists in Xero
-                $invoices = $xero->load('Accounting\\Invoice')
-                ->where( 'InvoiceID', "WC-{$order_id}" );
-            
-            ACLXeroLogger::log_message( "Invoices String: ". print_r($invoices, true), 'invoice_sync' );
-            
-                $invoices = $invoices->execute();
-                
-                if ( $invoices->count() > 0 ) {
-                    return $invoices->first(); // Invoice exists, return it
+                $url = "https://api.xero.com/api.xro/2.0/Invoices/{$invoice_id}";
+                $ch = curl_init();
+                curl_setopt( $ch, CURLOPT_URL, $url );
+                curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+                $response = curl_exec( $ch );
+                $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+                curl_close( $ch );
+    
+                ACLXeroLogger::log_message( "Invoices String for order #{$order_id}: " . substr( $response, 0, 200 ) . " ... ", 'invoice_sync' );
+    
+                if ( $httpCode === 200 ) {
+                    $data = json_decode( $response, true );
+                    ACLXeroLogger::log_message( "Found invoice by InvoiceID {$invoice_id} for order #{$order_id} ", 'invoice_sync' );
+                    return (object) $data['Invoices'][0]; // Mimic XeroPHP object
                 } else {
-                    // Invoice ID in metadata but not in Xero (deleted?)
                     ACLXeroLogger::log_message( "Order #{$order_id} has _xero_invoice_id '{$invoice_id}' but no matching invoice in Xero.", 'invoice_sync' );
-                    return null; // Treat as not synced, or handle differently if needed
                 }
             }
     
-            // Step 2: Fallback to Reference check if no metadata
-            $invoices = $xero->load('Accounting\\Invoice')
-                ->where( 'Reference', "WC Order #{$order_id}" )
-                ->execute();
-            
-            return $invoices->count() > 0 ? $invoices->first() : null;
+            // Step 2: Fallback to Reference check
+            $url = "https://api.xero.com/api.xro/2.0/Invoices?where=" . urlencode( 'Reference=="WC Order #' . $order_id . '"' );
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+            $response = curl_exec( $ch );
+            $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+            curl_close( $ch );
     
+            ACLXeroLogger::log_message( "Reference check for order #{$order_id}: " . substr( $response, 0, 200 ) . " ... ", 'invoice_sync' );
+    
+            if ( $httpCode === 200 ) {
+                $data = json_decode( $response, true );
+                if ( !empty( $data['Invoices'] ) ) {
+                    $invoice = $data['Invoices'][0];
+                    update_post_meta( $order_id, '_xero_invoice_id', $invoice['InvoiceID'] );
+                    ACLXeroLogger::log_message( "Found invoice by Reference WC Order #{$order_id} for order #{$order_id} ", 'invoice_sync' );
+                    return (object) $invoice;
+                }
+            }
+    
+            return null;
+                
         } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
             return null;
