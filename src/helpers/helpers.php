@@ -705,5 +705,5 @@ class ACLXeroHelper {
             flush();
             wp_die();
         }
-    }    
+    }   
 }

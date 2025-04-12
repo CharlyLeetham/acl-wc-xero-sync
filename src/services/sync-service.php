@@ -637,11 +637,11 @@ class ACLSyncService {
     
     public static function fetch_xero_items( $xero ) {
         $xero_items = array();
-        $page = 1;
         $accessToken = get_option( 'xero_access_token' );
         $tenantId = get_option( 'xero_tenant_id' );
     
         if ( ! $accessToken || ! $tenantId ) {
+            ACLXeroLogger::log_message( "Missing credentials: token=" . ( $accessToken ? 'set' : 'unset' ) . ", tenant=" . ( $tenantId ? 'set' : 'unset' ), 'product_sync' );
             throw new \Exception( "Missing Xero credentials." );
         }
     
@@ -651,12 +651,15 @@ class ACLSyncService {
             'Accept: application/json',
         );
     
-        do {
-            $url = "https://api.xero.com/api.xro/2.0/Items?page={$page}";
+        try {
+            $url = "https://api.xero.com/api.xro/2.0/Items";
+            ACLXeroLogger::log_message( "Fetching all items: {$url}", 'product_sync' );
+    
             $ch = curl_init();
             curl_setopt( $ch, CURLOPT_URL, $url );
             curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
             curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+            curl_setopt( $ch, CURLOPT_TIMEOUT, 30 );
     
             $response = curl_exec( $ch );
             $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
@@ -664,12 +667,12 @@ class ACLSyncService {
             if ( curl_errno( $ch ) ) {
                 $error = curl_error( $ch );
                 curl_close( $ch );
-                throw new \Exception( "Curl error on page {$page}: {$error}" );
+                throw new \Exception( "Curl error: {$error}" );
             }
     
             if ( $httpCode !== 200 ) {
                 curl_close( $ch );
-                throw new \Exception( "Failed to fetch page {$page}. Status: {$httpCode}" );
+                throw new \Exception( "Failed to fetch items. Status: {$httpCode}" );
             }
     
             $data = json_decode( $response, true );
@@ -687,11 +690,13 @@ class ACLSyncService {
             }
     
             curl_close( $ch );
-            $page++;
-            ACLXeroLogger::log_message( "Fetched page {$page}: " . count( $items ) . " items.", 'product_sync' );
-            ACLXeroLogger::log_message( "Raw items page {$page}: " . print_r( $items, true ), 'product_sync' );
-        } while ( ! empty( $items ) );
-    
-        return $xero_items;
-    }    
+            ACLXeroLogger::log_message( "Fetched " . count( $items ) . " items.", 'product_sync' );
+            return $xero_items;
+        } catch ( \Exception $e ) {
+            if ( isset( $ch ) ) {
+                curl_close( $ch );
+            }
+            throw $e;
+        }
+    }   
 }
