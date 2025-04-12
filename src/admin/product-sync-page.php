@@ -696,8 +696,6 @@ class ACLProductSyncPage {
                         foreach ( $order_ids as $order_id ) {
                             $order = wc_get_order( $order_id );
                             $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
-
-                            var_dump ($existing_invoice);
                             $sync_status = $existing_invoice ? "Synced (Invoice ID: " . $existing_invoice->InvoiceID . ")" : "Not Synced";
                             $sync_issue = get_post_meta($order_id, '_xero_sync_issue', true); // Get sync issue meta
                             if ($sync_issue) {
