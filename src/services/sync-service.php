@@ -164,13 +164,22 @@ class ACLSyncService {
      */
     private static function process_product( $xero, $product, $pricechange_csv, $nopricechange_csv, $dry_run, $cogs = NULL, $salesacct = NULL, $cogstaxtype = NULL, $salestaxtype = NULL, $xero_items = array() ) {
         $sku = trim( $product['sku'] );
+        // Truncate SKU to 30 characters for Xero
+        $xero_sku = substr( $sku, 0, 30 );
+
+        if ( strlen( $sku ) > 30 ) {
+            ACLXeroLogger::log_message( "SKU {$sku} truncated to {$xero_sku} for Xero (max 30 characters).", 'product_sync' );
+            echo "<div class='notice notice-warning'><p>SKU <strong>{$sku}</strong> truncated to <strong>{$xero_sku}</strong> for Xero (max 30 characters).</p></div>";
+            flush();
+        }
+
         try {
             // Check if SKU exists in Xero cache
-            $exists = self::check_if_sku_exists( $xero, $sku, $xero_items );
+            $exists = self::check_if_sku_exists( $xero, $xero_sku, $xero_items );
     
             if ( $exists ) {
                 // Fetch item details from cache
-                $item = self::get_xero_item( $xero, $sku, $xero_items );
+                $item = self::get_xero_item( $xero, $xero_sku, $xero_items );
     
                 // Get prices from cache
                 $xeroPrice = $item['sales_price'];
@@ -215,7 +224,7 @@ class ACLSyncService {
                 if ( $priceChange ) {
                     ACLXeroHelper::csv_file( $pricechange_csv, "{$sku},{$xeroPurchasePrice},{$xeroPrice},{$wcPurchasePrice},{$wcPrice}" );
                     return array(
-                        'Code' => $sku,
+                        'Code' => $xero_sku,
                         'SalesDetails' => $priceDetails['SalesDetails'] ?? null,
                         'PurchaseDetails' => $priceDetails['PurchaseDetails'] ?? null
                     );
@@ -234,7 +243,7 @@ class ACLSyncService {
     
                 // Create a new item for batch update
                 $newItem = array(
-                    'Code' => $sku,
+                    'Code' => $xero_sku,
                     'Name' => substr( $product['name'], 0, 50 ),
                     'Description' => isset( $product['short_description'] ) ? mb_substr( strip_tags( $product['short_description'] ), 0, 1000, 'UTF-8' ) : '',
                     'SalesDetails' => array(
