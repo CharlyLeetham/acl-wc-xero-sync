@@ -582,7 +582,7 @@ class ACLXeroHelper {
                 $invoices = $xero->load('Accounting\\Invoice')
                 ->where( 'InvoiceID', $invoice_id );
             
-            ACLXeroLogger::log_message( "Invoices String: '{$invoices}' .", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Invoices String: ". print_r($invoices, true), 'invoice_sync' );
             
                 $invoices = $invoices->execute();
                 
