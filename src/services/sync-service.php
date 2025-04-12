@@ -689,6 +689,7 @@ class ACLSyncService {
             curl_close( $ch );
             $page++;
             ACLXeroLogger::log_message( "Fetched page {$page}: " . count( $items ) . " items.", 'product_sync' );
+            ACLXeroLogger::log_message( "Raw items page {$page}: " . print_r( $items, true ), 'product_sync' );
         } while ( ! empty( $items ) );
     
         return $xero_items;
