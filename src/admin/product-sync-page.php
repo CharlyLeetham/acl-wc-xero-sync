@@ -395,7 +395,6 @@ class ACLProductSyncPage {
      */
     public static function render_sync_page() {
         // Handle form submission
-        var_dump ($_POST);
         if ( isset( $_POST['sync_xero_products'] ) && isset( $_POST['sync_products_nonce'] ) && wp_verify_nonce( $_POST['sync_products_nonce'], 'sync_products_action' ) ) {
             $cogs = isset( $_POST['cogs'] ) ? sanitize_text_field( $_POST['cogs'] ) : '';
             $salesacct = isset( $_POST['salesacct'] ) ? sanitize_text_field( $_POST['salesacct'] ) : '200';
