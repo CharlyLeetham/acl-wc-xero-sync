@@ -579,36 +579,29 @@ class ACLXeroHelper {
             $invoice_id = get_post_meta( $order_id, '_xero_invoice_id', true );
             if ( $invoice_id ) {
                 // Verify it still exists in Xero
-                $invoices = $xero->load( 'Accounting\\Invoice' )
-                    ->where( 'InvoiceID', $invoice_id ) // No quotes for GUID
+                $invoices = $xero->load('Accounting\\Invoice')
+                    ->where( 'InvoiceID=$invoice_id' )
                     ->execute();
                 
                 if ( $invoices->count() > 0 ) {
-                    ACLXeroLogger::log_message( "Found existing invoice by InvoiceID {$invoice_id} for order {$order_id} ", 'invoice_sync' );
-                    return $invoices->first();
+                    return $invoices->first(); // Invoice exists, return it
                 } else {
-                    ACLXeroLogger::log_message( "Order #{$order_id} has _xero_invoice_id '{$invoice_id}' but no matching invoice in Xero. ", 'invoice_sync' );
-                    return null;
+                    // Invoice ID in metadata but not in Xero (deleted?)
+                    ACLXeroLogger::log_message( "Order #{$order_id} has _xero_invoice_id '{$invoice_id}' but no matching invoice in Xero.", 'invoice_sync' );
+                    return null; // Treat as not synced, or handle differently if needed
                 }
             }
     
-            // Step 2: Fallback to Reference check
-            $invoices = $xero->load( 'Accounting\\Invoice' )
-                ->where( 'Reference', '"' . "WC Order #{$order_id}" . '"' ) // Quote string
+            // Step 2: Fallback to Reference check if no metadata
+            $invoices = $xero->load('Accounting\\Invoice')
+                ->where( 'Reference', "WC Order #{$order_id}" )
                 ->execute();
             
-            if ( $invoices->count() > 0 ) {
-                $invoice = $invoices->first();
-                $new_invoice_id = $invoice->getInvoiceID();
-                update_post_meta( $order_id, '_xero_invoice_id', $new_invoice_id ); // Save found ID
-                ACLXeroLogger::log_message( "Found existing invoice by Reference for order {$order_id}, set _xero_invoice_id to {$new_invoice_id} ", 'invoice_sync' );
-                return $invoice;
-            }
-            return null;
+            return $invoices->count() > 0 ? $invoices->first() : null;
     
         } catch ( \Exception $e ) {
-            ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()} ", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
             return null;
         }
-    }  
+    } 
 }
