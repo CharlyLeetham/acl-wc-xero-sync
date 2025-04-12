@@ -672,7 +672,7 @@ class ACLXeroHelper {
                 wp_die();
             }
     
-            $cache_dir = WP_CONTENT_DIR . '/Uploads/xero_cache';
+            $cache_dir = WP_CONTENT_DIR . '/uploads/xero_cache';
             $cache_file = $cache_dir . '/xero_items.json';
     
             if ( ! file_exists( $cache_dir ) ) {
@@ -687,6 +687,8 @@ class ACLXeroHelper {
             ACLXeroLogger::log_message( "Fetching items.", 'product_sync' );
             $xero_items = ACLSyncService::fetch_xero_items( $xero );
             ACLXeroLogger::log_message( "Fetched " . count( $xero_items ) . " items.", 'product_sync' );
+
+           // if (file_put_contents($log_file, "[{$timestamp}] [{$level}] {$message}\n", FILE_APPEND) !== false)
     
             if ( ! file_put_contents( $cache_file, json_encode( $xero_items ) ) ) {
                 ACLXeroLogger::log_message( "Failed to write cache file.", 'product_sync' );
