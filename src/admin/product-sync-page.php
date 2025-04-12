@@ -20,7 +20,8 @@ class ACLProductSyncPage {
         add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );
         add_action( 'wp_ajax_acl_get_log_content', [ACLXeroHelper::class, 'get_log_content' ] );           
         add_action( 'acl_xero_log_rotation_event', [ACLXeroLogger::class, 'acl_xero_log_rotation'] ); 
-        add_action( 'wp_ajax_acl_xero_sync_status_ajax', [ACLXeroHelper::class, 'handle_sync_status'] );             
+        add_action( 'wp_ajax_acl_xero_sync_status_ajax', [ACLXeroHelper::class, 'handle_sync_status'] );
+        add_action( 'wp_ajax_acl_xero_fetch_items_ajax', [ ACLXeroHelper::class, 'handle_fetch_items_ajax' ] );             
                     
 
         // Enqueue scripts and localize AJAX URL
@@ -53,6 +54,7 @@ class ACLProductSyncPage {
             'nonce_delete_csv' => wp_create_nonce('delete_csv'),
             'nonce_delete_csv_multiple' => wp_create_nonce('delete_csv_multiple'),
             'nonce_xero_sync_products_ajax' => wp_create_nonce('xero_sync_products_ajax'),
+            'nonce_xero_fetch_items_ajax' => wp_create_nonce( 'xero_fetch_items_ajax' ),
             'defaultLog' => $defaultLog ? $defaultLog : null,
         ));
     }    
@@ -523,8 +525,10 @@ class ACLProductSyncPage {
                 <div class="syncrow">
                     <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
                     <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+                    <button id="fetch-xero-items" class="button">Fetch Xero Items</button>
                 </div>        
             </form>
+            
             <div id="sync-results"></div>
             <div id="csv-file-updates"></div> <!-- Placeholder for updates -->                      
             
@@ -548,6 +552,8 @@ class ACLProductSyncPage {
         </div>
         <?php
     }
+
+    
     
     public static function render_xero_invoice_sync() {
         // Save option if submitted

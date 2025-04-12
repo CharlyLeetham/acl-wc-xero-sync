@@ -637,4 +637,53 @@ class ACLXeroHelper {
             return null;
         }
     } 
+
+    public static function handle_fetch_items_ajax() {
+        check_ajax_referer( 'xero_fetch_items_ajax', '_ajax_nonce' );
+    
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            echo "<div class='notice notice-error'><p>Insufficient permissions.</p></div>";
+            flush();
+            wp_die();
+        }
+    
+        if ( ob_get_level() > 0 ) {
+            ob_end_clean();
+        }
+    
+        header( 'Content-Type: text/html; charset=utf-8' );
+        header( 'Cache-Control: no-cache' );
+    
+        try {
+            $xero = self::initialize_xero_client();
+            if ( is_wp_error( $xero ) ) {
+                echo "<div class='notice notice-error'><p>" . htmlspecialchars( $xero->get_error_message() ) . "</p></div>";
+                flush();
+                wp_die();
+            }
+    
+            $cache_dir = WP_CONTENT_DIR . '/Uploads/xero_cache';
+            $cache_file = $cache_dir . '/xero_items.json';
+    
+            if ( ! file_exists( $cache_dir ) ) {
+                mkdir( $cache_dir, 0755, true );
+            }
+    
+            echo "<div class='notice notice-info'><p>Fetching Xero items...</p></div>";
+            flush();
+    
+            $xero_items = ACLSyncService::fetch_xero_items( $xero );
+            file_put_contents( $cache_file, json_encode( $xero_items ) );
+            ACLXeroLogger::log_message( "Fetched and cached " . count( $xero_items ) . " Xero items.", 'product_sync' );
+    
+            echo "<div class='notice notice-success'><p>Fetched " . count( $xero_items ) . " Xero items.</p></div>";
+            flush();
+            wp_die();
+        } catch ( \Exception $e ) {
+            ACLXeroLogger::log_message( "Error fetching Xero items: {$e->getMessage()}", 'product_sync' );
+            echo "<div class='notice notice-error'><p>Error fetching Xero items: " . htmlspecialchars( $e->getMessage() ) . "</p></div>";
+            flush();
+            wp_die();
+        }
+    }    
 }
