@@ -389,30 +389,27 @@ class ACLSyncService {
      */
     public static function sync_order_to_xero_invoice( $order_id ) {
         try {
-            // Get the WooCommerce order
             $order = wc_get_order( $order_id );
             if ( !$order ) {
                 ACLXeroLogger::log_message( "Order ID {$order_id} not found. ", 'invoice_sync' );
                 return false;
             }
     
-            // Initialize Xero client (for contact and check only)
             $xero = ACLXeroHelper::initialize_xero_client();
             if ( is_wp_error( $xero ) ) {
                 ACLXeroLogger::log_message( "Xero client initialization failed for order {$order_id}: " . $xero->get_error_message() . " ", 'invoice_sync' );
                 return false;
             }
     
-            // Check if invoice already exists in Xero
             $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
             if ( $existing_invoice ) {
                 ACLXeroLogger::log_message( "Invoice for order {$order_id} already exists in Xero. ", 'invoice_sync' );
+                delete_post_meta( $order_id, '_xero_sync_issue' );
                 return true;
             } else {
                 ACLXeroLogger::log_message( "Invoice for order {$order_id} does not exist in Xero. ", 'invoice_sync' );
             }
     
-            // cURL setup
             $accessToken = get_option( 'xero_access_token' );
             $tenantId = get_option( 'xero_tenant_id' );
             $headers = [
@@ -423,8 +420,10 @@ class ACLSyncService {
             ];
             $url = "https://api.xero.com/api.xro/2.0/Invoices";
     
-            // Build invoice payload
             $contact = self::get_or_create_xero_contact( $xero, $order );
+            $sales_account_code = get_option( 'acl_xero_sales_account', '200' );
+            $shipping_account_code = get_option( 'acl_xero_shipping_account', '200' );
+            $sales_tax_type = get_option( 'acl_xero_sales_tax_type', 'OUTPUT' ); // New: Use saved tax type
             $line_items = [];
             foreach ( $order->get_items() as $item ) {
                 $product = $item->get_product();
@@ -434,27 +433,26 @@ class ACLSyncService {
                     'Quantity' => $item->get_quantity(),
                     'UnitAmount' => $item->get_subtotal() / $item->get_quantity(),
                     'LineAmount' => $item->get_subtotal(),
-                    'AccountCode' => '200'
+                    'AccountCode' => $sales_account_code
                 ];
                 if ( $sku ) {
                     $line_item['ItemCode'] = $sku;
                 }
                 $tax_amount = $item->get_subtotal_tax();
                 if ( $tax_amount > 0 ) {
-                    $line_item['TaxType'] = 'OUTPUT';
+                    $line_item['TaxType'] = $sales_tax_type; // Dynamic tax type
                     $line_item['TaxAmount'] = $tax_amount;
                 }
                 $line_items[] = $line_item;
             }
     
-            // Add shipping as a line item
             if ( $order->get_shipping_total() > 0 ) {
                 $line_items[] = [
                     'Description' => 'Shipping',
                     'Quantity' => 1,
                     'UnitAmount' => $order->get_shipping_total(),
                     'LineAmount' => $order->get_shipping_total(),
-                    'AccountCode' => '200'
+                    'AccountCode' => $shipping_account_code
                 ];
             }
     
@@ -467,7 +465,7 @@ class ACLSyncService {
                 'Reference' => "WC Order #{$order_id}",
                 'InvoiceNumber' => "WC-{$order_id}",
                 'Date' => $order->get_date_created()->format( 'Y-m-d' ),
-                'DueDate' => $order->get_date_created()->format( 'Y-m-d' ), // Adjust as needed
+                'DueDate' => $order->get_date_created()->format( 'Y-m-d' ),
                 'Status' => $payment_status,
                 'LineItems' => $line_items
             ];
@@ -498,7 +496,6 @@ class ACLSyncService {
             $invoice_id = $invoice_response['Invoices'][0]['InvoiceID'];
             update_post_meta( $order_id, '_xero_invoice_id', $invoice_id );
     
-            // Payment (if paid)
             if ( $order->is_paid() ) {
                 $payment_url = "https://api.xero.com/api.xro/2.0/Payments";
                 $payment_data = [
@@ -527,6 +524,7 @@ class ACLSyncService {
                 curl_close( $ch );
             }
     
+            delete_post_meta( $order_id, '_xero_sync_issue' );
             ACLXeroLogger::log_message( "Successfully synced order {$order_id} as invoice {$invoice_id} to Xero. Status: {$payment_status} ", 'invoice_sync' );
             curl_close( $ch );
             return true;
