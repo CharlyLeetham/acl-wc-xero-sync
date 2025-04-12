@@ -626,12 +626,12 @@ class ACLXeroHelper {
                     $invoice = $data['Invoices'][0];
                     update_post_meta( $order_id, '_xero_invoice_id', $invoice['InvoiceID'] );
                     ACLXeroLogger::log_message( "Found invoice by Reference WC Order #{$order_id} for order #{$order_id} ", 'invoice_sync' );
-                    return (object) $invoice;
+                    return (object) $data['Invoices'][0];
                 }
             }
     
             return null;
-                
+
         } catch ( \Exception $e ) {
             ACLXeroLogger::log_message( "Error checking existing invoice for order {$order_id}: {$e->getMessage()}", 'invoice_sync' );
             return null;
