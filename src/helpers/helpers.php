@@ -639,9 +639,13 @@ class ACLXeroHelper {
     } 
 
     public static function handle_fetch_items_ajax() {
+        ACLXeroLogger::log_message( "Fetch AJAX called.", 'product_sync' );
+    
         check_ajax_referer( 'xero_fetch_items_ajax', '_ajax_nonce' );
+        ACLXeroLogger::log_message( "Nonce verified.", 'product_sync' );
     
         if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            ACLXeroLogger::log_message( "Permission denied.", 'product_sync' );
             echo "<div class='notice notice-error'><p>Insufficient permissions.</p></div>";
             flush();
             wp_die();
@@ -655,9 +659,15 @@ class ACLXeroHelper {
         header( 'Cache-Control: no-cache' );
     
         try {
+            echo "<div class='notice notice-info'><p>Fetching Xero items...</p></div>";
+            flush();
+            ACLXeroLogger::log_message( "Initializing Xero client.", 'product_sync' );
+    
             $xero = self::initialize_xero_client();
             if ( is_wp_error( $xero ) ) {
-                echo "<div class='notice notice-error'><p>" . htmlspecialchars( $xero->get_error_message() ) . "</p></div>";
+                $error = $xero->get_error_message();
+                ACLXeroLogger::log_message( "Xero client failed: {$error}", 'product_sync' );
+                echo "<div class='notice notice-error'><p>Xero client error: {$error}</p></div>";
                 flush();
                 wp_die();
             }
@@ -666,22 +676,32 @@ class ACLXeroHelper {
             $cache_file = $cache_dir . '/xero_items.json';
     
             if ( ! file_exists( $cache_dir ) ) {
-                mkdir( $cache_dir, 0755, true );
+                if ( ! mkdir( $cache_dir, 0755, true ) ) {
+                    ACLXeroLogger::log_message( "Failed to create cache directory.", 'product_sync' );
+                    echo "<div class='notice notice-error'><p>Failed to create cache directory.</p></div>";
+                    flush();
+                    wp_die();
+                }
             }
     
-            echo "<div class='notice notice-info'><p>Fetching Xero items...</p></div>";
-            flush();
-    
+            ACLXeroLogger::log_message( "Fetching items.", 'product_sync' );
             $xero_items = ACLSyncService::fetch_xero_items( $xero );
-            file_put_contents( $cache_file, json_encode( $xero_items ) );
-            ACLXeroLogger::log_message( "Fetched and cached " . count( $xero_items ) . " Xero items.", 'product_sync' );
+            ACLXeroLogger::log_message( "Fetched " . count( $xero_items ) . " items.", 'product_sync' );
     
+            if ( ! file_put_contents( $cache_file, json_encode( $xero_items ) ) ) {
+                ACLXeroLogger::log_message( "Failed to write cache file.", 'product_sync' );
+                echo "<div class='notice notice-error'><p>Failed to write cache file.</p></div>";
+                flush();
+                wp_die();
+            }
+    
+            ACLXeroLogger::log_message( "Cached " . count( $xero_items ) . " items.", 'product_sync' );
             echo "<div class='notice notice-success'><p>Fetched " . count( $xero_items ) . " Xero items.</p></div>";
             flush();
             wp_die();
         } catch ( \Exception $e ) {
-            ACLXeroLogger::log_message( "Error fetching Xero items: {$e->getMessage()}", 'product_sync' );
-            echo "<div class='notice notice-error'><p>Error fetching Xero items: " . htmlspecialchars( $e->getMessage() ) . "</p></div>";
+            ACLXeroLogger::log_message( "Error: {$e->getMessage()}", 'product_sync' );
+            echo "<div class='notice notice-error'><p>Error: {$e->getMessage()}</p></div>";
             flush();
             wp_die();
         }
