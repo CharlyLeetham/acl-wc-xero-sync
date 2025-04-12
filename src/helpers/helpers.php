@@ -580,8 +580,11 @@ class ACLXeroHelper {
             if ( $invoice_id ) {
                 // Verify it still exists in Xero
                 $invoices = $xero->load('Accounting\\Invoice')
-                    ->where( 'InvoiceID='.$invoice_id )
-                    ->execute();
+                    ->where( 'InvoiceID', $invoice_id );
+
+                ACLXeroLogger::log_message( "Invoices String: '{$invoices}' .", 'invoice_sync' );
+
+                $invoices->execute();
                 
                 if ( $invoices->count() > 0 ) {
                     return $invoices->first(); // Invoice exists, return it
