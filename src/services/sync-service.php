@@ -633,5 +633,64 @@ class ACLSyncService {
             ACLXeroLogger::log_message( "Error handling contact for order " . $order_id . ": " . $e->getMessage() . " ", 'invoice_sync' );
             throw $e;
         }
-    }   
+    } 
+    
+    public static function fetch_xero_items( $xero ) {
+        $xero_items = array();
+        $page = 1;
+        $accessToken = get_option( 'xero_access_token' );
+        $tenantId = get_option( 'xero_tenant_id' );
+    
+        if ( ! $accessToken || ! $tenantId ) {
+            throw new \Exception( "Missing Xero credentials." );
+        }
+    
+        $headers = array(
+            'Authorization: Bearer ' . $accessToken,
+            'Xero-tenant-id: ' . $tenantId,
+            'Accept: application/json',
+        );
+    
+        do {
+            $url = "https://api.xero.com/api.xro/2.0/Items?page={$page}";
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
+    
+            $response = curl_exec( $ch );
+            $httpCode = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+    
+            if ( curl_errno( $ch ) ) {
+                $error = curl_error( $ch );
+                curl_close( $ch );
+                throw new \Exception( "Curl error on page {$page}: {$error}" );
+            }
+    
+            if ( $httpCode !== 200 ) {
+                curl_close( $ch );
+                throw new \Exception( "Failed to fetch page {$page}. Status: {$httpCode}" );
+            }
+    
+            $data = json_decode( $response, true );
+            $items = isset( $data['Items'] ) ? $data['Items'] : array();
+    
+            foreach ( $items as $item ) {
+                $xero_items[ $item['Code'] ] = array(
+                    'sales_price' => isset( $item['SalesDetails']['UnitPrice'] ) ? $item['SalesDetails']['UnitPrice'] : null,
+                    'purchase_price' => isset( $item['PurchaseDetails']['UnitPrice'] ) ? $item['PurchaseDetails']['UnitPrice'] : null,
+                    'sales_account' => isset( $item['SalesDetails']['AccountCode'] ) ? $item['SalesDetails']['AccountCode'] : null,
+                    'sales_tax' => isset( $item['SalesDetails']['TaxType'] ) ? $item['SalesDetails']['TaxType'] : null,
+                    'purchase_account' => isset( $item['PurchaseDetails']['AccountCode'] ) ? $item['PurchaseDetails']['AccountCode'] : null,
+                    'purchase_tax' => isset( $item['PurchaseDetails']['TaxType'] ) ? $item['PurchaseDetails']['TaxType'] : null,
+                );
+            }
+    
+            curl_close( $ch );
+            $page++;
+            ACLXeroLogger::log_message( "Fetched page {$page}: " . count( $items ) . " items.", 'product_sync' );
+        } while ( ! empty( $items ) );
+    
+        return $xero_items;
+    }    
 }
