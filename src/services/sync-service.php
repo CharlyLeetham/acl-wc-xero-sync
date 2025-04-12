@@ -229,7 +229,7 @@ class ACLSyncService {
                 $newItem = [
                     'Code' => $sku,
                     'Name' => substr($product['name'], 0, 50),
-                    'Description' => $product['description'],
+                    'Description' => isset($product['short_description']) ? mb_substr(strip_tags($product['short_description']), 0, 1000, 'UTF-8') : '',
                     'SalesDetails' => [
                         'UnitPrice' => (float)$wcPurchasePrice,
                         'AccountCode' => $cogs, 
