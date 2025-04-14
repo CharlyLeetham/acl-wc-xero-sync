@@ -717,7 +717,7 @@ class ACLXeroHelper {
         
         foreach ( $products as $product ) {
             $type = $include_variations && strpos( $product['description'], ' - ' ) !== false ? 'Variation' : 'Product';
-            $line = "\"{$supplier}\",\"{$type}\",\"{$sku}\",\"{$description}\"";
+            $line = "{$product['supplier']},{$type},{$product['sku']},\"{$product['description']}\"";
             self::csv_file( $filename, $line, 'product_images' );
         }
     }
