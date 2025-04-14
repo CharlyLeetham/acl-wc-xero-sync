@@ -776,6 +776,7 @@ class ACLProductSyncPage {
             $supplier = isset( $_POST['supplier'] ) ? sanitize_text_field( $_POST['supplier'] ) : '';
             $include_variations = isset( $_POST['include_variations'] ) && $_POST['include_variations'] === '1';
             $filename = $include_variations ? 'products_with_variations.csv' : 'products_no_variations.csv';
+            var_dump( $supplier );
             ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations );
         }
         ?>
