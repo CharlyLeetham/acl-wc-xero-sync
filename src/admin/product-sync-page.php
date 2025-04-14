@@ -815,7 +815,7 @@ class ACLProductSyncPage {
                         <td colspan="2">
                             <?php 
                             $filetype = 'csv';
-                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'product_sync' );
+                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'product' );
                             ?>
                             <script>
                                 var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
