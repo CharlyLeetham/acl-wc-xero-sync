@@ -102,7 +102,7 @@ class ACLWCService {
     
                     $products[] = [
                         'sku'         => $variation->get_sku( ),
-                        'description' => $variation->get_name( ),
+                        'description' => $product->get_name( ), // Use parent product name
                         'supplier'    => $supplier_term, // Inherit parent's supplier
                     ];
                     ACLXeroLogger::log_message( "Added variation ID $variation_id, SKU: " . $variation->get_sku( ), 'product_images' );
