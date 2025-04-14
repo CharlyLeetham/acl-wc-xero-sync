@@ -72,9 +72,7 @@ class ACLWCService {
                 continue;
             }
     
-            // Handleอร์
-    
-            // Handle variations based on $include_variations
+            // Handle variations
             if ( $product->is_type( 'variation' ) ) {
                 if ( $include_variations ) {
                     $products[] = [
@@ -90,23 +88,12 @@ class ACLWCService {
             }
     
             // Include simple or variable parent products
-            if ( ! $include_variations && $product->is_type( 'variable' ) ) {
-                // Variable parent only for non-variations list
-                $products[] = [
-                    'sku'         => $product->get_sku( ),
-                    'description' => $product->get_name( ),
-                    'supplier'    => self::get_supplier_term( $product ),
-                ];
-                ACLXeroLogger::log_message( "Added variable product ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
-            } elseif ( ! $product->is_type( 'variable' ) ) {
-                // Simple products always included
-                $products[] = [
-                    'sku'         => $product->get_sku( ),
-                    'description' => $product->get_name( ),
-                    'supplier'    => self::get_supplier_term( $product ),
-                ];
-                ACLXeroLogger::log_message( "Added simple product ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
-            }
+            $products[] = [
+                'sku'         => $product->get_sku( ),
+                'description' => $product->get_name( ),
+                'supplier'    => self::get_supplier_term( $product ),
+            ];
+            ACLXeroLogger::log_message( "Added " . ( $product->is_type( 'variable' ) ? 'variable' : 'simple' ) . " product ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
         }
     
         ACLXeroLogger::log_message( "Returning " . count( $products ) . " products", 'product_images' );
