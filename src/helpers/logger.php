@@ -12,8 +12,8 @@ class ACLXeroLogger {
      *  'product_sync' => 'Product Sync',
      *  'xero_logging' => 'Xero Logging',
      *  'invoice_sync_test' => 'Invoice Sync Test',
-     *  'invoice_sync' => 'Invoice Sync'
-     * 
+     *  'invoice_sync' => 'Invoice Sync',
+     *   'product_images' => 'Woocommerce Query"
      */
     public static function log_message($message, $level = 'none') {
         $upload_dir = WP_CONTENT_DIR . '/uploads/';

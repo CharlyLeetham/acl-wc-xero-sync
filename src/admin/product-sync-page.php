@@ -263,7 +263,8 @@ class ACLProductSyncPage {
                 'product_sync' => 'Product Sync',
                 'xero_logging' => 'Xero Logging',
                 'invoice_sync_test' => 'Invoice Sync Test',
-                'invoice_sync' => 'Invoice Sync'
+                'invoice_sync' => 'Invoice Sync',
+                'product_images' => 'Woocommerce Query'
             ];
             foreach ($logging_levels as $key => $label) {
                 update_option( 'acl_xero_log_' . $key, isset( $_POST['acl_xero_log_' . $key] ) ? '1' : '0' );
@@ -337,7 +338,8 @@ class ACLProductSyncPage {
                             'product_sync' => 'Product Sync',
                             'xero_logging' => 'Xero Logging',
                             'invoice_sync_test' => 'Invoice Sync Test',
-                            'invoice_sync' => 'Invoice Sync'                            
+                            'invoice_sync' => 'Invoice Sync',
+                            'product_images' => 'Woocommerce Query'                          
                         ];
                         foreach ($logging_levels as $key => $label):
                             $checked = get_option('acl_xero_log_' . $key) ? 'checked' : '';
