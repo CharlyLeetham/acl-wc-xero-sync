@@ -1,5 +1,7 @@
 <?php
 namespace ACLWcXeroSync\Services;
+use ACLWcXeroSync\Helpers\ACLXeroHelper;
+use ACLWcXeroSync\Helpers\ACLXeroLogger;
 
 class ACLWCService {
     /**
