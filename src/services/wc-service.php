@@ -12,10 +12,9 @@ class ACLWCService {
     public static function get_products( $offset = 0, $batch_size = null, $category_id = null, $supplier = '', $no_featured_image = false, $include_variations = false ) {
         ACLXeroLogger::log_message( "Starting get_products with supplier: '$supplier', no_featured_image: " . ( $no_featured_image ? 'true' : 'false' ) . ", include_variations: " . ( $include_variations ? 'true' : 'false' ), 'product_images' );
     
-        // Query WooCommerce products and variations if needed
-        $post_types = $include_variations ? array( 'product', 'product_variation' ) : array( 'product' );
+        // Query only products (not variations directly)
         $query = [
-            'post_type'      => $post_types,
+            'post_type'      => 'product',
             'post_status'    => 'publish',
             'posts_per_page' => -1,
             'fields'         => 'ids',
@@ -72,28 +71,43 @@ class ACLWCService {
                 continue;
             }
     
-            // Handle variations
-            if ( $product->is_type( 'variation' ) ) {
-                if ( $include_variations ) {
-                    $products[] = [
-                        'sku'         => $product->get_sku( ),
-                        'description' => $product->get_name( ),
-                        'supplier'    => self::get_supplier_term( $product ),
-                    ];
-                    ACLXeroLogger::log_message( "Added variation ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
-                } else {
-                    ACLXeroLogger::log_message( "Skipped variation ID $product_id as include_variations is false", 'product_images' );
-                }
-                continue;
-            }
+            // Get supplier for parent product
+            $supplier_term = self::get_supplier_term( $product );
     
-            // Include simple or variable parent products
+            // Add parent product (simple or variable)
             $products[] = [
                 'sku'         => $product->get_sku( ),
                 'description' => $product->get_name( ),
-                'supplier'    => self::get_supplier_term( $product ),
+                'supplier'    => $supplier_term,
             ];
             ACLXeroLogger::log_message( "Added " . ( $product->is_type( 'variable' ) ? 'variable' : 'simple' ) . " product ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
+    
+            // If variable product and include_variations is true, add its variations
+            if ( $include_variations && $product->is_type( 'variable' ) ) {
+                $variation_ids = $product->get_children( );
+                ACLXeroLogger::log_message( "Found " . count( $variation_ids ) . " variations for product ID $product_id", 'product_images' );
+    
+                foreach ( $variation_ids as $variation_id ) {
+                    $variation = wc_get_product( $variation_id );
+                    if ( ! $variation ) {
+                        ACLXeroLogger::log_message( "Variation ID $variation_id not found", 'product_images' );
+                        continue;
+                    }
+    
+                    // Skip if variation has a featured image and no_featured_image is true
+                    if ( $no_featured_image && ( has_post_thumbnail( $variation->get_id( ) ) || $variation->get_image_id( ) ) ) {
+                        ACLXeroLogger::log_message( "Variation ID $variation_id skipped due to having featured image", 'product_images' );
+                        continue;
+                    }
+    
+                    $products[] = [
+                        'sku'         => $variation->get_sku( ),
+                        'description' => $variation->get_name( ),
+                        'supplier'    => $supplier_term, // Inherit parent's supplier
+                    ];
+                    ACLXeroLogger::log_message( "Added variation ID $variation_id, SKU: " . $variation->get_sku( ), 'product_images' );
+                }
+            }
         }
     
         ACLXeroLogger::log_message( "Returning " . count( $products ) . " products", 'product_images' );
