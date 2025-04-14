@@ -79,7 +79,6 @@ class ACLWCService {
                 'sku'         => $product->get_sku( ),
                 'description' => $product->get_name( ),
                 'supplier'    => $supplier_term,
-                'is_variation' => false,
             ];
             ACLXeroLogger::log_message( "Added " . ( $product->is_type( 'variable' ) ? 'variable' : 'simple' ) . " product ID $product_id, SKU: " . $product->get_sku( ), 'product_images' );
     
@@ -105,7 +104,6 @@ class ACLWCService {
                         'sku'         => $variation->get_sku( ),
                         'description' => $product->get_name( ), // Use parent product name
                         'supplier'    => $supplier_term, // Inherit parent's supplier
-                        'is_variation' => true,
                     ];
                     ACLXeroLogger::log_message( "Added variation ID $variation_id, SKU: " . $variation->get_sku( ), 'product_images' );
                 }
