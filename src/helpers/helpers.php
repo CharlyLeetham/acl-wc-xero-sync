@@ -710,7 +710,7 @@ class ACLXeroHelper {
     }  
     
     public static function export_products_to_csv( $supplier = '', $filename = 'products_without_images.csv', $include_variations = false ) {
-        $products = self::get_products( 0, null, null, $supplier, true, $include_variations );
+        $products = ACLWCService::get_products( 0, null, null, $supplier, true, $include_variations );
         
         foreach ( $products as $product ) {
             $line = "{$product['sku']},{$product['description']},{$product['supplier']}";
