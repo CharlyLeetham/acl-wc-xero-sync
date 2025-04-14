@@ -3,6 +3,7 @@ namespace ACLWcXeroSync\Helpers;
 use ACLWcXeroSync\Services\ACLSyncService;
 use ACLWcXeroSync\Admin\ACLProductSyncPage;
 use ACLWcXeroSync\Helpers\ACLXeroLoggers;
+use ACLWcXeroSync\Services\ACLWCService;
 
 class ACLXeroHelper {
 
