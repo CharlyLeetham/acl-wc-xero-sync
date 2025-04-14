@@ -775,9 +775,8 @@ class ACLProductSyncPage {
         if ( isset( $_POST['export_csv_nonce'] ) && wp_verify_nonce( $_POST['export_csv_nonce'], 'export_csv_action' ) ) {
             $supplier = isset( $_POST['supplier'] ) ? sanitize_text_field( $_POST['supplier'] ) : '';
             $include_variations = isset( $_POST['include_variations'] ) && $_POST['include_variations'] === '1';
-
             $timestamp = current_time( "Y-m-d-H-i-s" );
-            $filename = $include_variations ? 'products_with_variations_'. $timestamp . 'csv' : 'products_no_variations.csv';
+            $filename = $include_variations ? 'products_with_variations_'. $timestamp . '.csv' : 'products_no_variations'. $timestamp .'.csv';
             ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations );
         }
         ?>
