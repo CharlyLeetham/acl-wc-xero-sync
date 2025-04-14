@@ -10,7 +10,7 @@ class ACLWCService {
      * @return array List of WooCommerce products.
      */
     public static function get_products( $offset = 0, $batch_size = null, $category_id = null, $supplier = '', $no_featured_image = false, $include_variations = false ) {
-        ACLXeroLogger::log_message( "Starting get_products with supplier: '$supplier', no_featured_image: " . ( $no_featured_image ? 'true' : 'false' ) . ", include_variations: " . ( $include_variations ? 'true' : 'false' ), 'product_images' );
+        ACLXeroLogger::log_message( "Starting get_products with supplier: '$supplier', category_id: " . ( $category_id ?? 'none' ) . ", no_featured_image: " . ( $no_featured_image ? 'true' : 'false' ) . ", include_variations: " . ( $include_variations ? 'true' : 'false' ), 'product_images' );
     
         // Query only products (not variations directly)
         $query = [
@@ -32,6 +32,7 @@ class ACLWCService {
                 'taxonomy' => 'product_cat',
                 'field'    => 'term_id',
                 'terms'    => $category_id,
+                'operator' => 'IN',
             ];
         }
     
