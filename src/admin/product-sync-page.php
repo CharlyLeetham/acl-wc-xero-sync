@@ -89,7 +89,16 @@ class ACLProductSyncPage {
             'manage_woocommerce', // Capability
             'acl-xero-invoice-sync', // Menu slug
             [ __CLASS__, 'render_xero_invoice_sync' ]
-        );        
+        ); 
+        
+        add_submenu_page(
+            'acl-xero-sync', // Parent slug (under WooCommerce)
+            'WooCommerce Functions', // Page title
+            'WooCommerce Functions', // Menu title
+            'manage_woocommerce', // Capability
+            'acl-xero-invoice-woocommerce', // Menu slug
+            [ __CLASS__, 'render_woocommerce_functions' ]
+        );         
 
         add_submenu_page(
             'acl-xero-sync',
@@ -753,5 +762,69 @@ class ACLProductSyncPage {
             </div>
         </div>
         <?php
-    }  
+    } 
+    
+    public static function render_woocommerce_functions() {
+        // Get supplier terms
+        $suppliers = get_terms( [
+            'taxonomy'   => 'pa_supplier',
+            'hide_empty' => false,
+        ] );
+    
+        // Handle CSV export
+        if ( isset( $_POST['export_csv_nonce'] ) && wp_verify_nonce( $_POST['export_csv_nonce'], 'export_csv_action' ) ) {
+            $supplier = isset( $_POST['supplier'] ) ? sanitize_text_field( $_POST['supplier'] ) : '';
+            $include_variations = isset( $_POST['include_variations'] ) && $_POST['include_variations'] === '1';
+            $filename = $include_variations ? 'products_with_variations.csv' : 'products_no_variations.csv';
+            ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations );
+        }
+        ?>
+        <div class="wrap">
+            <h1>Export Products</h1>
+            <form method="post" action="">
+                <?php wp_nonce_field( 'export_csv_action', 'export_csv_nonce' ); ?>
+                <div class="syncrow">
+                    <select name="supplier" id="supplier">
+                        <option value="">All Suppliers</option>
+                        <?php
+                        if ( ! empty( $suppliers ) && ! is_wp_error( $suppliers ) ) {
+                            foreach ( $suppliers as $supplier ) {
+                                echo '<option value="' . esc_attr( $supplier->slug ) . '">' . esc_html( $supplier->name ) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="supplier">Supplier</label>
+                </div>
+                <div class="syncrow">
+                    <select name="include_variations" id="include_variations">
+                        <option value="0">Just Products</option>
+                        <option value="1">Include Variations</option>
+                    </select>
+                    <label for="include_variations">Product Options</label>
+                </div>
+                <p class="submit">
+                    <input type="submit" name="export_csv" class="button button-primary" value="Export to CSV">
+                </p>
+            </form>
+    
+            <h2>Generated CSV Files</h2>
+            <div id="csv-file-container">
+                <table class="form-table">
+                    <tr>
+                        <td colspan="2">
+                            <?php 
+                            $filetype = 'csv';
+                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'product_sync' );
+                            ?>
+                            <script>
+                                var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
+                            </script>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <?php
+    }
 }
