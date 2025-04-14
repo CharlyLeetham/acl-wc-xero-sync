@@ -132,7 +132,7 @@ class ACLXeroHelper {
                 } elseif ( $context === 'invoice_sync_test' ) {
                     fwrite( $fp, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action\n" );
                 } elseif ( $context === 'product_images' ) {
-                    fwrite( $fp, "Supplier,SKU,Title\n" );
+                    fwrite( $fp, "Supplier,Type,SKU,Title\n" );
                 }
                 ACLXeroLogger::log_message( "Created $csv_file", 'product_sync' );
             }
@@ -716,7 +716,8 @@ class ACLXeroHelper {
         $products = ACLWCService::get_products( 0, null, null, $supplier, true, $include_variations );
         
         foreach ( $products as $product ) {
-            $line = "{$product['supplier']},{$product['sku']},{$product['description']}";
+            $type = $include_variations && strpos( $product['description'], ' - ' ) !== false ? 'Variation' : 'Product';
+            $line = "{$product['supplier']},{$type},{$product['sku']},{$product['description']}";
             self::csv_file( $filename, $line, 'product_images' );
         }
     }
