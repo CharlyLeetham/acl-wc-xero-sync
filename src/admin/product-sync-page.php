@@ -773,13 +773,21 @@ class ACLProductSyncPage {
             'hide_empty' => false,
         ] );
     
+        // Get product categories (up to 3 levels deep)
+        $categories = get_terms( [
+            'taxonomy'   => 'product_cat',
+            'hide_empty' => false,
+            'parent'     => 0,
+        ] );
+    
         // Handle CSV export
         if ( isset( $_POST['export_csv_nonce'] ) && wp_verify_nonce( $_POST['export_csv_nonce'], 'export_csv_action' ) ) {
             $supplier = isset( $_POST['supplier'] ) ? sanitize_text_field( $_POST['supplier'] ) : '';
+            $category_id = isset( $_POST['category'] ) ? intval( $_POST['category'] ) : null;
             $include_variations = isset( $_POST['include_variations'] ) && $_POST['include_variations'] === '1';
             $timestamp = current_time( "Y-m-d-H-i-s" );
-            $filename = $include_variations ? 'products_with_variations_'. $timestamp . '.csv' : 'products_no_variations'. $timestamp .'.csv';
-            ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations );
+            $filename = $include_variations ? 'products_with_variations_' . $timestamp . '.csv' : 'products_no_variations_' . $timestamp . '.csv';
+            ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations, $category_id );
         }
         ?>
         <div class="wrap">
@@ -798,6 +806,46 @@ class ACLProductSyncPage {
                         ?>
                     </select>
                     <label for="supplier">Supplier</label>
+                </div>
+                <div class="syncrow">
+                    <select name="category" id="category">
+                        <option value="">All Categories</option>
+                        <?php
+                        if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                            foreach ( $categories as $top_cat ) {
+                                $top_count = $top_cat->count;
+                                echo '<option value="' . esc_attr( $top_cat->term_id ) . '">' . esc_html( $top_cat->name ) . ' (' . $top_count . ')</option>';
+    
+                                // Get subcategories (level 2)
+                                $sub_cats = get_terms( [
+                                    'taxonomy'   => 'product_cat',
+                                    'hide_empty' => false,
+                                    'parent'     => $top_cat->term_id,
+                                ] );
+                                if ( ! empty( $sub_cats ) && ! is_wp_error( $sub_cats ) ) {
+                                    foreach ( $sub_cats as $sub_cat ) {
+                                        $sub_count = $sub_cat->count;
+                                        echo '<option value="' . esc_attr( $sub_cat->term_id ) . '">&nbsp;- ' . esc_html( $sub_cat->name ) . ' (' . $sub_count . ')</option>';
+    
+                                        // Get sub-subcategories (level 3)
+                                        $sub_sub_cats = get_terms( [
+                                            'taxonomy'   => 'product_cat',
+                                            'hide_empty' => false,
+                                            'parent'     => $sub_cat->term_id,
+                                        ] );
+                                        if ( ! empty( $sub_sub_cats ) && ! is_wp_error( $sub_sub_cats ) ) {
+                                            foreach ( $sub_sub_cats as $sub_sub_cat ) {
+                                                $sub_sub_count = $sub_sub_cat->count;
+                                                echo '<option value="' . esc_attr( $sub_sub_cat->term_id ) . '">&nbsp;&nbsp;-- ' . esc_html( $sub_sub_cat->name ) . ' (' . $sub_sub_count . ')</option>';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="category">Category</label>
                 </div>
                 <div class="syncrow">
                     <select name="include_variations" id="include_variations">
