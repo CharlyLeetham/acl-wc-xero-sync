@@ -93,4 +93,15 @@ class ACLWCService {
 
         return $products;  
     } 
+
+    /**
+     * Gets the supplier term for a product.
+     *
+     * @param WC_Product $product The WooCommerce product object.
+     * @return string The supplier term name(s) or empty string if none.
+     */
+    private static function get_supplier_term( $product ) {
+        $terms = wc_get_product_terms( $product->get_id( ), 'pa_supplier', array( 'fields' => 'names' ) );
+        return ! empty( $terms ) ? implode( ', ', $terms ) : '';
+    }
 }
