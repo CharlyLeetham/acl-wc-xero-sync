@@ -654,7 +654,8 @@ class ACLProductSyncPage {
                         <?php
                          $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
                         if ( empty( $accounts ) ) {
-                            echo '<option value="">Authenticate with Xero</option>';    
+                            echo '<option value="">Authenticate with Xero</option>'; 
+                            echo "</select></div><div class='notice notice-error'><p>" . esc_html( $xero->get_error_message() ) . "</p></div>";   
                         } else {
                             foreach ( $accounts as $account ) {
                                echo '<option value="">Select Bank Account</option>';
@@ -665,9 +666,10 @@ class ACLProductSyncPage {
                                     echo "<option value='$code' $is_selected>($code) $name</option>";
                                 }
                             }
+                            echo "</select>";
                         }
                         ?>
-                    </select>
+
                     <label for="bankaccount">Default Bank Account For Paid Orders</label>
                 </div>                    
                 <p class="submit">
