@@ -537,22 +537,22 @@ class ACLXeroHelper {
     
             foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
-                ACLXeroHelper::log_message( "Here", 'invoice_sync' );
+                ACLXeroLogger::log_message( "Here", 'invoice_sync' );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
-                ACLXeroHelper::log_message( "Existing Invoice" . print_r($existing_invoice, true), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Existing Invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
     
                 if ( $existing_invoice ) {
                     $synced_count++;
-                    ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync' );
+                    ACLXeroLogger::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                     $invoice_id = $existing_invoice->getInvoiceID( );
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
+                    ACLXeroLogger::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
                     $to_sync_count++;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
+                    ACLXeroLogger::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
                     
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
