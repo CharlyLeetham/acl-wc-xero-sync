@@ -546,7 +546,7 @@ class ACLXeroHelper {
     
                 if ( $existing_invoice ) {
                     $synced_count++;
-                    $invoice_id = $existing_invoice->getInvoiceID( );
+                    $invoice_id = $existing_invoice->InvoiceID;
                     ACLXeroLogger::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
