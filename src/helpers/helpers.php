@@ -516,7 +516,7 @@ class ACLXeroHelper {
     
             if ( empty( $order_ids ) ) {
                 echo "<div class='notice notice-warning'><p>No orders found to sync.</p></div>";
-                ACLXeroLogger::log_message( "No orders found to sync.", 'invoice_sync_test' );
+                ACLXeroLogger::log_message( "No orders found to sync.", 'invoice_sync' );
                 return;
             }
     
@@ -532,8 +532,9 @@ class ACLXeroHelper {
     
             foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
+                CLXeroHelper::log_message( "Here", 'invoice_sync' );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
-                ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync' );
+                ACLXeroHelper::log_message( "Existing Invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
