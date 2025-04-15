@@ -650,14 +650,14 @@ class ACLProductSyncPage {
                 </div>
 
                 <div class="syncrow">
-                    <select name="bankaccount" id="bankaccount">
-                        <option value="">Select Bank Account</option>
+                    <select name="bankaccount" id="bankaccount" <?php echo empty( $accounts ) ? 'disabled' : ''; ?>>
                         <?php
                          $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
                         if ( empty( $accounts ) ) {
                             echo '<option value="">Authenticate with Xero</option>';    
                         } else {
                             foreach ( $accounts as $account ) {
+                               echo '<option value="">Select Bank Account</option>';
                                 if ( $account['Type'] == 'BANK' ) { // Filter for expense accounts which would generally include COGS
                                     $code = esc_attr($account['Code']);
                                     $name = esc_html($account['Name']);
