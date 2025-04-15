@@ -547,11 +547,11 @@ class ACLXeroHelper {
                 if ( $existing_invoice ) {
                     $synced_count++;
                     $invoice_id = $existing_invoice->InvoiceID;
-                    ACLXeroLogger::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
+                    ACLXeroHelpers::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
                     $to_sync_count++;
-                    ACLXeroLogger::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
+                    ACLXeroHelpers::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
                     
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
