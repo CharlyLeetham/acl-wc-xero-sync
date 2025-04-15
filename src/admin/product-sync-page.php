@@ -671,7 +671,8 @@ class ACLProductSyncPage {
                         ?>
 
                     <label for="bankaccount">Default Bank Account For Paid Orders</label>
-                </div>                    
+                </div>  
+                <?php if ( $xero_error ) echo $xero_error; ?>                  
                 <p class="submit">
                     <input type="submit" name="submit" class="button button-primary" value="Save Settings">
                 </p>
