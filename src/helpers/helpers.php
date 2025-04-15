@@ -516,6 +516,8 @@ class ACLXeroHelper {
             $total_orders = count( $order_ids );
 
             ACLXeroLogger::log_message( "Orders ". implode(', ', $order_ids), 'invoice_sync' );
+            ACLXeroLogger::log_message( "Order IDs type: " . gettype($order_ids), 'invoice_sync' );
+            ACLXeroLogger::log_message( "Order IDs dump: " . print_r($order_ids, true), 'invoice_sync' );
     
             if ( empty( $order_ids ) ) {
                 echo "<div class='notice notice-warning'><p>No orders found to sync.</p></div>";
