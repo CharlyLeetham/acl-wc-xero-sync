@@ -533,6 +533,7 @@ class ACLXeroHelper {
             foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+                ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync_test' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
