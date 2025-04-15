@@ -515,7 +515,7 @@ class ACLXeroHelper {
             $order_ids = wc_get_orders( $args );
             $total_orders = count( $order_ids );
 
-            ACLXeroLogger::log_message( "Orders {$order_ids}", 'invoice_sync' );
+            ACLXeroLogger::log_message( "Orders ". print_r ($order_ids, true)", 'invoice_sync' );
     
             if ( empty( $order_ids ) ) {
                 echo "<div class='notice notice-warning'><p>No orders found to sync.</p></div>";
