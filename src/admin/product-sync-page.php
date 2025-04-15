@@ -621,8 +621,9 @@ class ACLProductSyncPage {
 
         $xero = ACLXeroHelper::initialize_xero_client();
 
+        $xero_error = '';
         if ( is_wp_error( $xero ) ) {
-            echo "<div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
+            $xero_error = "<div class='notice notice-error'><p>" . esc_html( $xero->get_error_message() ) . "</p></div>"; // Display the error message
             flush();
             // Set to empty arrays so that the form can still be rendered
             $accounts = [];
@@ -653,9 +654,8 @@ class ACLProductSyncPage {
                     <select name="bankaccount" id="bankaccount" <?php echo empty( $accounts ) ? 'disabled' : ''; ?>>
                         <?php
                          $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
-                        if ( empty( $accounts ) ) {
-                            echo '<option value="">Authenticate with Xero</option>'; 
-                            echo "</select></div><div class='notice notice-error'><p>" . esc_html( $xero->get_error_message() ) . "</p></div>";   
+                         if ( $xero_error ) {
+                            echo '<option value="" selected>Authenticate with Xero</option>';
                         } else {
                             foreach ( $accounts as $account ) {
                                echo '<option value="">Select Bank Account</option>';
