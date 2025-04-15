@@ -129,7 +129,7 @@ class ACLXeroHelper {
                 // Write the header
                 if ( $context === 'product_sync' ) {
                     fwrite( $fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price,COGS Acct,Sales Acct,COGS Tax,Sales Tax\n" );
-                } elseif ( $context === 'invoice_sync_test' ) {
+                } elseif ( $context === 'invoice_sync' ) {
                     fwrite( $fp, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action\n" );
                 } elseif ( $context === 'product_images' ) {
                     fwrite( $fp, "Supplier,Type,SKU,Title\n" );
@@ -496,7 +496,7 @@ class ACLXeroHelper {
             $xero = ACLXeroHelper::initialize_xero_client( );
             if ( is_wp_error( $xero ) ) {
                 echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message( ) . "</p></div>";
-                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message( ), 'invoice_sync_test' );
+                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message( ), 'invoice_sync' );
                 return;
             }
     
@@ -530,7 +530,7 @@ class ACLXeroHelper {
     
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
-            $csv_filename = "invoice_sync_test{$dry_run_suffix}_{$timestamp}.csv";
+            $csv_filename = "invoice_sync{$dry_run_suffix}_{$timestamp}.csv";
    
             $synced_count = 0;
             $to_sync_count = 0;
@@ -547,11 +547,11 @@ class ACLXeroHelper {
                 if ( $existing_invoice ) {
                     $synced_count++;
                     $invoice_id = $existing_invoice->InvoiceID;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
                     $to_sync_count++;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync' );
                     
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
@@ -572,7 +572,7 @@ class ACLXeroHelper {
             
             echo "<div class='notice notice-info'><p>{$summary}</p></div>";
             echo "<div class='notice notice-info'><p>Results saved to CSV: {$csv_filename}</p></div>";
-            ACLXeroLogger::log_message( $summary, 'invoice_sync_test' );
+            ACLXeroLogger::log_message( $summary, 'invoice_sync' );
     
         } catch ( \Exception $e ) {
             echo "<div class='notice notice-error'><p>Error during test sync: {$e->getMessage( )}</p></div>";
