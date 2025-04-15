@@ -535,11 +535,11 @@ class ACLXeroHelper {
             $synced_count = 0;
             $to_sync_count = 0;
     
-            foreach ( $order_ids as $order_id ) {
+           foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
                 ACLXeroLogger::log_message( "Here", 'invoice_sync' );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
-                ACLXeroLogger::log_message( "Existing Invoice" . print_r($order_id, true), 'invoice_sync' );
+                ACLXeroLogger::log_message( "Existing Invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
