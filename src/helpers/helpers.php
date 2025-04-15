@@ -521,7 +521,7 @@ class ACLXeroHelper {
             }
     
             echo "<div class='notice notice-info'><p>Processing {$total_orders} orders.</p></div>";
-            ACLXeroLogger::log_message( "Processing {$total_orders} orders.", 'invoice_sync_test' );
+            ACLXeroLogger::log_message( "Processing {$total_orders} orders.", 'invoice_sync' );
     
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
@@ -533,14 +533,14 @@ class ACLXeroHelper {
             foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
-                ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync_test' );
+                ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
     
                 if ( $existing_invoice ) {
                     $synced_count++;
-                    ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync_test' );
+                    ACLXeroHelper::log_message( "$existing_invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                     $invoice_id = $existing_invoice->getInvoiceID( );
                     ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
@@ -571,7 +571,7 @@ class ACLXeroHelper {
     
         } catch ( \Exception $e ) {
             echo "<div class='notice notice-error'><p>Error during test sync: {$e->getMessage( )}</p></div>";
-            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync_test' );
+            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync' );
         }
     }
 
