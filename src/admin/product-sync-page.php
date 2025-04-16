@@ -529,12 +529,22 @@ class ACLProductSyncPage {
                         ?>
                     </select>
                     <label for="sales-tax-type">Sales Tax Type</label>
-                </div>                
+                </div> 
+                
+                
                 <div class="syncrow">
-                    <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
-                    <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
-                    <button id="fetch-xero-items" class="button">Fetch Xero Items</button>
-                </div>        
+                        <?php 
+                        if ( is_wp_error( $xero ) ) {
+                            echo '<input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">';
+                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
+                        } else { 
+                        ?>
+                            <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
+                            <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+                            <button id="fetch-xero-items" class="button">Fetch Xero Items</button>
+                        <?php } ?>
+                </div> 
+
             </form>
             
             <div id="sync-results"></div>
