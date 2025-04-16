@@ -632,6 +632,7 @@ class ACLProductSyncPage {
         }  else {
             $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
         }
+        remove_all_actions( 'admin_notices' );
         ?>
         <div class="wrap">
             <h1>Xero Invoice Sync</h1>
