@@ -447,17 +447,46 @@ class ACLProductSyncPage {
                     <input type="checkbox" id="dry-run" name="dry_run">
                     <label for="dry-run">Dry Run</label>
                 </div>
-                <div class="syncrow">                
+                 <div class="syncrow">
                     <select name="category_id" id="category-select">
-                        <option value="">Select Category</option>
+                        <option value="">All Categories</option>
                         <?php
-                        $categories = get_terms('product_cat', array('hide_empty' => false));
-                        foreach ($categories as $category) {
-                            echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
+                        if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                            foreach ( $categories as $top_cat ) {
+                                $top_count = $top_cat->count;
+                                echo '<option value="' . esc_attr( $top_cat->term_id ) . '">' . esc_html( $top_cat->name ) . ' (' . $top_count . ')</option>';
+    
+                                // Get subcategories (level 2)
+                                $sub_cats = get_terms( [
+                                    'taxonomy'   => 'product_cat',
+                                    'hide_empty' => false,
+                                    'parent'     => $top_cat->term_id,
+                                ] );
+                                if ( ! empty( $sub_cats ) && ! is_wp_error( $sub_cats ) ) {
+                                    foreach ( $sub_cats as $sub_cat ) {
+                                        $sub_count = $sub_cat->count;
+                                        echo '<option value="' . esc_attr( $sub_cat->term_id ) . '">&nbsp;- ' . esc_html( $sub_cat->name ) . ' (' . $sub_count . ')</option>';
+    
+                                        // Get sub-subcategories (level 3)
+                                        $sub_sub_cats = get_terms( [
+                                            'taxonomy'   => 'product_cat',
+                                            'hide_empty' => false,
+                                            'parent'     => $sub_cat->term_id,
+                                        ] );
+                                        if ( ! empty( $sub_sub_cats ) && ! is_wp_error( $sub_sub_cats ) ) {
+                                            foreach ( $sub_sub_cats as $sub_sub_cat ) {
+                                                $sub_sub_count = $sub_sub_cat->count;
+                                                echo '<option value="' . esc_attr( $sub_sub_cat->term_id ) . '">&nbsp;&nbsp;-- ' . esc_html( $sub_sub_cat->name ) . ' (' . $sub_sub_count . ')</option>';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         ?>
-                    </select> 
-                </div>
+                    </select>
+                    <label for="category-select">Select A Category</label>
+                </div>                
                 <div class="syncrow">
                     <h3>For New Products provide:</h3>
                 </div>
