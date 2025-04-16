@@ -447,6 +447,17 @@ class ACLProductSyncPage {
                     <input type="checkbox" id="dry-run" name="dry_run">
                     <label for="dry-run">Dry Run</label>
                 </div>
+                <div class="syncrow">                
+                    <select name="category_id" id="category-select">
+                        <option value="">Select Category</option>
+                        <?php
+                        $categories = get_terms('product_cat', array('hide_empty' => false));
+                        foreach ($categories as $category) {
+                            echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
+                        }
+                        ?>
+                    </select> 
+                </div>
                 <div class="syncrow">
                     <select name="category_id" id="category-select">
                         <option value="">All Categories</option>
@@ -458,7 +469,7 @@ class ACLProductSyncPage {
                             'parent'     => 0,
                         ] );
                     
-                        if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                        if ( ! empty( $categories ) ) {
                             foreach ( $categories as $top_cat ) {
                                 $top_count = $top_cat->count;
                                 echo '<option value="' . esc_attr( $top_cat->term_id ) . '">' . esc_html( $top_cat->name ) . ' (' . $top_count . ')</option>';
