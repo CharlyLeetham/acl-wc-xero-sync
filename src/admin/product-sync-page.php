@@ -709,8 +709,13 @@ class ACLProductSyncPage {
                         <?php
                         foreach ( $order_ids as $order_id ) {
                             $order = wc_get_order( $order_id );
-                            $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
-                            $sync_status = $existing_invoice ? "Synced (Invoice ID: " . $existing_invoice->InvoiceID . ")" : "Not Synced";
+                            $sync_status = $xero_error ? "<span style='color: red;'>Authorise with Xero</span>" : "Not Synced";
+                            if ( ! $xero_error ) {
+                                $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
+                                if ( $existing_invoice ) {
+                                    $sync_status = "Synced (Invoice ID: " . esc_attr( $existing_invoice->InvoiceID ) . ")";
+                                }
+                            }                            
                             $sync_issue = get_post_meta($order_id, '_xero_sync_issue', true); // Get sync issue meta
                             if ($sync_issue) {
                                 $sync_status = "<span style='color: red; font-weight: bold;' title='" . esc_attr($sync_issue) . "'>Problem</span>";
@@ -721,7 +726,7 @@ class ACLProductSyncPage {
                                 <td><?php echo $order->get_date_created()->format( 'Y-m-d H:i:s' ); ?></td>
                                 <td><?php echo $order->get_status(); ?></td>
                                 <td><?php echo wc_price( $order->get_total() ); ?></td>
-                                <td><?php echo $order->is_paid() ? 'Paid' : 'Unpaid'; ?></td>
+                                <td><?php echo $order->is_paid() ? '<span class="orderpaid">Paid</span>' : '<span class="orderunpaid">Unpaid</span>'; ?></td>
                                 <td><?php echo $sync_status; ?></td>
                                 <td>
                                     <form method="post" action="" style="display:inline;">
