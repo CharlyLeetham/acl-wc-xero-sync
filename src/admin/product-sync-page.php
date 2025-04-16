@@ -516,68 +516,57 @@ class ACLProductSyncPage {
                     <label for="cogs">Cost of Goods Sold Account</label>
                 </div>
                 <div class="syncrow">
-                    <?php 
-                    if ( is_wp_error( $xero ) ) {
-                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
-                    } else {
-                    ?>
-                        <select name="salesacct" id="salesacct">
-                            <option value="">Select Sales Account</option>
-                            <?php
+                    <select name="salesacct" id="salesacct">
+                        <option value="">Select Sales Account</option>
+                        <?php
+                        if ( empty( $accounts ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
                             foreach ( $accounts as $account ) {
                                 if ( $account['Type'] == 'REVENUE' ) {
                                     echo '<option value="' . $account['Code'] . '" ' . selected( $saved_salesacct, $account['Code'], false ) . '>(' . $account['Code'] . ') ' . $account['Name'] . '</option>';
                                 }
                             }
-                            ?>
-                        </select>
-                        <label for="salesacct">Sales Account</label>
-                    <?php
-                    }
-                    ?>
+                        }
+                        ?>
+                    </select>
+                    <label for="salesacct">Sales Account</label>
                 </div>
                 <div class="syncrow">
-                    <?php 
-                    if ( is_wp_error( $xero ) ) {
-                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
-                    } else {
-                    ?>                    
-                        <select name="cogs_tax_type" id="cogs-tax-type">
-                            <option value="">Select COGS Tax Type</option>
-                            <?php
+                    <select name="cogs_tax_type" id="cogs-tax-type">
+                        <option value="">Select COGS Tax Type</option>
+                        <?php
+                        if ( empty( $taxTypes ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
                             foreach ( $taxTypes as $taxType ) {
                                 if ( $taxType['Expenses'] ) {
                                     echo '<option value="' . $taxType['TaxType'] . '" ' . selected( $saved_cogs_tax_type, $taxType['TaxType'], false ) . '>' . $taxType['Name'] . '</option>';
                                 }
                             }
-                            ?>
-                        </select>
-                        <label for="cogs-tax-type">COGS Tax Type</label>
-                    <?php
-                    }
-                    ?>
+                        }
+                        ?>
+                    </select>
+                    <label for="cogs-tax-type">COGS Tax Type</label>
                 </div>
                 <div class="syncrow">
-                    <?php 
-                    if ( is_wp_error( $xero ) ) {
-                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
-                    } else {
-                    ?>                     
-                        <select name="sales_tax_type" id="sales-tax-type">
-                            <option value="">Select Sales Tax Type</option>
-                            <?php
+                    <select name="sales_tax_type" id="sales-tax-type">
+                        <option value="">Select Sales Tax Type</option>
+                        <?php
+                        if ( empty( $taxTypes ) ) {
+                            echo '<option value="">Authenticate with Xero</option>';
+                        } else {
                             foreach ( $taxTypes as $taxType ) {
                                 if ( $taxType['Revenue'] ) {
                                     echo '<option value="' . $taxType['TaxType'] . '" ' . selected( $saved_sales_tax_type, $taxType['TaxType'], false ) . '>' . $taxType['Name'] . '</option>';
                                 }
                             }
-                            ?>
-                        </select>
-                        <label for="sales-tax-type">Sales Tax Type</label>
-                    <?php
-                    }
-                    ?>
+                        }
+                        ?>
+                    </select>
+                    <label for="sales-tax-type">Sales Tax Type</label>
                 </div> 
+                
                 
                 <div class="syncrow">
                         <?php 
