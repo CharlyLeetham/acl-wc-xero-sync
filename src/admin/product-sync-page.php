@@ -844,7 +844,7 @@ class ACLProductSyncPage {
         }
         ?>
         <div class="wrap">
-            <h1>Export Products</h1>
+            <h1>Export Products Without Images</h1>
             <form method="post" action="">
                 <?php wp_nonce_field( 'export_csv_action', 'export_csv_nonce' ); ?>
                 <div class="syncrow">
