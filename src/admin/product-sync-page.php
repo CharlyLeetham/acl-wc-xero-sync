@@ -656,6 +656,8 @@ class ACLProductSyncPage {
                          $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
                          if ( $xero_error ) {
                             echo '<option value="" selected>Authenticate with Xero</option>';
+                            echo '</select>';
+                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
                         } else {
                             echo '<option value="">Select Bank Account</option>';
                             foreach ( $accounts as $account ) {
