@@ -3,6 +3,7 @@ namespace ACLWcXeroSync\Helpers;
 use ACLWcXeroSync\Services\ACLSyncService;
 use ACLWcXeroSync\Admin\ACLProductSyncPage;
 use ACLWcXeroSync\Helpers\ACLXeroLoggers;
+use ACLWcXeroSync\Services\ACLWCService;
 
 class ACLXeroHelper {
 
@@ -128,8 +129,10 @@ class ACLXeroHelper {
                 // Write the header
                 if ( $context === 'product_sync' ) {
                     fwrite( $fp, "SKU,Xero Purchase Price,Xero Price,WC Purchase Price,WC Price,COGS Acct,Sales Acct,COGS Tax,Sales Tax\n" );
-                } elseif ( $context === 'invoice_sync_test' ) {
+                } elseif ( $context === 'invoice_sync' ) {
                     fwrite( $fp, "Order ID,Status,Payment Status,Total,Xero Invoice ID,Action\n" );
+                } elseif ( $context === 'product_images' ) {
+                    fwrite( $fp, "Supplier,Type,SKU,Title\n" );
                 }
                 ACLXeroLogger::log_message( "Created $csv_file", 'product_sync' );
             }
@@ -493,7 +496,7 @@ class ACLXeroHelper {
             $xero = ACLXeroHelper::initialize_xero_client( );
             if ( is_wp_error( $xero ) ) {
                 echo "<div class='notice notice-error'><p>Xero client initialization failed: " . $xero->get_error_message( ) . "</p></div>";
-                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message( ), 'invoice_sync_test' );
+                ACLXeroLogger::log_message( "Xero client initialization failed: " . $xero->get_error_message( ), 'invoice_sync' );
                 return;
             }
     
@@ -508,40 +511,47 @@ class ACLXeroHelper {
                 $args['post__in'] = $specific_order_ids;
             }
             
+            
             $order_ids = wc_get_orders( $args );
             $total_orders = count( $order_ids );
+
+            ACLXeroLogger::log_message( "Orders ". implode(', ', $order_ids), 'invoice_sync' );
+            ACLXeroLogger::log_message( "Order IDs type: " . gettype($order_ids), 'invoice_sync' );
+            ACLXeroLogger::log_message( "Order IDs dump: " . print_r($order_ids, true), 'invoice_sync' );
     
             if ( empty( $order_ids ) ) {
                 echo "<div class='notice notice-warning'><p>No orders found to sync.</p></div>";
-                ACLXeroLogger::log_message( "No orders found to sync.", 'invoice_sync_test' );
+                ACLXeroLogger::log_message( "No orders found to sync.", 'invoice_sync' );
                 return;
             }
     
             echo "<div class='notice notice-info'><p>Processing {$total_orders} orders.</p></div>";
-            ACLXeroLogger::log_message( "Processing {$total_orders} orders.", 'invoice_sync_test' );
+            ACLXeroLogger::log_message( "Processing {$total_orders} orders.", 'invoice_sync' );
     
             $timestamp = current_time( "Y-m-d-H-i-s" );
             $dry_run_suffix = $dry_run ? '_dryrun' : '';
-            $csv_filename = "invoice_sync_test{$dry_run_suffix}_{$timestamp}.csv";
+            $csv_filename = "invoice_sync{$dry_run_suffix}_{$timestamp}.csv";
    
             $synced_count = 0;
             $to_sync_count = 0;
     
-            foreach ( $order_ids as $order_id ) {
+           foreach ( $order_ids as $order_id ) {
                 $order = wc_get_order( $order_id );
+                ACLXeroLogger::log_message( "Here", 'invoice_sync' );
                 $existing_invoice = self::check_existing_xero_invoice( $xero, $order_id );
+                ACLXeroLogger::log_message( "Existing Invoice" . print_r($existing_invoice, true), 'invoice_sync' );
                 
                 $payment_status = $order->is_paid( ) ? 'Paid' : 'Unpaid';
                 $order_total = $order->get_total( );
     
                 if ( $existing_invoice ) {
                     $synced_count++;
-                    $invoice_id = $existing_invoice->getInvoiceID( );
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync_test' );
+                    $invoice_id = $existing_invoice->InvoiceID;
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},{$invoice_id},Already Synced", 'invoice_sync' );
                     echo "<div class='notice notice-success'><p>Order #{$order_id} - Already synced (Invoice ID: {$invoice_id})</p></div>";
                 } else {
                     $to_sync_count++;
-                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync_test' );
+                    ACLXeroHelper::csv_file( $csv_filename, "{$order_id},{$order->get_status( )},{$payment_status},{$order_total},N/A," . ( $dry_run ? 'Dry Run' : 'Synced' ), 'invoice_sync' );
                     
                     if ( $dry_run ) {
                         echo "<div class='notice notice-info'><p>Order #{$order_id} - Would be synced (Dry Run)</p></div>";
@@ -562,11 +572,11 @@ class ACLXeroHelper {
             
             echo "<div class='notice notice-info'><p>{$summary}</p></div>";
             echo "<div class='notice notice-info'><p>Results saved to CSV: {$csv_filename}</p></div>";
-            ACLXeroLogger::log_message( $summary, 'invoice_sync_test' );
+            ACLXeroLogger::log_message( $summary, 'invoice_sync' );
     
         } catch ( \Exception $e ) {
             echo "<div class='notice notice-error'><p>Error during test sync: {$e->getMessage( )}</p></div>";
-            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync_test' );
+            ACLXeroLogger::log_message( "Error during test sync: {$e->getMessage( )}", 'invoice_sync' );
         }
     }
 
@@ -637,4 +647,84 @@ class ACLXeroHelper {
             return null;
         }
     } 
+
+    public static function handle_fetch_items_ajax() {
+        ACLXeroLogger::log_message( "Fetch AJAX called.", 'product_sync' );
+    
+        check_ajax_referer( 'xero_fetch_items_ajax', '_ajax_nonce' );
+        ACLXeroLogger::log_message( "Nonce verified.", 'product_sync' );
+    
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            ACLXeroLogger::log_message( "Permission denied.", 'product_sync' );
+            echo "<div class='notice notice-error'><p>Insufficient permissions.</p></div>";
+            flush();
+            wp_die();
+        }
+    
+        if ( ob_get_level() > 0 ) {
+            ob_end_clean();
+        }
+    
+        header( 'Content-Type: text/html; charset=utf-8' );
+        header( 'Cache-Control: no-cache' );
+    
+        try {
+            echo "<div class='notice notice-info'><p>Fetching Xero items...</p></div>";
+            flush();
+            ACLXeroLogger::log_message( "Initializing Xero client.", 'product_sync' );
+    
+            $xero = self::initialize_xero_client();
+            if ( is_wp_error( $xero ) ) {
+                $error = $xero->get_error_message();
+                ACLXeroLogger::log_message( "Xero client failed: {$error}", 'product_sync' );
+                echo "<div class='notice notice-error'><p>Xero client error: {$error}</p></div>";
+                flush();
+                wp_die();
+            }
+    
+            $cache_dir = WP_CONTENT_DIR . '/uploads/xero_cache';
+            $cache_file = $cache_dir . '/xero_items.json';
+    
+            if ( ! file_exists( $cache_dir ) ) {
+                if ( ! mkdir( $cache_dir, 0755, true ) ) {
+                    ACLXeroLogger::log_message( "Failed to create cache directory.", 'product_sync' );
+                    echo "<div class='notice notice-error'><p>Failed to create cache directory.</p></div>";
+                    flush();
+                    wp_die();
+                }
+            }
+    
+            ACLXeroLogger::log_message( "Fetching items.", 'product_sync' );
+            $xero_items = ACLSyncService::fetch_xero_items( $xero );
+            ACLXeroLogger::log_message( "Fetched " . count( $xero_items ) . " items.", 'product_sync' );
+
+           // if (file_put_contents($log_file, "[{$timestamp}] [{$level}] {$message}\n", FILE_APPEND) !== false)
+    
+            if ( ! file_put_contents( $cache_file, json_encode( $xero_items ) ) ) {
+                ACLXeroLogger::log_message( "Failed to write cache file.", 'product_sync' );
+                echo "<div class='notice notice-error'><p>Failed to write cache file.</p></div>";
+                flush();
+                wp_die();
+            }
+    
+            ACLXeroLogger::log_message( "Cached " . count( $xero_items ) . " items.", 'product_sync' );
+            echo "<div class='notice notice-success'><p>Fetched " . count( $xero_items ) . " Xero items.</p></div>";
+            flush();
+            wp_die();
+        } catch ( \Exception $e ) {
+            ACLXeroLogger::log_message( "Error: {$e->getMessage()}", 'product_sync' );
+            echo "<div class='notice notice-error'><p>Error: {$e->getMessage()}</p></div>";
+            flush();
+            wp_die();
+        }
+    }  
+    
+    public static function export_products_to_csv( $supplier = '', $filename = 'products_without_images.csv', $include_variations = false, $category_id = null ) {
+        $products = ACLWCService::get_products( 0, null, $category_id, $supplier, true, $include_variations );
+        
+        foreach ( $products as $product ) {
+            $line = "{$product['supplier']},{$product['type']},{$product['sku']},\"{$product['description']}\"";
+            self::csv_file( $filename, $line, 'product_images' );
+        }
+    }
 }

@@ -388,4 +388,27 @@ jQuery(document).ready(function($) {
             }
         });
     });
+
+    $('#fetch-xero-items').on('click', function(e) {
+        e.preventDefault();
+        var $syncResults = $('#sync-results');
+        $syncResults.html('<div class="notice notice-info"><p>Fetching Xero items...</p><div id="sync-indicator" class="loader"></div></div>');
+    
+        $.ajax({
+            url: aclWcXeroSyncAjax.ajax_url,
+            method: 'POST',
+            data: {
+                action: 'acl_xero_fetch_items_ajax',
+                _ajax_nonce: aclWcXeroSyncAjax.nonce_xero_fetch_items_ajax
+            },
+            success: function(data) {
+                $('#sync-indicator').remove();
+                $syncResults.html(data);
+            },
+            error: function(xhr, status, error) {
+                $('#sync-indicator').remove();
+                $syncResults.html('<div class="notice notice-error"><p>Failed to fetch Xero items: ' + error + '</p></div>');
+            }
+        });
+    });    
 });

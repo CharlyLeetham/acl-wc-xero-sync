@@ -20,7 +20,8 @@ class ACLProductSyncPage {
         add_action( 'wp_ajax_acl_update_csv_display', [ACLXeroHelper::class, 'update_csv_display'] );
         add_action( 'wp_ajax_acl_get_log_content', [ACLXeroHelper::class, 'get_log_content' ] );           
         add_action( 'acl_xero_log_rotation_event', [ACLXeroLogger::class, 'acl_xero_log_rotation'] ); 
-        add_action( 'wp_ajax_acl_xero_sync_status_ajax', [ACLXeroHelper::class, 'handle_sync_status'] );             
+        add_action( 'wp_ajax_acl_xero_sync_status_ajax', [ACLXeroHelper::class, 'handle_sync_status'] );
+        add_action( 'wp_ajax_acl_xero_fetch_items_ajax', [ ACLXeroHelper::class, 'handle_fetch_items_ajax' ] );             
                     
 
         // Enqueue scripts and localize AJAX URL
@@ -53,6 +54,7 @@ class ACLProductSyncPage {
             'nonce_delete_csv' => wp_create_nonce('delete_csv'),
             'nonce_delete_csv_multiple' => wp_create_nonce('delete_csv_multiple'),
             'nonce_xero_sync_products_ajax' => wp_create_nonce('xero_sync_products_ajax'),
+            'nonce_xero_fetch_items_ajax' => wp_create_nonce( 'xero_fetch_items_ajax' ),
             'defaultLog' => $defaultLog ? $defaultLog : null,
         ));
     }    
@@ -87,7 +89,16 @@ class ACLProductSyncPage {
             'manage_woocommerce', // Capability
             'acl-xero-invoice-sync', // Menu slug
             [ __CLASS__, 'render_xero_invoice_sync' ]
-        );        
+        ); 
+        
+        add_submenu_page(
+            'acl-xero-sync', // Parent slug (under WooCommerce)
+            'WooCommerce Functions', // Page title
+            'WooCommerce Functions', // Menu title
+            'manage_woocommerce', // Capability
+            'acl-xero-invoice-woocommerce', // Menu slug
+            [ __CLASS__, 'render_woocommerce_functions' ]
+        );         
 
         add_submenu_page(
             'acl-xero-sync',
@@ -251,8 +262,8 @@ class ACLProductSyncPage {
                 'xero_connection' => 'Xero Connection for Sync',
                 'product_sync' => 'Product Sync',
                 'xero_logging' => 'Xero Logging',
-                'invoice_sync_test' => 'Invoice Sync Test',
-                'invoice_sync' => 'Invoice Sync'
+                'invoice_sync' => 'Invoice Sync',
+                'product_images' => 'Woocommerce Query'
             ];
             foreach ($logging_levels as $key => $label) {
                 update_option( 'acl_xero_log_' . $key, isset( $_POST['acl_xero_log_' . $key] ) ? '1' : '0' );
@@ -325,8 +336,8 @@ class ACLProductSyncPage {
                             'xero_connection' => 'Xero Connection for Sync',
                             'product_sync' => 'Product Sync',
                             'xero_logging' => 'Xero Logging',
-                            'invoice_sync_test' => 'Invoice Sync Test',
-                            'invoice_sync' => 'Invoice Sync'                            
+                            'invoice_sync' => 'Invoice Sync',
+                            'product_images' => 'Woocommerce Query'                          
                         ];
                         foreach ($logging_levels as $key => $label):
                             $checked = get_option('acl_xero_log_' . $key) ? 'checked' : '';
@@ -342,7 +353,6 @@ class ACLProductSyncPage {
                 <p class="submit">
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
-
 
                 <!-- Log Files -->
                 <h2>Log Files</h2>
@@ -361,32 +371,32 @@ class ACLProductSyncPage {
                         </tr>
                     </table>
                 </div>                                   
-            </form>
+            </form>                
+                <!-- Step 2: Sync with Xero -->
+                <h2>Step 2: Sync with Xero</h2>
+                <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
+                <?php if ( $reset_success ): ?>
+                    <p style="color: green;">Authorization has been reset successfully.</p>
+                <?php endif; ?>
+                <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
+                    class="button button-primary"
+                    <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
+                    Authorise with Xero
+                </a>
+                <button type="button" id="test-xero-connection" class="button button-secondary" style="margin-left: 10px;">
+                    Test Xero Connection
+                </button>
+                <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
 
-            
-            <!-- Step 2: Sync with Xero -->
-            <h2>Step 2: Sync with Xero</h2>
-            <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
-            <?php if ( $reset_success ): ?>
-                <p style="color: green;">Authorization has been reset successfully.</p>
-            <?php endif; ?>
-            <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
-               class="button button-primary"
-               <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
-               Authorise with Xero
-            </a>
-            <button type="button" id="test-xero-connection" class="button button-secondary" style="margin-left: 10px;">
-                Test Xero Connection
-            </button>
-            <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
-         
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
-                <button type="submit" class="button">Reset Authorization</button>
-            </form>
-            <?php if ( ! $is_authorized ): ?>
-                <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
-            <?php endif; ?>
-        </div>
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
+                        <button type="submit" class="button">Reset Authorization</button>
+                    </form>
+                    <?php if ( ! $is_authorized ): ?>
+                        <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
+                    <?php endif; ?>
+                </div>
+           
+
         <?php
     }
 
@@ -437,17 +447,53 @@ class ACLProductSyncPage {
                     <input type="checkbox" id="dry-run" name="dry_run">
                     <label for="dry-run">Dry Run</label>
                 </div>
-                <div class="syncrow">                
+                <div class="syncrow">
                     <select name="category_id" id="category-select">
-                        <option value="">Select Category</option>
+                        <option value="">All Categories</option>
                         <?php
-                        $categories = get_terms('product_cat', array('hide_empty' => false));
-                        foreach ($categories as $category) {
-                            echo '<option value="' . $category->term_id . '">' . $category->name . '</option>';
+                                // Get product categories (up to 3 levels deep)
+                        $categories = get_terms( [
+                            'taxonomy'   => 'product_cat',
+                            'hide_empty' => false,
+                            'parent'     => 0,
+                        ] );
+                    
+                        if ( ! empty( $categories ) ) {
+                            foreach ( $categories as $top_cat ) {
+                                $top_count = $top_cat->count;
+                                echo '<option value="' . esc_attr( $top_cat->term_id ) . '">' . esc_html( $top_cat->name ) . ' (' . $top_count . ')</option>';
+    
+                                // Get subcategories (level 2)
+                                $sub_cats = get_terms( [
+                                    'taxonomy'   => 'product_cat',
+                                    'hide_empty' => false,
+                                    'parent'     => $top_cat->term_id,
+                                ] );
+                                if ( ! empty( $sub_cats ) && ! is_wp_error( $sub_cats ) ) {
+                                    foreach ( $sub_cats as $sub_cat ) {
+                                        $sub_count = $sub_cat->count;
+                                        echo '<option value="' . esc_attr( $sub_cat->term_id ) . '">&nbsp;- ' . esc_html( $sub_cat->name ) . ' (' . $sub_count . ')</option>';
+    
+                                        // Get sub-subcategories (level 3)
+                                        $sub_sub_cats = get_terms( [
+                                            'taxonomy'   => 'product_cat',
+                                            'hide_empty' => false,
+                                            'parent'     => $sub_cat->term_id,
+                                        ] );
+                                        if ( ! empty( $sub_sub_cats ) && ! is_wp_error( $sub_sub_cats ) ) {
+                                            foreach ( $sub_sub_cats as $sub_sub_cat ) {
+                                                $sub_sub_count = $sub_sub_cat->count;
+                                                echo '<option value="' . esc_attr( $sub_sub_cat->term_id ) . '">&nbsp;&nbsp;-- ' . esc_html( $sub_sub_cat->name ) . ' (' . $sub_sub_count . ')</option>';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                         ?>
-                    </select> 
-                </div>
+                    </select>
+                    <label for="category-select">Select A Category</label>
+                </div>                
                 <div class="syncrow">
                     <h3>For New Products provide:</h3>
                 </div>
@@ -519,12 +565,24 @@ class ACLProductSyncPage {
                         ?>
                     </select>
                     <label for="sales-tax-type">Sales Tax Type</label>
-                </div>                
+                </div> 
+                
+                
                 <div class="syncrow">
-                    <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
-                    <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
-                </div>        
+                        <?php 
+                        if ( is_wp_error( $xero ) ) {
+                            echo '<input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">';
+                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
+                        } else { 
+                        ?>
+                            <input type="submit" name="save_xero_product_settings" class="button button-secondary" value="Save Settings">
+                            <button type="button" class="button button-primary" id="start-sync">Start Sync</button>
+                            <button id="fetch-xero-items" class="button">Fetch Xero Items</button>
+                        <?php } ?>
+                </div> 
+
             </form>
+            
             <div id="sync-results"></div>
             <div id="csv-file-updates"></div> <!-- Placeholder for updates -->                      
             
@@ -548,6 +606,8 @@ class ACLProductSyncPage {
         </div>
         <?php
     }
+
+    
     
     public static function render_xero_invoice_sync() {
         // Save option if submitted
@@ -606,8 +666,9 @@ class ACLProductSyncPage {
 
         $xero = ACLXeroHelper::initialize_xero_client();
 
+        $xero_error = '';
         if ( is_wp_error( $xero ) ) {
-            echo "<div class='notice notice-error'><p>" . $xero->get_error_message() . "</p></div>"; // Display the error message
+            $xero_error = "<div class='notice notice-error'><p>" . esc_html( $xero->get_error_message() ) . "</p></div>"; // Display the error message
             flush();
             // Set to empty arrays so that the form can still be rendered
             $accounts = [];
@@ -635,13 +696,15 @@ class ACLProductSyncPage {
                 </div>
 
                 <div class="syncrow">
-                    <select name="bankaccount" id="bankaccount">
-                        <option value="">Select Bank Account</option>
+                    <select name="bankaccount" id="bankaccount" <?php echo empty( $accounts ) ? 'disabled' : ''; ?>>
                         <?php
                          $selected_bank_account = get_option('acl_xero_default_bank_account', ''); // Get the saved bank account code
-                        if ( empty( $accounts ) ) {
-                            echo '<option value="">Authenticate with Xero</option>';    
+                         if ( $xero_error ) {
+                            echo '<option value="" selected>Authenticate with Xero</option>';
+                            echo '</select>';
+                            echo '<p style="color: red;">Please authorise the app with Xero to enable syncing.</p>';
                         } else {
+                            echo '<option value="">Select Bank Account</option>';
                             foreach ( $accounts as $account ) {
                                 if ( $account['Type'] == 'BANK' ) { // Filter for expense accounts which would generally include COGS
                                     $code = esc_attr($account['Code']);
@@ -650,11 +713,13 @@ class ACLProductSyncPage {
                                     echo "<option value='$code' $is_selected>($code) $name</option>";
                                 }
                             }
+                            echo "</select>";
                         }
                         ?>
-                    </select>
+
                     <label for="bankaccount">Default Bank Account For Paid Orders</label>
-                </div>                    
+                </div>  
+                <?php if ( $xero_error ) echo $xero_error; ?>                  
                 <p class="submit">
                     <input type="submit" name="submit" class="button button-primary" value="Save Settings">
                 </p>
@@ -689,10 +754,13 @@ class ACLProductSyncPage {
                         <?php
                         foreach ( $order_ids as $order_id ) {
                             $order = wc_get_order( $order_id );
-                            $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
-
-                            var_dump ($existing_invoice);
-                            $sync_status = $existing_invoice ? "Synced (Invoice ID: " . $existing_invoice->InvoiceID . ")" : "Not Synced";
+                            $sync_status = $xero_error ? "<span style='color: red;'>Authorise with Xero</span>" : "Not Synced";
+                            if ( ! $xero_error ) {
+                                $existing_invoice = ACLXeroHelper::check_existing_xero_invoice( $xero, $order_id );
+                                if ( $existing_invoice ) {
+                                    $sync_status = "Synced (Invoice ID: " . esc_attr( $existing_invoice->InvoiceID ) . ")";
+                                }
+                            }                            
                             $sync_issue = get_post_meta($order_id, '_xero_sync_issue', true); // Get sync issue meta
                             if ($sync_issue) {
                                 $sync_status = "<span style='color: red; font-weight: bold;' title='" . esc_attr($sync_issue) . "'>Problem</span>";
@@ -703,7 +771,7 @@ class ACLProductSyncPage {
                                 <td><?php echo $order->get_date_created()->format( 'Y-m-d H:i:s' ); ?></td>
                                 <td><?php echo $order->get_status(); ?></td>
                                 <td><?php echo wc_price( $order->get_total() ); ?></td>
-                                <td><?php echo $order->is_paid() ? 'Paid' : 'Unpaid'; ?></td>
+                                <td><?php echo $order->is_paid() ? '<span class="orderpaid">Paid</span>' : '<span class="orderunpaid">Unpaid</span>'; ?></td>
                                 <td><?php echo $sync_status; ?></td>
                                 <td>
                                     <form method="post" action="" style="display:inline;">
@@ -749,5 +817,118 @@ class ACLProductSyncPage {
             </div>
         </div>
         <?php
-    }  
+    } 
+    
+    public static function render_woocommerce_functions() {
+        // Get supplier terms
+        $suppliers = get_terms( [
+            'taxonomy'   => 'pa_supplier',
+            'hide_empty' => false,
+        ] );
+    
+        // Get product categories (up to 3 levels deep)
+        $categories = get_terms( [
+            'taxonomy'   => 'product_cat',
+            'hide_empty' => false,
+            'parent'     => 0,
+        ] );
+    
+        // Handle CSV export
+        if ( isset( $_POST['export_csv_nonce'] ) && wp_verify_nonce( $_POST['export_csv_nonce'], 'export_csv_action' ) ) {
+            $supplier = isset( $_POST['supplier'] ) ? sanitize_text_field( $_POST['supplier'] ) : '';
+            $category_id = isset( $_POST['category'] ) ? intval( $_POST['category'] ) : null;
+            $include_variations = isset( $_POST['include_variations'] ) && $_POST['include_variations'] === '1';
+            $timestamp = current_time( "Y-m-d-H-i-s" );
+            $filename = $include_variations ? 'products_with_variations_' . $timestamp . '.csv' : 'products_no_variations_' . $timestamp . '.csv';
+            ACLXeroHelper::export_products_to_csv( $supplier, $filename, $include_variations, $category_id );
+        }
+        ?>
+        <div class="wrap">
+            <h1>Export Products Without Images</h1>
+            <form method="post" action="">
+                <?php wp_nonce_field( 'export_csv_action', 'export_csv_nonce' ); ?>
+                <div class="syncrow">
+                    <select name="supplier" id="supplier">
+                        <option value="">All Suppliers</option>
+                        <?php
+                        if ( ! empty( $suppliers ) && ! is_wp_error( $suppliers ) ) {
+                            foreach ( $suppliers as $supplier ) {
+                                echo '<option value="' . esc_attr( $supplier->slug ) . '">' . esc_html( $supplier->name ) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="supplier">Supplier</label>
+                </div>
+                <div class="syncrow">
+                    <select name="category" id="category">
+                        <option value="">All Categories</option>
+                        <?php
+                        if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                            foreach ( $categories as $top_cat ) {
+                                $top_count = $top_cat->count;
+                                echo '<option value="' . esc_attr( $top_cat->term_id ) . '">' . esc_html( $top_cat->name ) . ' (' . $top_count . ')</option>';
+    
+                                // Get subcategories (level 2)
+                                $sub_cats = get_terms( [
+                                    'taxonomy'   => 'product_cat',
+                                    'hide_empty' => false,
+                                    'parent'     => $top_cat->term_id,
+                                ] );
+                                if ( ! empty( $sub_cats ) && ! is_wp_error( $sub_cats ) ) {
+                                    foreach ( $sub_cats as $sub_cat ) {
+                                        $sub_count = $sub_cat->count;
+                                        echo '<option value="' . esc_attr( $sub_cat->term_id ) . '">&nbsp;- ' . esc_html( $sub_cat->name ) . ' (' . $sub_count . ')</option>';
+    
+                                        // Get sub-subcategories (level 3)
+                                        $sub_sub_cats = get_terms( [
+                                            'taxonomy'   => 'product_cat',
+                                            'hide_empty' => false,
+                                            'parent'     => $sub_cat->term_id,
+                                        ] );
+                                        if ( ! empty( $sub_sub_cats ) && ! is_wp_error( $sub_sub_cats ) ) {
+                                            foreach ( $sub_sub_cats as $sub_sub_cat ) {
+                                                $sub_sub_count = $sub_sub_cat->count;
+                                                echo '<option value="' . esc_attr( $sub_sub_cat->term_id ) . '">&nbsp;&nbsp;-- ' . esc_html( $sub_sub_cat->name ) . ' (' . $sub_sub_count . ')</option>';
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        ?>
+                    </select>
+                    <label for="category">Category</label>
+                </div>
+                <div class="syncrow">
+                    <select name="include_variations" id="include_variations">
+                        <option value="0">Just Products</option>
+                        <option value="1">Include Variations</option>
+                    </select>
+                    <label for="include_variations">Product Options</label>
+                </div>
+                <p class="submit">
+                    <input type="submit" name="export_csv" class="button button-primary" value="Export to CSV">
+                </p>
+            </form>
+    
+            <h2>Generated CSV Files</h2>
+            <div id="csv-file-container">
+                <table class="form-table">
+                    <tr>
+                        <td colspan="2">
+                            <?php 
+                            $filetype = 'csv';
+                            $defaultLog = ACLXeroHelper::display_files( $filetype, 'product' );
+                            ?>
+                            <script>
+                                var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
+                            </script>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <?php
+    }
 }
