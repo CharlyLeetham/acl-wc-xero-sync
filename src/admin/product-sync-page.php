@@ -353,7 +353,29 @@ class ACLProductSyncPage {
                 <p class="submit">
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
+                <!-- Step 2: Sync with Xero -->
+                <h2>Step 2: Sync with Xero</h2>
+                <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
+                <?php if ( $reset_success ): ?>
+                    <p style="color: green;">Authorization has been reset successfully.</p>
+                <?php endif; ?>
+                <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
+                    class="button button-primary"
+                    <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
+                    Authorise with Xero
+                </a>
+                <button type="button" id="test-xero-connection" class="button button-secondary" style="margin-left: 10px;">
+                    Test Xero Connection
+                </button>
+                <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
 
+                    <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
+                        <button type="submit" class="button">Reset Authorization</button>
+                    </form>
+                    <?php if ( ! $is_authorized ): ?>
+                        <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
+                    <?php endif; ?>
+                </div>
 
                 <!-- Log Files -->
                 <h2>Log Files</h2>
@@ -375,29 +397,7 @@ class ACLProductSyncPage {
             </form>
 
             
-            <!-- Step 2: Sync with Xero -->
-            <h2>Step 2: Sync with Xero</h2>
-            <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
-            <?php if ( $reset_success ): ?>
-                <p style="color: green;">Authorization has been reset successfully.</p>
-            <?php endif; ?>
-            <a href="<?php echo esc_url( self::get_xero_auth_url( $consumer_key, $redirect_uri ) ); ?>" 
-               class="button button-primary"
-               <?php echo empty( $consumer_key ) || empty( $consumer_secret ) ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''; ?>>
-               Authorise with Xero
-            </a>
-            <button type="button" id="test-xero-connection" class="button button-secondary" style="margin-left: 10px;">
-                Test Xero Connection
-            </button>
-            <div id="xero-test-connection-result" style="margin-top: 10px;"></div>
-         
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=acl_xero_reset_authorization' ) ); ?>" style="margin-top: 10px;">
-                <button type="submit" class="button">Reset Authorization</button>
-            </form>
-            <?php if ( ! $is_authorized ): ?>
-                <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
-            <?php endif; ?>
-        </div>
+
         <?php
     }
 
@@ -632,7 +632,6 @@ class ACLProductSyncPage {
         }  else {
             $accounts = ACLXeroHelper::getXeroAccounts( $xero ); 
         }
-        remove_all_actions( 'admin_notices' );
         ?>
         <div class="wrap">
             <h1>Xero Invoice Sync</h1>
