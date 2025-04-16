@@ -657,8 +657,8 @@ class ACLProductSyncPage {
                          if ( $xero_error ) {
                             echo '<option value="" selected>Authenticate with Xero</option>';
                         } else {
+                            echo '<option value="">Select Bank Account</option>';
                             foreach ( $accounts as $account ) {
-                               echo '<option value="">Select Bank Account</option>';
                                 if ( $account['Type'] == 'BANK' ) { // Filter for expense accounts which would generally include COGS
                                     $code = esc_attr($account['Code']);
                                     $name = esc_html($account['Name']);
