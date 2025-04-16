@@ -353,6 +353,25 @@ class ACLProductSyncPage {
                 <p class="submit">
                     <button type="submit" name="acl_xero_settings" class="button button-primary">Save Settings</button>
                 </p>
+
+                <!-- Log Files -->
+                <h2>Log Files</h2>
+                <div id="log-file-container">
+                    <table class="form-table">
+                        <tr>
+                            <td colspan="2">
+                                <?php 
+                                $filetype = 'log';
+                                $defaultLog = ACLXeroHelper::display_files( $filetype );                               
+                                ?>
+                                    <script>
+                                        var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
+                                    </script>
+                            </td>
+                        </tr>
+                    </table>
+                </div>                                   
+            </form>                
                 <!-- Step 2: Sync with Xero -->
                 <h2>Step 2: Sync with Xero</h2>
                 <p>Status: <strong><?php echo esc_html( $status ); ?></strong></p>
@@ -376,27 +395,7 @@ class ACLProductSyncPage {
                         <p style="color: red;">Please authorise the app with Xero to enable syncing.</p>
                     <?php endif; ?>
                 </div>
-
-                <!-- Log Files -->
-                <h2>Log Files</h2>
-                <div id="log-file-container">
-                    <table class="form-table">
-                        <tr>
-                            <td colspan="2">
-                                <?php 
-                                $filetype = 'log';
-                                $defaultLog = ACLXeroHelper::display_files( $filetype );                               
-                                ?>
-                                    <script>
-                                        var defaultLog = "<?php echo esc_js( $defaultLog ); ?>";
-                                    </script>
-                            </td>
-                        </tr>
-                    </table>
-                </div>                                   
-            </form>
-
-            
+           
 
         <?php
     }
