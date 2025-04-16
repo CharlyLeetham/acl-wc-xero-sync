@@ -447,10 +447,17 @@ class ACLProductSyncPage {
                     <input type="checkbox" id="dry-run" name="dry_run">
                     <label for="dry-run">Dry Run</label>
                 </div>
-                 <div class="syncrow">
+                <div class="syncrow">
                     <select name="category_id" id="category-select">
                         <option value="">All Categories</option>
                         <?php
+                                // Get product categories (up to 3 levels deep)
+                        $categories = get_terms( [
+                            'taxonomy'   => 'product_cat',
+                            'hide_empty' => false,
+                            'parent'     => 0,
+                        ] );
+                    
                         if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
                             foreach ( $categories as $top_cat ) {
                                 $top_count = $top_cat->count;
