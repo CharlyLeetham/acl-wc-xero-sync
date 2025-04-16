@@ -60,3 +60,13 @@
 .syncrow {
     margin-bottom: 10px;
 }
+
+.orderpaid {
+    color:green;
+    font-weight: bold;
+}
+
+.orderunpaid {
+    color: red;
+    font-weight: bold;
+}
